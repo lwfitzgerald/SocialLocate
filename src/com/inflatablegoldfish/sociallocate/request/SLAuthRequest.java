@@ -32,6 +32,9 @@ public class SLAuthRequest extends SLRequest {
         SharedPreferences.Editor editor = Util.prefs.edit();
         editor.remove("access_token");
         editor.remove("access_expires");
+        editor.commit();
+        
+        facebook.setAccessToken(null);
         
         // Create new FB auth request and queue it!
         new FBAuthRequest(
@@ -68,7 +71,9 @@ public class SLAuthRequest extends SLRequest {
                         // own error handler here too
                         
                         // Call listener's error handler
-                        request.listener.onError();
+                        if (request.listener != null) {
+                            request.listener.onError();
+                        }
                         
                         // Remove from queue
                         itr.remove();
