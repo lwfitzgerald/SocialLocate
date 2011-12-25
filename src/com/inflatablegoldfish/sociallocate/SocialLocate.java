@@ -19,7 +19,7 @@ public class SocialLocate {
         CookieHandler.setDefault(manager);
     }
     
-    public RequestResult auth(String accessToken, SLRequestListener listener) {
+    public RequestResult auth(String accessToken, RequestListener<User[]> listener) {
         String url = URL_PREFIX + "action=auth"
                 + "&access_token=" + accessToken;
 
@@ -31,7 +31,7 @@ public class SocialLocate {
             if (jsonObject.getInt("auth_status") == 0) {
                 return RequestResult.AUTHFAIL;
             } else {
-                listener.onComplete();
+                listener.onComplete(null);
                 return RequestResult.SUCCESS;
             }
         } catch (Exception e) {
@@ -39,7 +39,7 @@ public class SocialLocate {
         }
     }
     
-    public RequestResult initialFetch(SLRequestListener listener) {
+    public RequestResult initialFetch(RequestListener<User[]> listener) {
         String url = URL_PREFIX + "action=initial_fetch";
         
         try {
@@ -81,7 +81,7 @@ public class SocialLocate {
         }
     }
     
-    public RequestResult fetch(SLRequestListener listener) {
+    public RequestResult fetch(RequestListener<User[]> listener) {
         String url = URL_PREFIX + "action=fetch";
         
         try {
@@ -113,17 +113,5 @@ public class SocialLocate {
         } catch (Exception e) {
             return RequestResult.ERROR;
         }
-    }
-    
-    public static abstract class SLRequestListener implements RequestListener<User[]> {
-        public void onComplete() {
-            onComplete(null);
-        }
-        
-        public abstract void onComplete(User[] users);
-        
-        public abstract void onError();
-        
-        public abstract void onCancel();
     }
 }

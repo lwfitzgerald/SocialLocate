@@ -103,7 +103,7 @@ public class FBAuthRequest extends Request {
         }
         
         Util.showToast(
-            "FB authentication OK",
+            "FB authed using saved token",
             manager.getCurrentActivity().getApplicationContext()
         );
         

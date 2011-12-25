@@ -2,9 +2,9 @@ package com.inflatablegoldfish.sociallocate;
 
 
 import com.facebook.android.Facebook;
-import com.inflatablegoldfish.sociallocate.SocialLocate.SLRequestListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;
+import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
@@ -57,15 +57,13 @@ public class SLActivity extends Activity implements OnItemClickListener {
         requestManager.addRequestWithoutStarting(
             new SLInitialFetchRequest(
                 requestManager,
-                new SLRequestListener() {
-                    @Override
+                new RequestListener<User[]>() {
                     public void onError() {
                         Util.showToast("Initial fetch error", getApplicationContext());
                     }
                     
-                    @Override
                     public void onComplete(final User[] users) {
-                        Util.showToast("Initial fetch ok", getApplicationContext());
+                        Util.showToast("Initial fetch OK", getApplicationContext());
                         
                         // Set our name
                         Util.uiHandler.post(new Runnable() {
@@ -75,16 +73,20 @@ public class SLActivity extends Activity implements OnItemClickListener {
                             }
                         });
                         
-                        StringBuffer buffer = new StringBuffer("Users: \n");
+                        StringBuffer buffer = new StringBuffer("Friends:\n");
                         
-                        for (User user : users) {
-                            buffer.append(user.getName() + "\n");
+                        int i;
+                        for (i=1 ; i < users.length-1; i++) {
+                            buffer.append(users[i].getName() + "\n");
+                        }
+                        
+                        if (i < users.length) {
+                            buffer.append(users[i].getName());
                         }
                         
                         Util.showToast(buffer.toString(), getApplicationContext());
                     }
                     
-                    @Override
                     public void onCancel() {
                         Util.showToast("FB auth cancelled so cancelling initial fetch", getApplicationContext());
                     }
@@ -98,18 +100,15 @@ public class SLActivity extends Activity implements OnItemClickListener {
         requestManager.addRequestWithoutStarting(
             new SLAuthRequest(
                 requestManager,
-                new SLRequestListener() {
-                    @Override
+                new RequestListener<User[]>() {
                     public void onError() {
                         Util.showToast("SL auth error", getApplicationContext());
                     }
                     
-                    @Override
                     public void onComplete(User[] users) {
-                        Util.showToast("SL auth ok", getApplicationContext());
+                        Util.showToast("SL auth OK", getApplicationContext());
                     }
                     
-                    @Override
                     public void onCancel() {
                         Util.showToast("FB auth cancelled so cancelling SL auth", getApplicationContext());
                     }

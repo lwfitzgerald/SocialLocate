@@ -5,21 +5,22 @@ import java.util.Iterator;
 
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
-import com.inflatablegoldfish.sociallocate.SocialLocate.SLRequestListener;
+import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class SLInitialFetchRequest extends SLRequest {
 
     public SLInitialFetchRequest(RequestManager manager,
-            SLRequestListener listener, Facebook facebook,
+            RequestListener<User[]> listener, Facebook facebook,
             SocialLocate socialLocate, Foursquare foursquare) {
         
         super(manager, listener, facebook, socialLocate, foursquare);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RequestResult execute() {
-        return socialLocate.initialFetch((SLRequestListener) listener);
+        return socialLocate.initialFetch((RequestListener<User[]>) listener);
     }
 
     @Override
