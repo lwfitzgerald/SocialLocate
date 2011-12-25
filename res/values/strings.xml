@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SocialLocate</string>
+    <string name="notification_id">131289</string>
+    <string name="service_stopping">SocialLocate service stopping</string>
+    <string name="service_starting">SocialLocate service starting</string>
+    <string name="notification_text">SocialLocate service running</string>
 
 </resources>
