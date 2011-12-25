@@ -26,8 +26,6 @@ public class SLActivity extends Activity implements OnItemClickListener {
     private SocialLocate socialLocate = new SocialLocate();
     private Foursquare foursquare = new Foursquare();
     
-    private SharedPreferences mPrefs;
-    
     private RequestManager requestManager;
     
     private TextView ownName;
