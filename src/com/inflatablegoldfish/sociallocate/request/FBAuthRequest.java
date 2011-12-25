@@ -19,6 +19,8 @@ public class FBAuthRequest extends Request {
     private Boolean resultReady;
     private Object resultLock = new Object();
     
+    private static final int NUM_RETRIES = 3;
+    
     public FBAuthRequest(RequestManager manager, Facebook facebook,
             SocialLocate socialLocate, Foursquare foursquare) {
         
@@ -105,14 +107,39 @@ public class FBAuthRequest extends Request {
 
     @Override
     public void onAuthFail(Deque<Request> requestQueue) {
-        // TODO Auto-generated method stub
-
+        /*
+         * TODO: Don't think we actually need to do anything
+         * here
+         */
     }
 
     @Override
     public void onError(Deque<Request> requestQueue) {
-        // TODO Auto-generated method stub
-
+        if (retries < NUM_RETRIES) {
+            // Request will be reattempted by manager
+            // TODO: Implement exponential backoff sleep here?
+            retries++;
+        } else {
+            /*
+             * Need to remove all later dependent
+             * operations
+             */
+            synchronized (requestQueue) {
+                Iterator<Request> itr = requestQueue.iterator();
+                
+                while (itr.hasNext()) {
+                    Request request = itr.next();
+                    // We will call our listener's
+                    // own error handler here too
+                    
+                    // Call listener's error handler
+                    request.listener.onError();
+                    
+                    // Remove from queue
+                    itr.remove();
+                }
+            }
+        }
     }
 
     @Override
