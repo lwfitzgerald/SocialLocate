@@ -134,16 +134,20 @@ public class FBAuthRequest extends Request {
                 
                 while (itr.hasNext()) {
                     Request request = itr.next();
-                    // We will call our listener's
-                    // own error handler here too
                     
-                    // Call listener's error handler
-                    if (request.listener != null) {
-                        request.listener.onError();
+                    if (request instanceof SLRequest
+                            || request instanceof FBAuthRequest) {
+                        // We will call our listener's
+                        // own error handler here too
+                        
+                        // Call listener's error handler
+                        if (request.listener != null) {
+                            request.listener.onError();
+                        }
+                        
+                        // Remove from queue
+                        itr.remove();
                     }
-                    
-                    // Remove from queue
-                    itr.remove();
                 }
             }
         }
@@ -160,16 +164,20 @@ public class FBAuthRequest extends Request {
             
             while (itr.hasNext()) {
                 Request request = itr.next();
-                // We will call our listener's
-                // own cancel handler here too
                 
-                // Call listener's error handler
-                if (request.listener != null) {
-                    request.listener.onCancel();
+                if (request instanceof SLRequest
+                        || request instanceof FBAuthRequest) {
+                    // We will call our listener's
+                    // own cancel handler here too
+                    
+                    // Call listener's error handler
+                    if (request.listener != null) {
+                        request.listener.onCancel();
+                    }
+                    
+                    // Remove from queue
+                    itr.remove();
                 }
-                
-                // Remove from queue
-                itr.remove();
             }
         }
     }
