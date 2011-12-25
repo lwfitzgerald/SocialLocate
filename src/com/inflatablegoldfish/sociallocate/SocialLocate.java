@@ -7,6 +7,8 @@ import java.net.CookiePolicy;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.location.Location;
+
 import com.inflatablegoldfish.sociallocate.request.Request.RequestResult;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 
@@ -108,6 +110,26 @@ public class SocialLocate {
                 }
                 
                 listener.onComplete(toReturn);
+                return RequestResult.SUCCESS;
+            }
+        } catch (Exception e) {
+            return RequestResult.ERROR;
+        }
+    }
+    
+    public RequestResult updateLocation(Location location, RequestListener<User[]> listener) {
+        String url = URL_PREFIX + "action=update_location" + "&lat="
+                + location.getLatitude() + "&long=" + location.getLongitude();
+
+        try {
+            String response = Util.getURL(url, true);
+            
+            JSONObject jsonObject = new JSONObject(response);
+            
+            if (jsonObject.getInt("auth_status") == 0) {
+                return RequestResult.AUTHFAIL;
+            } else {
+                listener.onComplete(null);
                 return RequestResult.SUCCESS;
             }
         } catch (Exception e) {
