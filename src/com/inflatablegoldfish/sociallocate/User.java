@@ -6,6 +6,7 @@ public class User {
     private Double lng;
     private String name;
     private String pic;
+    private boolean updatedInLastFetch = true;
     
     public User(int id, double lat, double lng, String name, String pic) {
         this.id = id;
@@ -21,6 +22,19 @@ public class User {
         this.lng = null;
         this.name = name;
         this.pic = pic;
+    }
+    
+    public void updateLocation(double lat, double lng) {
+        this.lat = lat;
+        this.lng = lng;
+    }
+    
+    public void markUpdated(boolean updated) {
+        this.updatedInLastFetch = updated;
+    }
+    
+    public boolean wasUpdatedInLastFetch() {
+        return updatedInLastFetch;
     }
     
     public int getId() {
