@@ -33,6 +33,9 @@ public abstract class SLRequest extends Request {
                     
                     @Override
                     public void onComplete(User[] users) {}
+                    
+                    @Override
+                    public void onCancel() {}
                 },
                 facebook,
                 socialLocate,

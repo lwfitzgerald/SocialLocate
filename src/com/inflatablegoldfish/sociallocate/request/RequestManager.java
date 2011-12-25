@@ -85,6 +85,9 @@ public class RequestManager implements Runnable {
                     break;
                 case ERROR:
                     request.onError(queue);
+                    break;
+                case CANCELLED:
+                    request.onCancel(queue);
                 }
             } else {
                 break;

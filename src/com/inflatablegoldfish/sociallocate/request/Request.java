@@ -2,8 +2,6 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 
-import android.content.SharedPreferences;
-
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
@@ -33,7 +31,9 @@ public abstract class Request {
     
     public abstract void onError(Deque<Request> requestQueue);
     
+    public abstract void onCancel(Deque<Request> requestQueue);
+    
     public abstract void addToQueue(Deque<Request> requestQueue);
     
-    public static enum RequestResult { SUCCESS, AUTHFAIL, ERROR };
+    public static enum RequestResult { SUCCESS, AUTHFAIL, ERROR, CANCELLED };
 }

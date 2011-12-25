@@ -83,7 +83,7 @@ public class FBAuthRequest extends Request {
         
                     public void onCancel() {
                         synchronized (resultLock) {
-                            // TODO: Deal with FB cancel properly
+                            result = RequestResult.CANCELLED;
                             resultReady = true;
                             resultLock.notify();
                         }
@@ -101,6 +101,11 @@ public class FBAuthRequest extends Request {
             
             return result;
         }
+        
+        Util.showToast(
+            "FB authentication OK",
+            manager.getCurrentActivity().getApplicationContext()
+        );
         
         return RequestResult.SUCCESS;
     }
@@ -133,11 +138,38 @@ public class FBAuthRequest extends Request {
                     // own error handler here too
                     
                     // Call listener's error handler
-                    request.listener.onError();
+                    if (request.listener != null) {
+                        request.listener.onError();
+                    }
                     
                     // Remove from queue
                     itr.remove();
                 }
+            }
+        }
+    }
+    
+    @Override
+    public void onCancel(Deque<Request> requestQueue) {
+        /*
+         * Need to remove all later dependent
+         * operations
+         */
+        synchronized (requestQueue) {
+            Iterator<Request> itr = requestQueue.iterator();
+            
+            while (itr.hasNext()) {
+                Request request = itr.next();
+                // We will call our listener's
+                // own cancel handler here too
+                
+                // Call listener's error handler
+                if (request.listener != null) {
+                    request.listener.onCancel();
+                }
+                
+                // Remove from queue
+                itr.remove();
             }
         }
     }

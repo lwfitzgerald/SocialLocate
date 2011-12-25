@@ -123,5 +123,7 @@ public class SocialLocate {
         public abstract void onComplete(User[] users);
         
         public abstract void onError();
+        
+        public abstract void onCancel();
     }
 }

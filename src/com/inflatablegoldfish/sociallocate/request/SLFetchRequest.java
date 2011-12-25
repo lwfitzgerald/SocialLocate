@@ -41,6 +41,9 @@ public class SLFetchRequest extends SLRequest {
     }
     
     @Override
+    public void onCancel(Deque<Request> requestQueue) {}
+    
+    @Override
     public void addToQueue(Deque<Request> requestQueue) {
         // Synchronize on the queue whilst iterating
         synchronized (requestQueue) {
@@ -62,5 +65,4 @@ public class SLFetchRequest extends SLRequest {
             requestQueue.addFirst(this);
         }
     }
-
 }
