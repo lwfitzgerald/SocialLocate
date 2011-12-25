@@ -3,8 +3,6 @@ package com.inflatablegoldfish.sociallocate.request;
 import java.util.Deque;
 import java.util.Iterator;
 
-import android.content.SharedPreferences;
-
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.SocialLocate.SLRequestListener;
@@ -14,10 +12,9 @@ public class SLInitialFetchRequest extends SLRequest {
 
     public SLInitialFetchRequest(RequestManager manager,
             SLRequestListener listener, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare,
-            SharedPreferences mPrefs) {
+            SocialLocate socialLocate, Foursquare foursquare) {
         
-        super(manager, listener, facebook, socialLocate, foursquare, mPrefs);
+        super(manager, listener, facebook, socialLocate, foursquare);
     }
 
     @Override

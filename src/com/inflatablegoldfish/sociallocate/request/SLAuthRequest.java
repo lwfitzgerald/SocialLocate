@@ -6,22 +6,22 @@ import java.util.Iterator;
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.SocialLocate.SLRequestListener;
+import com.inflatablegoldfish.sociallocate.Util;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 import android.content.SharedPreferences;
 
 public class SLAuthRequest extends SLRequest {
     public SLAuthRequest(RequestManager manager, SLRequestListener listener,
-            Facebook facebook, SocialLocate socialLocate,
-            Foursquare foursquare, SharedPreferences mPrefs) {
-        
-        super(manager, listener, facebook, socialLocate, foursquare, mPrefs);
+            Facebook facebook, SocialLocate socialLocate, Foursquare foursquare) {
+
+        super(manager, listener, facebook, socialLocate, foursquare);
     }
     
     @Override
     public RequestResult execute() {
         // Get the FB access token
-        String accessToken =  mPrefs.getString("access_token", null);
+        String accessToken = Util.prefs.getString("access_token", null);
         
         return socialLocate.auth(accessToken, (SLRequestListener) listener);
     }
@@ -29,7 +29,7 @@ public class SLAuthRequest extends SLRequest {
     @Override
     public void onAuthFail(Deque<Request> requestQueue) {
         // Facebook token must be invalid so clear it!
-        SharedPreferences.Editor editor = mPrefs.edit();
+        SharedPreferences.Editor editor = Util.prefs.edit();
         editor.remove("access_token");
         editor.remove("access_expires");
         
@@ -38,8 +38,7 @@ public class SLAuthRequest extends SLRequest {
             manager,
             facebook,
             socialLocate,
-            foursquare,
-            mPrefs
+            foursquare
         ).addToQueue(requestQueue);
     }
 

@@ -13,24 +13,27 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.widget.Toast;
 
 public class Util {
     private static SSLSocketFactory IGSSLSocketFactory = null;
+    public static Handler uiHandler;
+    public static SharedPreferences prefs;
     
     /**
      * Show a toast message
      * @param message Message to show
      */
-    public static void showToast(final String message, final Handler handler, final Context context) {
+    public static void showToast(final String message, final Context context) {
         Runnable runnable = new Runnable() {
             public void run() {
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
             }
         };
         
-        handler.post(runnable);
+        uiHandler.post(runnable);
     }
     
     public static void initIGSSLSocketFactory(InputStream keystoreInputStream) {

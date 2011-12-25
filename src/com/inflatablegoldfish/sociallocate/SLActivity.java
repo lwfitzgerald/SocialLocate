@@ -26,7 +26,6 @@ public class SLActivity extends Activity implements OnItemClickListener {
     private SocialLocate socialLocate = new SocialLocate();
     private Foursquare foursquare = new Foursquare();
     
-    private Handler mHandler;
     private SharedPreferences mPrefs;
     
     private RequestManager requestManager;
@@ -40,12 +39,14 @@ public class SLActivity extends Activity implements OnItemClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        mHandler = new Handler();
-        mPrefs = getPreferences(MODE_PRIVATE);
+        // Create UI handler and preferences interface
+        Util.uiHandler = new Handler();
+        Util.prefs = getPreferences(MODE_PRIVATE);
         
         // Initialise custom SSL socket factory for IG
         Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
         
+        // Initialise request manager
         requestManager = new RequestManager(this);
         
         ownName = (TextView) findViewById(R.id.own_name);
@@ -63,12 +64,12 @@ public class SLActivity extends Activity implements OnItemClickListener {
                     
                     @Override
                     public void onError() {
-                        Util.showToast("Initial fetch error", mHandler, getApplicationContext());
+                        Util.showToast("Initial fetch error", getApplicationContext());
                     }
                     
                     @Override
                     public void onComplete(User[] users) {
-                        Util.showToast("Initial fetch ok", mHandler, getApplicationContext());
+                        Util.showToast("Initial fetch ok", getApplicationContext());
                         
                         StringBuffer buffer = new StringBuffer("Users: \n");
                         
@@ -76,13 +77,12 @@ public class SLActivity extends Activity implements OnItemClickListener {
                             buffer.append(user.getName() + "\n");
                         }
                         
-                        Util.showToast(buffer.toString(), mHandler, getApplicationContext());
+                        Util.showToast(buffer.toString(), getApplicationContext());
                     }
                 },
                 facebook,
                 socialLocate,
-                foursquare,
-                mPrefs
+                foursquare
             )
         );
         
@@ -93,18 +93,17 @@ public class SLActivity extends Activity implements OnItemClickListener {
                     
                     @Override
                     public void onError() {
-                        Util.showToast("SL auth error", mHandler, getApplicationContext());
+                        Util.showToast("SL auth error", getApplicationContext());
                     }
                     
                     @Override
                     public void onComplete(User[] users) {
-                        Util.showToast("SL auth ok", mHandler, getApplicationContext());
+                        Util.showToast("SL auth ok", getApplicationContext());
                     }
                 },
                 facebook,
                 socialLocate,
-                foursquare,
-                mPrefs
+                foursquare
             )
         );
         
@@ -113,8 +112,7 @@ public class SLActivity extends Activity implements OnItemClickListener {
                 requestManager,
                 facebook,
                 socialLocate,
-                foursquare,
-                mPrefs
+                foursquare
             )
         );
         

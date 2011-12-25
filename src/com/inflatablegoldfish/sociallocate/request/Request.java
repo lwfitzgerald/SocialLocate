@@ -16,18 +16,15 @@ public abstract class Request {
     protected Facebook facebook;
     protected SocialLocate socialLocate;
     protected Foursquare foursquare;
-    protected SharedPreferences mPrefs;
     
     protected Request(RequestManager manager, RequestListener<?> listener, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare,
-            SharedPreferences mPrefs) {
+            SocialLocate socialLocate, Foursquare foursquare) {
         
         this.manager = manager;
         this.listener = listener;
         this.facebook = facebook;
         this.socialLocate = socialLocate;
         this.foursquare = foursquare;
-        this.mPrefs = mPrefs;
     }
     
     public abstract RequestResult execute();

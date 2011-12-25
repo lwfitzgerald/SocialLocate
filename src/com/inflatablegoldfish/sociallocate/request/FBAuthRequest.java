@@ -11,6 +11,7 @@ import com.facebook.android.Facebook;
 import com.facebook.android.FacebookError;
 import com.facebook.android.Facebook.DialogListener;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
+import com.inflatablegoldfish.sociallocate.Util;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class FBAuthRequest extends Request {
@@ -19,26 +20,25 @@ public class FBAuthRequest extends Request {
     private Object resultLock = new Object();
     
     public FBAuthRequest(RequestManager manager, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare,
-            SharedPreferences mPrefs) {
+            SocialLocate socialLocate, Foursquare foursquare) {
         
-        super(manager, null, facebook, socialLocate, foursquare, mPrefs);
+        super(manager, null, facebook, socialLocate, foursquare);
     }
 
     @Override
     public RequestResult execute() {
         resultReady = false;
         
-        String access_token = mPrefs.getString("access_token", null);
-        long expires = mPrefs.getLong("access_expires", 0);
+        String access_token = Util.prefs.getString("access_token", null);
+        long expires = Util.prefs.getLong("access_expires", 0);
         
-//        if (access_token != null) {
-//            facebook.setAccessToken(access_token);
-//        }
-//        
-//        if (expires != 0) {
-//            facebook.setAccessExpires(expires);
-//        }
+        if (access_token != null) {
+            facebook.setAccessToken(access_token);
+        }
+        
+        if (expires != 0) {
+            facebook.setAccessExpires(expires);
+        }
         
         if (!facebook.isSessionValid()) {
             facebook.authorize(
@@ -46,7 +46,7 @@ public class FBAuthRequest extends Request {
                 new String[] {"offline_access"},
                 new DialogListener() {
                     public void onComplete(final Bundle values) {                        
-                        SharedPreferences.Editor editor = mPrefs.edit();
+                        SharedPreferences.Editor editor = Util.prefs.edit();
                         editor.putString("access_token", facebook.getAccessToken());
                         editor.putLong("access_expires", facebook.getAccessExpires());
                         editor.commit();
@@ -56,6 +56,11 @@ public class FBAuthRequest extends Request {
                             resultReady = true;
                             resultLock.notify();
                         }
+                        
+                        Util.showToast(
+                            "FB authentication OK",
+                            manager.getCurrentActivity().getApplicationContext()
+                        );
                     }
 
                     public void onFacebookError(final FacebookError e) {
