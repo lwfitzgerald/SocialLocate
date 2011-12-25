@@ -69,6 +69,14 @@ public class SLActivity extends Activity implements OnItemClickListener {
                     @Override
                     public void onComplete(User[] users) {
                         Util.showToast("Initial fetch ok", mHandler, getApplicationContext());
+                        
+                        StringBuffer buffer = new StringBuffer("Users: \n");
+                        
+                        for (User user : users) {
+                            buffer.append(user.getName() + "\n");
+                        }
+                        
+                        Util.showToast(buffer.toString(), mHandler, getApplicationContext());
                     }
                 },
                 facebook,
