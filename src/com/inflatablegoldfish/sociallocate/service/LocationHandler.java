@@ -1,5 +1,7 @@
 package com.inflatablegoldfish.sociallocate.service;
 
+import com.inflatablegoldfish.sociallocate.SocialLocate;
+
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
@@ -12,6 +14,7 @@ public class LocationHandler {
     private LocationManager manager;
     private LocationListener listener;
     private Location currentBest = null;
+    private long lastUpdate = Long.MIN_VALUE;
     
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
@@ -27,8 +30,12 @@ public class LocationHandler {
                 if (isBetterLocation(location, currentBest)) {
                     currentBest = location;
                     
-                    // Update service's best location
-                    LocationHandler.this.service.updateLocation(currentBest);
+                    if (lastUpdate + (60000 / SocialLocate.UPDATES_PER_MINUTE)
+                            < System.currentTimeMillis()) {
+                        lastUpdate = System.currentTimeMillis();
+                        
+                        LocationHandler.this.service.updateLocation(location);
+                    }
                 }
             }
 
