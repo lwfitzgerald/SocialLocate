@@ -1,6 +1,7 @@
 package com.inflatablegoldfish.sociallocate;
 
 import com.facebook.android.Facebook;
+import com.google.android.maps.MapActivity;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
@@ -9,7 +10,6 @@ import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
 import com.inflatablegoldfish.sociallocate.service.SLService;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,7 +20,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class SLActivity extends Activity implements OnItemClickListener {
+public class SLActivity extends MapActivity implements OnItemClickListener {
     private Facebook facebook = new Facebook("162900730478788");
     private SocialLocate socialLocate = new SocialLocate();
     private Foursquare foursquare = new Foursquare();
@@ -55,8 +55,8 @@ public class SLActivity extends Activity implements OnItemClickListener {
         ownName.setText("Loading...");
         ownPicture = (ImageView) findViewById(R.id.own_picture);
         
-        friendList = (ListView) findViewById(R.id.friend_list);
-        friendList.setOnItemClickListener(this);
+        //friendList = (ListView) findViewById(R.id.friend_list);
+        //friendList.setOnItemClickListener(this);
         //friendList.setAdapter(new FriendListAdapter(this));
 
         requestManager.addRequestWithoutStarting(
@@ -147,5 +147,10 @@ public class SLActivity extends Activity implements OnItemClickListener {
         super.onActivityResult(requestCode, resultCode, data);
 
         facebook.authorizeCallback(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected boolean isRouteDisplayed() {
+        return false;
     }
 }
