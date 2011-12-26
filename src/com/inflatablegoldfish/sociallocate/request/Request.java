@@ -8,7 +8,7 @@ import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public abstract class Request {
     protected RequestListener<?> listener;
-    protected int retries = 0;
+    protected int retries = 1;
     
     protected RequestManager manager;
     protected Facebook facebook;

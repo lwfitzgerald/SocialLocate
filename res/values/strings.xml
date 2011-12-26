@@ -4,7 +4,7 @@
     <string name="notification_id">131289</string>
     <string name="service_stopping">SocialLocate service stopping</string>
     <string name="service_starting">SocialLocate service starting</string>
-    <string name="notification_text">SocialLocate service running</string>
+    <string name="service_running">SocialLocate service running</string>
     <string name="maps_api_key">0IpWXclDIvfN1JCvY5jvFnXyb6kvCedu2ugqCGg</string>
 
 </resources>

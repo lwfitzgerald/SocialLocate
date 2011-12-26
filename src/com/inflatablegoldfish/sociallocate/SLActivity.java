@@ -10,9 +10,12 @@ import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
 import com.inflatablegoldfish.sociallocate.service.SLService;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -21,6 +24,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class SLActivity extends MapActivity implements OnItemClickListener {
+    private SLService service;
+    private ServiceConnection serviceConnection;
+    
     private Facebook facebook = new Facebook("162900730478788");
     private SocialLocate socialLocate = new SocialLocate();
     private Foursquare foursquare = new Foursquare();
@@ -38,8 +44,8 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        // Start service
-        startService(new Intent(this, SLService.class));
+        // Set up service connection
+        setUpService();
         
         // Create UI handler and preferences interface
         Util.uiHandler = new Handler();
@@ -139,6 +145,26 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         requestManager.startProcessing();
     }
     
+    private void setUpService() {
+        serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                SLActivity.this.service = ((SLService.SLServiceBinder) service).getService();
+                
+                // Start service if not already running
+                if (!SLActivity.this.service.isStarted()) {
+                    startService(new Intent(SLActivity.this, SLService.class));
+                }
+            }
+        
+            public void onServiceDisconnected(ComponentName className) {
+                SLActivity.this.service = null;
+            }
+        };
+        
+        bindService(new Intent(this, 
+                SLService.class), serviceConnection, BIND_AUTO_CREATE);
+    }
+    
     public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
     }
     
@@ -147,6 +173,12 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         super.onActivityResult(requestCode, resultCode, data);
 
         facebook.authorizeCallback(requestCode, resultCode, data);
+    }
+    
+    public void onDestroy() {
+        super.onDestroy();
+
+        unbindService(serviceConnection);
     }
 
     @Override

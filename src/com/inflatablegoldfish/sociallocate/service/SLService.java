@@ -26,6 +26,10 @@ public class SLService extends Service {
     // This is the object that receives interactions from clients.  See
     // RemoteService for a more complete example.
     private final IBinder binder = new SLServiceBinder();
+    
+    private boolean isStarted = false;
+    
+    private Notification.Builder notificationBuilder;
 
     /**
      * Class for clients to access.  Because we know this service always
@@ -42,13 +46,35 @@ public class SLService extends Service {
     public void onCreate() {
         notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
-        // Display a notification about us starting.  We put an icon in the status bar.
-        showNotification();
+        // Set up notification builder
+        notificationBuilder = new Notification.Builder(this);
+        notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
+        notificationBuilder.setOngoing(true);
+
+        // The PendingIntent to launch our activity if the user selects this notification
+        Intent activityIntent = new Intent(this, SLActivity.class);
+        activityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                getBaseContext(), 0, activityIntent, 0);
+        
+        notificationBuilder.setContentIntent(pendingIntent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         locationHandler = new LocationHandler(this);
+
+        // Build starting notification
+        Notification notification = buildNotification(
+            getText(R.string.service_starting),
+            getText(R.string.service_running)
+        );
+
+        // Send the notification.
+        notificationManager.notify(notificationID, notification);
+        
+        isStarted = true;
         
         return START_STICKY;
     }
@@ -69,31 +95,12 @@ public class SLService extends Service {
     public IBinder onBind(Intent intent) {
         return binder;
     }
-
-    /**
-     * Show a notification while this service is running.
-     */
-    private void showNotification() {
-        // In this sample, we'll use the same text for the ticker and the expanded notification
-        CharSequence text = getText(R.string.service_starting);
-
-        // Set the icon, scrolling text and timestamp
-        Notification notification = new Notification(R.drawable.ic_launcher, text,
-                System.currentTimeMillis());
-
-        // The PendingIntent to launch our activity if the user selects this notification
-        Intent activityIntent = new Intent(this, SLActivity.class);
-        activityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    
+    private Notification buildNotification(CharSequence tickerText, CharSequence titleText) {
+        notificationBuilder.setTicker(tickerText);
+        notificationBuilder.setContentTitle(titleText);
         
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                getBaseContext(), 0, activityIntent, 0);
-
-        // Set the info for the views that show in the notification panel.
-        notification.setLatestEventInfo(this, getText(R.string.notification_text),
-                       text, pendingIntent);
-
-        // Send the notification.
-        notificationManager.notify(notificationID, notification);
+        return notificationBuilder.getNotification();
     }
     
     public void updateLocation(Location location) {
@@ -101,22 +108,13 @@ public class SLService extends Service {
         
         notificationManager.cancel(notificationID);
         
-        Notification notification = new Notification(R.drawable.ic_launcher,
-                "Location is: " + location.getLatitude() + ", "
-                        + location.getLongitude(),
-                System.currentTimeMillis());
-        
-        // The PendingIntent to launch our activity if the user selects this notification
-        Intent activityIntent = new Intent(this, SLActivity.class);
-        activityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                getBaseContext(), 0, activityIntent, 0);
-
-        // Set the info for the views that show in the notification panel.
-        notification.setLatestEventInfo(this, getText(R.string.notification_text),
-                "Location is: " + location.getLatitude() + ", " + location.getLongitude(), pendingIntent);
+        String notificationText = "Location is: " + location.getLatitude() + ", " + location.getLongitude();
+        Notification notification = buildNotification(notificationText, notificationText);
         
         notificationManager.notify(notificationID, notification);
+    }
+    
+    public boolean isStarted() {
+        return isStarted;
     }
 }
