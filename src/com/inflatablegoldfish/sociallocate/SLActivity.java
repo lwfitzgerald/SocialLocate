@@ -161,8 +161,9 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
             }
         };
         
+        // Service is vital for application so raise priority when binding
         bindService(new Intent(this, 
-                SLService.class), serviceConnection, BIND_AUTO_CREATE);
+                SLService.class), serviceConnection, BIND_AUTO_CREATE | BIND_IMPORTANT);
     }
     
     public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {

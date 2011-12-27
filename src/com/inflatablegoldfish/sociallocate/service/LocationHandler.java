@@ -18,7 +18,7 @@ public class LocationHandler {
     
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
-    public LocationHandler(SLService service) {
+    public LocationHandler(SLService service, String provider) {
         this.service = service;
         
         // Acquire a reference to the system Location Manager
@@ -46,7 +46,15 @@ public class LocationHandler {
             public void onProviderDisabled(String provider) {}
         };
         
-        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+        manager.requestLocationUpdates(provider, 0, 0, listener);
+    }
+    
+    public void changeProvider(String provider) {
+        // Stop current updates
+        manager.removeUpdates(listener);
+        
+        // Re-request with new provider
+        manager.requestLocationUpdates(provider, 0, 0, listener);
     }
     
     public void stopUpdates() {
