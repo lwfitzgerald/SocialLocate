@@ -17,10 +17,9 @@ public class SLInitialFetchRequest extends SLRequest {
         super(manager, listener, facebook, socialLocate, foursquare);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public RequestResult execute() {
-        return socialLocate.initialFetch((RequestListener<User[]>) listener);
+    public RequestResult<User[]> execute() {
+        return socialLocate.initialFetch();
     }
 
     @Override
@@ -35,10 +34,12 @@ public class SLInitialFetchRequest extends SLRequest {
             // TODO: Implement exponential backoff sleep here?
             retries++;
         } else {
-            listener.onError();
-            
             // Remove from queue (will be at front)
-            requestQueue.poll();
+            synchronized(requestQueue) {
+                requestQueue.poll();
+            }
+
+            listener.onError();
         }
     }
     

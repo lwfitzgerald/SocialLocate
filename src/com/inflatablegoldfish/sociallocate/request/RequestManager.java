@@ -3,19 +3,22 @@ package com.inflatablegoldfish.sociallocate.request;
 import java.util.Deque;
 import java.util.LinkedList;
 
-import android.app.Activity;
+import android.content.Context;
 
 import com.inflatablegoldfish.sociallocate.request.Request.RequestResult;
 
 public class RequestManager implements Runnable {
     private Deque<Request> queue;
     private Boolean running = false;
-    private volatile Activity currentActivity;
+    private Context context;
     
-    public RequestManager(Activity currentActivity) {
-        this.currentActivity = currentActivity;
-        
+    public RequestManager(Context context) {
+        /*
+         * ALL queue accesses MUST be synchronized!
+         */
         this.queue = new LinkedList<Request>();
+        
+        this.context = context;
     }
     
     /**
@@ -73,12 +76,22 @@ public class RequestManager implements Runnable {
             
             if (request != null) {
                 // Execute the request
-                RequestResult result = request.execute();
+                RequestResult<?> result = request.execute();
                 
-                switch (result) {
+                switch (result.code) {
                 case SUCCESS:
-                    // Completed successfully so remove
-                    queue.poll();
+                    /*
+                     * Completed successfully so remove
+                     * if still at front of queue
+                     */
+                    synchronized(queue) {
+                        if (queue.peek() == request) {
+                            queue.poll();
+                        }
+                    }
+                    
+                    request.listener.onComplete(result.result);
+                    
                     break;
                 case AUTHFAIL:
                     request.onAuthFail(queue);
@@ -121,11 +134,11 @@ public class RequestManager implements Runnable {
         }
     }
     
-    public Activity getCurrentActivity() {
-        return currentActivity;
+    public Context getContext() {
+        return context;
     }
     
-    public void setCurrentActivity(Activity currentActivity) {
-        this.currentActivity = currentActivity;
+    public void updateContext(Context newContext) {
+        this.context = newContext;
     }
 }

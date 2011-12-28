@@ -9,25 +9,26 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 public class SLService extends Service {
-    private NotificationManager notificationManager;
-
     private LocationHandler locationHandler;
     private Location currentLocation;
-
-    private int notificationID = R.string.notification_id;
+    
+    private NotificationManager notificationManager;
+    private Notification.Builder notificationBuilder;
+    private static int notificationID = R.string.notification_id;
     
     private final IBinder binder = new SLServiceBinder();
     private boolean isStarted = false;
-    
-    private Notification.Builder notificationBuilder;
     
     private RequestManager requestManager;
 
@@ -44,19 +45,32 @@ public class SLService extends Service {
 
     @Override
     public void onCreate() {
-        notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-
+        // Set up request manager
+        requestManager = new RequestManager(this);
+        
+        // Set up custom IG SSL socket factory
+        Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
+        
+        // Get preferences reference
+        Util.prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        
+        // Create a handler for this thread
+        Util.uiHandler = new Handler();
+        
+        // Store notification manager
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        
         // Set up notification builder
         notificationBuilder = new Notification.Builder(this);
         notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
         notificationBuilder.setOngoing(true);
-
+        
         // The PendingIntent to launch our activity if the user selects this notification
         Intent activityIntent = new Intent(this, SLActivity.class);
         activityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                getBaseContext(), 0, activityIntent, 0);
+                this, 0, activityIntent, 0);
         
         notificationBuilder.setContentIntent(pendingIntent);
         
@@ -112,6 +126,9 @@ public class SLService extends Service {
         Util.showToast("Service switching to Network", this);
         locationHandler.changeProvider(LocationManager.NETWORK_PROVIDER);
         
+        // Activity closed so set request context to service
+        requestManager.updateContext(this);
+        
         return true;
     }
     
@@ -135,5 +152,9 @@ public class SLService extends Service {
     
     public boolean isStarted() {
         return isStarted;
+    }
+    
+    public RequestManager getRequestManager() {
+        return requestManager;
     }
 }

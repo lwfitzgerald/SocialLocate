@@ -21,23 +21,25 @@ public abstract class SLRequest extends Request {
      * front of the request queue
      */
     protected void addSLReAuth(Deque<Request> requestQueue) {
-        requestQueue.addFirst(
-            new SLAuthRequest(
-                manager,
-                
-                // Listener with no operations
-                new RequestListener<User[]>() {
-                    public void onError() {}
+        synchronized(requestQueue) {
+            requestQueue.addFirst(
+                new SLAuthRequest(
+                    manager,
                     
-                    public void onComplete(User[] users) {}
+                    // Listener with no operations
+                    new RequestListener<User[]>() {
+                        public void onError() {}
+                        
+                        public void onComplete(Object users) {}
+                        
+                        public void onCancel() {}
+                    },
                     
-                    public void onCancel() {}
-                },
-                
-                facebook,
-                socialLocate,
-                foursquare
-            )
-        );
+                    facebook,
+                    socialLocate,
+                    foursquare
+                )
+            );
+        }
     }
 }

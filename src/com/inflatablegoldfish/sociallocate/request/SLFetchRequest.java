@@ -9,40 +9,40 @@ import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class SLFetchRequest extends SLRequest {
-
     public SLFetchRequest(RequestManager manager, RequestListener<User[]> listener,
             Facebook facebook, SocialLocate socialLocate, Foursquare foursquare) {
         
         super(manager, listener, facebook, socialLocate, foursquare);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public RequestResult execute() {
-        return socialLocate.fetch((RequestListener<User[]>) listener);
+    public RequestResult<User[]> execute() {
+        return socialLocate.fetch();
     }
 
     @Override
-    public void onAuthFail(Deque<Request> requestQueue) {
+    protected void onAuthFail(Deque<Request> requestQueue) {
         // Add an SL auth request to the queue
         addSLReAuth(requestQueue);
     }
 
     @Override
-    public void onError(Deque<Request> requestQueue) {
+    protected void onError(Deque<Request> requestQueue) {
         if (retries < NUM_RETRIES) {
             // TODO: Implement exponential backoff sleep here?
             retries++;
         } else {
-            listener.onError();
-            
             // Remove from queue (will be at front)
-            requestQueue.poll();
+            synchronized(requestQueue) {
+                requestQueue.poll();
+            }
+            
+            listener.onError();
         }
     }
     
     @Override
-    public void onCancel(Deque<Request> requestQueue) {}
+    protected void onCancel(Deque<Request> requestQueue) {}
     
     @Override
     public void addToQueue(Deque<Request> requestQueue) {

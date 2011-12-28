@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import android.location.Location;
 
 import com.inflatablegoldfish.sociallocate.request.Request.RequestResult;
-import com.inflatablegoldfish.sociallocate.request.RequestListener;
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 public class SocialLocate {
     private static final String URL_PREFIX = "https://www.inflatablegoldfish.com/sociallocate/api.php?";
@@ -23,7 +23,7 @@ public class SocialLocate {
         CookieHandler.setDefault(manager);
     }
     
-    public RequestResult auth(String accessToken, RequestListener<User[]> listener) {
+    public RequestResult<User[]> auth(String accessToken) {
         String url = URL_PREFIX + "action=auth"
                 + "&access_token=" + accessToken;
 
@@ -33,17 +33,16 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return RequestResult.AUTHFAIL;
+                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
             } else {
-                listener.onComplete(null);
-                return RequestResult.SUCCESS;
+                return new RequestResult<User[]>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return RequestResult.ERROR;
+            return new RequestResult<User[]>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult initialFetch(RequestListener<User[]> listener) {
+    public RequestResult<User[]> initialFetch() {
         String url = URL_PREFIX + "action=initial_fetch";
         
         try {
@@ -52,7 +51,7 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return RequestResult.AUTHFAIL;
+                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
             } else {
                 JSONObject ownDetails = jsonObject.getJSONObject("own_details");
                 JSONArray friends = jsonObject.getJSONArray("friends");
@@ -77,15 +76,14 @@ public class SocialLocate {
                     );
                 }
                 
-                listener.onComplete(toReturn);
-                return RequestResult.SUCCESS;
+                return new RequestResult<User[]>(toReturn, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return RequestResult.ERROR;
+            return new RequestResult<User[]>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult fetch(RequestListener<User[]> listener) {
+    public RequestResult<User[]> fetch() {
         String url = URL_PREFIX + "action=fetch";
         
         try {
@@ -94,7 +92,7 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return RequestResult.AUTHFAIL;
+                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
             } else {
                 JSONArray friends = jsonObject.getJSONArray("friends");
                 
@@ -111,15 +109,14 @@ public class SocialLocate {
                     );
                 }
                 
-                listener.onComplete(toReturn);
-                return RequestResult.SUCCESS;
+                return new RequestResult<User[]>(toReturn, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return RequestResult.ERROR;
+            return new RequestResult<User[]>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult updateLocation(Location location, RequestListener<User[]> listener) {
+    public RequestResult<User[]> updateLocation(Location location) {
         String url = URL_PREFIX + "action=update_location" + "&lat="
                 + location.getLatitude() + "&long=" + location.getLongitude();
 
@@ -129,13 +126,12 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return RequestResult.AUTHFAIL;
+                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
             } else {
-                listener.onComplete(null);
-                return RequestResult.SUCCESS;
+                return new RequestResult<User[]>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return RequestResult.ERROR;
+            return new RequestResult<User[]>(null, ResultCode.ERROR);
         }
     }
 }

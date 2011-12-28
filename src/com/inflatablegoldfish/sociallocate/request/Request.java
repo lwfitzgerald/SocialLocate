@@ -25,15 +25,25 @@ public abstract class Request {
         this.foursquare = foursquare;
     }
     
-    public abstract RequestResult execute();
+    public abstract RequestResult<?> execute();
     
-    public abstract void onAuthFail(Deque<Request> requestQueue);
+    protected abstract void onAuthFail(Deque<Request> requestQueue);
     
-    public abstract void onError(Deque<Request> requestQueue);
+    protected abstract void onError(Deque<Request> requestQueue);
     
-    public abstract void onCancel(Deque<Request> requestQueue);
+    protected abstract void onCancel(Deque<Request> requestQueue);
     
     public abstract void addToQueue(Deque<Request> requestQueue);
     
-    public static enum RequestResult { SUCCESS, AUTHFAIL, ERROR, CANCELLED };
+    public static class RequestResult<Type> {
+        public final Type result;
+        public final ResultCode code;
+        
+        public RequestResult (Type result, ResultCode code) {
+            this.result = result;
+            this.code = code;
+        }
+    }
+    
+    public static enum ResultCode { SUCCESS, AUTHFAIL, ERROR, CANCELLED };
 }

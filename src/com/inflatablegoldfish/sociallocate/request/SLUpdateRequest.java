@@ -22,10 +22,9 @@ public class SLUpdateRequest extends SLRequest {
         this.location = location;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public RequestResult execute() {
-        return socialLocate.updateLocation(location, (RequestListener<User[]>) listener);
+    public RequestResult<User[]> execute() {
+        return socialLocate.updateLocation(location);
     }
 
     @Override
@@ -39,10 +38,12 @@ public class SLUpdateRequest extends SLRequest {
             // TODO: Implement exponential backoff sleep here?
             retries++;
         } else {
-            listener.onError();
-            
             // Remove from queue (will be at front)
-            requestQueue.poll();
+            synchronized(requestQueue) {
+                requestQueue.poll();
+            }
+            
+            listener.onError();
         }
     }
 

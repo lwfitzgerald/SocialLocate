@@ -11,9 +11,9 @@ package com.inflatablegoldfish.sociallocate.request;
 public interface RequestListener<ReturnType> {
     /**
      * Called when a request completed successfully
-     * @param toReturn Results of the request
+     * @param result Results of the request
      */
-    public void onComplete(final ReturnType toReturn);
+    public void onComplete(final Object result);
     
     /**
      * Called when a request fails. This may be

@@ -9,6 +9,9 @@ import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
+import com.inflatablegoldfish.sociallocate.R;
+
+import android.app.Activity;
 import android.content.SharedPreferences;
 
 public class SLAuthRequest extends SLRequest {
@@ -18,13 +21,12 @@ public class SLAuthRequest extends SLRequest {
         super(manager, listener, facebook, socialLocate, foursquare);
     }
     
-    @SuppressWarnings("unchecked")
     @Override
-    public RequestResult execute() {
+    public RequestResult<User[]> execute() {
         // Get the FB access token
         String accessToken = Util.prefs.getString("access_token", null);
         
-        return socialLocate.auth(accessToken, (RequestListener<User[]>) listener);
+        return socialLocate.auth(accessToken);
     }
 
     @Override
@@ -37,13 +39,47 @@ public class SLAuthRequest extends SLRequest {
         
         facebook.setAccessToken(null);
         
-        // Create new FB auth request and queue it!
-        new FBAuthRequest(
-            manager,
-            facebook,
-            socialLocate,
-            foursquare
-        ).addToQueue(requestQueue);
+        if (manager.getContext() instanceof Activity) {
+            // Create new FB auth request and queue it!
+            new FBAuthRequest(
+                manager,
+                new RequestListener<User[]>() {
+                    public void onComplete(Object result) {}
+
+                    public void onError() {}
+
+                    public void onCancel() {}
+                },
+                facebook,
+                socialLocate,
+                foursquare
+            ).addToQueue(requestQueue);
+        } else {
+            /*
+             * Activity not open so cannot do Facebook auth
+             * 
+             * So silently remove all dependent requests from queue
+             */
+            
+            Util.showToast(
+                manager.getContext().getText(R.string.authfail_no_activity),
+                manager.getContext()
+            );
+            
+            synchronized (requestQueue) {
+                Iterator<Request> itr = requestQueue.iterator();
+                
+                while (itr.hasNext()) {
+                    Request request = itr.next();
+                    
+                    if (request instanceof SLRequest
+                            || request instanceof FBAuthRequest) {
+                        // Remove from queue
+                        itr.remove();
+                    }
+                }
+            }
+        }
     }
 
     @Override

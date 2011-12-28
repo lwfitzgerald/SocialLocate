@@ -19,22 +19,9 @@ import android.widget.Toast;
 
 public class Util {
     private static SSLSocketFactory IGSSLSocketFactory = null;
+    
     public static Handler uiHandler;
     public static SharedPreferences prefs;
-    
-    /**
-     * Show a toast message
-     * @param message Message to show
-     */
-    public static void showToast(final String message, final Context context) {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-            }
-        };
-        
-        uiHandler.post(runnable);
-    }
     
     public static void initIGSSLSocketFactory(InputStream keystoreInputStream) {
         KeyStore keyStore;
@@ -53,6 +40,20 @@ public class Util {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Show a toast message
+     * @param charSequence Message to show
+     */
+    public static void showToast(final CharSequence charSequence, final Context context) {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                Toast.makeText(context, charSequence, Toast.LENGTH_SHORT).show();
+            }
+        };
+        
+        uiHandler.post(runnable);
     }
     
     public static String getURL(String url, boolean useIGOverride) throws IOException {
@@ -83,5 +84,4 @@ public class Util {
         in.close();
         return sb.toString();
     }
-    
 }

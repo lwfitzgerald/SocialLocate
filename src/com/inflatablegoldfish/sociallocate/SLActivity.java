@@ -24,7 +24,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class SLActivity extends MapActivity implements OnItemClickListener {
-    private SLService service;
+    private SLService service = null;
     private ServiceConnection serviceConnection;
     
     private Facebook facebook = new Facebook("162900730478788");
@@ -46,16 +46,19 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         // Set up service connection
         setUpService();
+    }
+    
+    /**
+     * Called by the ServiceConnection listener
+     * when the service is bound
+     */
+    private void continueCreate() {
+        // Get request manager from service
+        requestManager = service.getRequestManager();
         
-        // Create UI handler and preferences interface
+        requestManager.updateContext(this);
+        
         Util.uiHandler = new Handler();
-        Util.prefs = getPreferences(MODE_PRIVATE);
-        
-        // Initialise custom SSL socket factory for IG
-        Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
-        
-        // Initialise request manager
-        requestManager = new RequestManager(this);
         
         ownName = (TextView) findViewById(R.id.own_name);
         ownName.setText("Loading...");
@@ -73,7 +76,9 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                         Util.showToast("Initial fetch error", SLActivity.this);
                     }
                     
-                    public void onComplete(final User[] users) {
+                    public void onComplete(final Object userArray) {
+                        User[] users = (User[]) userArray;
+                        
                         Util.showToast("Initial fetch OK", SLActivity.this);
                         
                         // Store own details
@@ -119,7 +124,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                         Util.showToast("SL auth error", SLActivity.this);
                     }
                     
-                    public void onComplete(User[] users) {
+                    public void onComplete(Object users) {
                         Util.showToast("SL auth OK", SLActivity.this);
                     }
                     
@@ -136,6 +141,13 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         requestManager.addRequestWithoutStarting(
             new FBAuthRequest(
                 requestManager,
+                new RequestListener<User[]>() {
+                    public void onComplete(Object result) {}
+
+                    public void onError() {}
+
+                    public void onCancel() {}
+                },
                 facebook,
                 socialLocate,
                 foursquare
@@ -154,6 +166,9 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                 if (!SLActivity.this.service.isStarted()) {
                     startService(new Intent(SLActivity.this, SLService.class));
                 }
+                
+                // Continue creation
+                continueCreate();
             }
         
             public void onServiceDisconnected(ComponentName className) {
@@ -176,6 +191,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         facebook.authorizeCallback(requestCode, resultCode, data);
     }
     
+    @Override
     public void onDestroy() {
         super.onDestroy();
 

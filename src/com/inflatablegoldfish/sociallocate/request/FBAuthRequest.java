@@ -3,6 +3,7 @@ package com.inflatablegoldfish.sociallocate.request;
 import java.util.Deque;
 import java.util.Iterator;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -11,24 +12,25 @@ import com.facebook.android.Facebook;
 import com.facebook.android.FacebookError;
 import com.facebook.android.Facebook.DialogListener;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
+import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class FBAuthRequest extends Request {
-    private RequestResult result;
+    private RequestResult<User[]> result;
     private Boolean resultReady;
     private Object resultLock = new Object();
     
     private static final int NUM_RETRIES = 3;
     
-    public FBAuthRequest(RequestManager manager, Facebook facebook,
+    public FBAuthRequest(RequestManager manager, RequestListener<?> listener, Facebook facebook,
             SocialLocate socialLocate, Foursquare foursquare) {
         
-        super(manager, null, facebook, socialLocate, foursquare);
+        super(manager, listener, facebook, socialLocate, foursquare);
     }
 
     @Override
-    public RequestResult execute() {
+    public RequestResult<User[]> execute() {
         resultReady = false;
         
         String access_token = Util.prefs.getString("access_token", null);
@@ -44,7 +46,7 @@ public class FBAuthRequest extends Request {
         
         if (!facebook.isSessionValid()) {
             facebook.authorize(
-                manager.getCurrentActivity(),
+                (Activity) manager.getContext(),
                 new String[] {"offline_access"},
                 new DialogListener() {
                     public void onComplete(final Bundle values) {                        
@@ -52,38 +54,37 @@ public class FBAuthRequest extends Request {
                         editor.putString("access_token", facebook.getAccessToken());
                         editor.putLong("access_expires", facebook.getAccessExpires());
                         editor.commit();
+
+                        result = new RequestResult<User[]>(null, ResultCode.SUCCESS);
                         
                         synchronized (resultLock) {
-                            result = RequestResult.SUCCESS;
                             resultReady = true;
                             resultLock.notify();
                         }
-                        
-                        Util.showToast(
-                            "FB authentication OK",
-                            manager.getCurrentActivity().getApplicationContext()
-                        );
                     }
 
                     public void onFacebookError(final FacebookError e) {
+                        result = new RequestResult<User[]>(null, ResultCode.ERROR);
+                        
                         synchronized (resultLock) {
-                            result = RequestResult.AUTHFAIL;
                             resultReady = true;
                             resultLock.notify();
                         }
                     }
         
                     public void onError(final DialogError e) {
+                        result = new RequestResult<User[]>(null, ResultCode.ERROR);
+                        
                         synchronized (resultLock) {
-                            result = RequestResult.ERROR;
                             resultReady = true;
                             resultLock.notify();
                         }
                     }
         
                     public void onCancel() {
+                        result = new RequestResult<User[]>(null, ResultCode.CANCELLED);
+                        
                         synchronized (resultLock) {
-                            result = RequestResult.CANCELLED;
                             resultReady = true;
                             resultLock.notify();
                         }
@@ -102,12 +103,7 @@ public class FBAuthRequest extends Request {
             return result;
         }
         
-        Util.showToast(
-            "FB authed using saved token",
-            manager.getCurrentActivity().getApplicationContext()
-        );
-        
-        return RequestResult.SUCCESS;
+        return new RequestResult<User[]>(null, ResultCode.SUCCESS);
     }
 
     @Override
@@ -137,6 +133,9 @@ public class FBAuthRequest extends Request {
                     
                     if (request instanceof SLRequest
                             || request instanceof FBAuthRequest) {
+                        // Remove from queue
+                        itr.remove();
+                        
                         // We will call our listener's
                         // own error handler here too
                         
@@ -144,9 +143,6 @@ public class FBAuthRequest extends Request {
                         if (request.listener != null) {
                             request.listener.onError();
                         }
-                        
-                        // Remove from queue
-                        itr.remove();
                     }
                 }
             }
@@ -167,6 +163,9 @@ public class FBAuthRequest extends Request {
                 
                 if (request instanceof SLRequest
                         || request instanceof FBAuthRequest) {
+                    // Remove from queue
+                    itr.remove();
+                    
                     // We will call our listener's
                     // own cancel handler here too
                     
@@ -174,9 +173,6 @@ public class FBAuthRequest extends Request {
                     if (request.listener != null) {
                         request.listener.onCancel();
                     }
-                    
-                    // Remove from queue
-                    itr.remove();
                 }
             }
         }
