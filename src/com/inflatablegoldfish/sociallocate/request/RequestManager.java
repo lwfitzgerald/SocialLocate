@@ -10,7 +10,7 @@ import com.inflatablegoldfish.sociallocate.request.Request.RequestResult;
 public class RequestManager implements Runnable {
     private Deque<Request> queue;
     private Boolean running = false;
-    private Context context;
+    private volatile Context context;
     
     public RequestManager(Context context) {
         /*
