@@ -1,5 +1,9 @@
 package com.inflatablegoldfish.sociallocate.service;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.inflatablegoldfish.sociallocate.R;
 import com.inflatablegoldfish.sociallocate.SLActivity;
 import com.inflatablegoldfish.sociallocate.Util;
@@ -30,6 +34,8 @@ public class SLService extends Service {
     private final IBinder binder = new SLServiceBinder();
     private boolean isStarted = false;
     
+    private List<SLServiceListener> listeners = new LinkedList<SLServiceListener>();
+    
     private RequestManager requestManager;
 
     /**
@@ -52,7 +58,7 @@ public class SLService extends Service {
         Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
         
         // Get preferences reference
-        Util.prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
         
         // Create a handler for this thread
         Util.uiHandler = new Handler();
@@ -80,14 +86,14 @@ public class SLService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Build starting notification
-        Notification notification = buildNotification(
-            getText(R.string.service_starting),
-            getText(R.string.service_running)
-        );
-
-        // Send the notification.
-        notificationManager.notify(notificationID, notification);
+//        // Build starting notification
+//        Notification notification = buildNotification(
+//            getText(R.string.service_starting),
+//            getText(R.string.service_running)
+//        );
+//
+//        // Send the notification.
+//        notificationManager.notify(notificationID, notification);
         
         isStarted = true;
         
@@ -110,7 +116,7 @@ public class SLService extends Service {
     public IBinder onBind(Intent intent) {
         // Switch to GPS as client is open
         Util.showToast("Service switching to GPS", this);
-        locationHandler.changeProvider(LocationManager.GPS_PROVIDER);
+        //locationHandler.changeProvider(LocationManager.GPS_PROVIDER);
         
         return binder;
     }
@@ -132,6 +138,28 @@ public class SLService extends Service {
         return true;
     }
     
+    /**
+     * Registers a new location update listener
+     * @param listener New listener
+     */
+    public void addListener(SLServiceListener listener) {
+        listeners.add(listener);
+    }
+    
+    /**
+     * Removes an existing listener
+     * @param listener Listener to remove
+     */
+    public void removeListener(SLServiceListener listener) {
+        Iterator<SLServiceListener> itr = listeners.iterator();
+        
+        while (itr.hasNext()) {
+            if (itr.next() == listener) {
+                itr.remove();
+            }
+        }
+    }
+    
     private Notification buildNotification(CharSequence tickerText, CharSequence titleText) {
         notificationBuilder.setTicker(tickerText);
         notificationBuilder.setContentTitle(titleText);
@@ -142,12 +170,17 @@ public class SLService extends Service {
     public void updateLocation(Location location) {
         this.currentLocation = location;
         
-        notificationManager.cancel(notificationID);
+        // Notify listeners
+        for (SLServiceListener listener : listeners) {
+            listener.locationUpdated(location);
+        }
         
-        String notificationText = "Location is: " + location.getLatitude() + ", " + location.getLongitude();
-        Notification notification = buildNotification(notificationText, notificationText);
-        
-        notificationManager.notify(notificationID, notification);
+//        notificationManager.cancel(notificationID);
+//        
+//        String notificationText = "Location is: " + location.getLatitude() + ", " + location.getLongitude();
+//        Notification notification = buildNotification(notificationText, notificationText);
+//        
+//        notificationManager.notify(notificationID, notification);
     }
     
     public boolean isStarted() {
@@ -156,5 +189,17 @@ public class SLService extends Service {
     
     public RequestManager getRequestManager() {
         return requestManager;
+    }
+    
+    /**
+     * Interface for classes wanted location updates
+     */
+    public static interface SLServiceListener {
+        /**
+         * Called when a new location is ready
+         * for delivery
+         * @param newLocation New Location
+         */
+        public void locationUpdated(final Location newLocation);
     }
 }

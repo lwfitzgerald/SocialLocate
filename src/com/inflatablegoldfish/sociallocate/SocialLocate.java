@@ -3,6 +3,8 @@ package com.inflatablegoldfish.sociallocate;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,7 +25,7 @@ public class SocialLocate {
         CookieHandler.setDefault(manager);
     }
     
-    public RequestResult<User[]> auth(String accessToken) {
+    public RequestResult<List<User>> auth(String accessToken) {
         String url = URL_PREFIX + "action=auth"
                 + "&access_token=" + accessToken;
 
@@ -33,16 +35,16 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
-                return new RequestResult<User[]>(null, ResultCode.SUCCESS);
+                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return new RequestResult<User[]>(null, ResultCode.ERROR);
+            return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult<User[]> initialFetch() {
+    public RequestResult<List<User>> initialFetch() {
         String url = URL_PREFIX + "action=initial_fetch";
         
         try {
@@ -51,39 +53,44 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
                 JSONObject ownDetails = jsonObject.getJSONObject("own_details");
                 JSONArray friends = jsonObject.getJSONArray("friends");
                 
-                User[] toReturn = new User[friends.length() + 1];
+                List<User> toReturn = new ArrayList<User>(friends.length() + 1);
                 
                 // Store own details in first user slot
-                toReturn[0] = new User(
-                    ownDetails.getInt("id"),
-                    ownDetails.getString("name"),
-                    ownDetails.getString("pic")
+                toReturn.add(
+                    new User(
+                        ownDetails.getInt("id"),
+                        ownDetails.getString("name"),
+                        ownDetails.getString("pic")
+                    )
                 );
                 
                 for (int i=0; i < friends.length(); i++) {
                     JSONObject friend = friends.getJSONObject(i);
-                    toReturn[i+1] = new User(
-                        friend.getInt("id"),
-                        friend.getDouble("lat"),
-                        friend.getDouble("long"),
-                        friend.getString("name"),
-                        friend.getString("pic")
+                    
+                    toReturn.add(
+                        new User(
+                            friend.getInt("id"),
+                            friend.getDouble("lat"),
+                            friend.getDouble("long"),
+                            friend.getString("name"),
+                            friend.getString("pic")
+                        )
                     );
                 }
                 
-                return new RequestResult<User[]>(toReturn, ResultCode.SUCCESS);
+                return new RequestResult<List<User>>(toReturn, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return new RequestResult<User[]>(null, ResultCode.ERROR);
+            return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult<User[]> fetch() {
+    public RequestResult<List<User>> fetch() {
         String url = URL_PREFIX + "action=fetch";
         
         try {
@@ -92,31 +99,34 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
                 JSONArray friends = jsonObject.getJSONArray("friends");
                 
-                User[] toReturn = new User[friends.length()];
+                List<User> toReturn = new ArrayList<User>(friends.length());
                 
                 for (int i=0; i < friends.length(); i++) {
                     JSONObject friend = friends.getJSONObject(i);
-                    toReturn[i] = new User(
-                        friend.getInt("id"),
-                        friend.getDouble("lat"),
-                        friend.getDouble("long"),
-                        friend.getString("name"),
-                        friend.getString("pic")
+                    
+                    toReturn.add(
+                        new User(
+                            friend.getInt("id"),
+                            friend.getDouble("lat"),
+                            friend.getDouble("long"),
+                            friend.getString("name"),
+                            friend.getString("pic")
+                        )
                     );
                 }
                 
-                return new RequestResult<User[]>(toReturn, ResultCode.SUCCESS);
+                return new RequestResult<List<User>>(toReturn, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return new RequestResult<User[]>(null, ResultCode.ERROR);
+            return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult<User[]> updateLocation(Location location) {
+    public RequestResult<List<User>> updateLocation(Location location) {
         String url = URL_PREFIX + "action=update_location" + "&lat="
                 + location.getLatitude() + "&long=" + location.getLongitude();
 
@@ -126,12 +136,12 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                return new RequestResult<User[]>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
-                return new RequestResult<User[]>(null, ResultCode.SUCCESS);
+                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            return new RequestResult<User[]>(null, ResultCode.ERROR);
+            return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
 }

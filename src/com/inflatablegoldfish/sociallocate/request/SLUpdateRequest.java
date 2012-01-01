@@ -2,6 +2,7 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.List;
 
 import android.location.Location;
 
@@ -14,7 +15,7 @@ public class SLUpdateRequest extends SLRequest {
     private Location location;
     
     public SLUpdateRequest(Location location, RequestManager manager,
-            RequestListener<User[]> listener, Facebook facebook,
+            RequestListener<List<User>> listener, Facebook facebook,
             SocialLocate socialLocate, Foursquare foursquare) {
         
         super(manager, listener, facebook, socialLocate, foursquare);
@@ -23,7 +24,7 @@ public class SLUpdateRequest extends SLRequest {
     }
 
     @Override
-    public RequestResult<User[]> execute() {
+    public RequestResult<List<User>> execute() {
         return socialLocate.updateLocation(location);
     }
 

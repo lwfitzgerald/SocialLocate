@@ -30,19 +30,19 @@
 	android:layout_height="fill_parent"
 	android:background="@color/offblack">
 
-	    <com.google.android.maps.MapView
-	        xmlns:android="http://schemas.android.com/apk/res/android"
-	        android:id="@+id/mapview"
-	        android:layout_width="fill_parent"
-	        android:layout_height="140dip"
-	        android:apiKey="@string/maps_api_key"
-	        android:clickable="true" />
+<!-- 	    <com.google.android.maps.MapView -->
+<!-- 	        xmlns:android="http://schemas.android.com/apk/res/android" -->
+<!-- 	        android:id="@+id/mapview" -->
+<!-- 	        android:layout_width="fill_parent" -->
+<!-- 	        android:layout_height="140dip" -->
+<!-- 	        android:apiKey="@string/maps_api_key" -->
+<!-- 	        android:clickable="true" /> -->
 	
-	    <ListView
+	    <com.foound.widget.AmazingListView
 	        android:id="@+id/friend_list"
 	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_below="@id/mapview" />
+	        android:layout_height="wrap_content" />
+<!-- 	        android:layout_below="@id/mapview" /> -->
     </RelativeLayout>
 
 </LinearLayout>

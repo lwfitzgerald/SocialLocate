@@ -14,6 +14,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Handler;
 import android.widget.Toast;
 
@@ -69,6 +70,7 @@ public class Util {
         
         return read(conn.getInputStream());
     }
+    
     /**
      * Read request response
      * @param in Response stream
@@ -83,5 +85,19 @@ public class Util {
         }
         in.close();
         return sb.toString();
+    }
+    
+    /**
+     * Get a location object from a given latitude
+     * and longitude 
+     * @param lat Latitude
+     * @param lng Longitude
+     * @return Location object for the location
+     */
+    public static Location getLocationObject(double lat, double lng) {
+        Location location = new Location("sociallocate");
+        location.setLatitude(lat);
+        location.setLongitude(lng);
+        return location;
     }
 }

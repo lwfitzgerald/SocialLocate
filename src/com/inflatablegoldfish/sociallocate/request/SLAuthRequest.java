@@ -2,6 +2,7 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.List;
 
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
@@ -15,14 +16,15 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 
 public class SLAuthRequest extends SLRequest {
-    public SLAuthRequest(RequestManager manager, RequestListener<User[]> listener,
-            Facebook facebook, SocialLocate socialLocate, Foursquare foursquare) {
+    public SLAuthRequest(RequestManager manager,
+            RequestListener<List<User>> listener, Facebook facebook,
+            SocialLocate socialLocate, Foursquare foursquare) {
 
         super(manager, listener, facebook, socialLocate, foursquare);
     }
     
     @Override
-    public RequestResult<User[]> execute() {
+    public RequestResult<List<User>> execute() {
         // Get the FB access token
         String accessToken = Util.prefs.getString("access_token", null);
         

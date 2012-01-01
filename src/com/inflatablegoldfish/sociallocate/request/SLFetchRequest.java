@@ -2,6 +2,7 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.List;
 
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
@@ -9,14 +10,15 @@ import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class SLFetchRequest extends SLRequest {
-    public SLFetchRequest(RequestManager manager, RequestListener<User[]> listener,
-            Facebook facebook, SocialLocate socialLocate, Foursquare foursquare) {
+    public SLFetchRequest(RequestManager manager,
+            RequestListener<List<User>> listener, Facebook facebook,
+            SocialLocate socialLocate, Foursquare foursquare) {
         
         super(manager, listener, facebook, socialLocate, foursquare);
     }
 
     @Override
-    public RequestResult<User[]> execute() {
+    public RequestResult<List<User>> execute() {
         return socialLocate.fetch();
     }
 
