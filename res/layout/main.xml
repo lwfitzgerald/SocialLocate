@@ -24,17 +24,25 @@
             android:layout_toRightOf="@id/own_picture" />
     </RelativeLayout>
     
-    <com.google.android.maps.MapView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/mapview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:apiKey="@string/maps_api_key"
-        android:clickable="true" />
+	<RelativeLayout
+	android:layout_width="fill_parent"
+	android:padding="6dip"
+	android:layout_height="fill_parent"
+	android:background="@color/offblack">
 
-<!--     <ListView -->
-<!--         android:id="@+id/friend_list" -->
-<!--         android:layout_width="fill_parent" -->
-<!--         android:layout_height="fill_parent" /> -->
+	    <com.google.android.maps.MapView
+	        xmlns:android="http://schemas.android.com/apk/res/android"
+	        android:id="@+id/mapview"
+	        android:layout_width="fill_parent"
+	        android:layout_height="140dip"
+	        android:apiKey="@string/maps_api_key"
+	        android:clickable="true" />
+	
+	    <ListView
+	        android:id="@+id/friend_list"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@id/mapview" />
+    </RelativeLayout>
 
 </LinearLayout>

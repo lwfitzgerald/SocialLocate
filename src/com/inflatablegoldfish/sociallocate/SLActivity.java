@@ -64,9 +64,9 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         ownName.setText("Loading...");
         ownPicture = (ImageView) findViewById(R.id.own_picture);
         
-        //friendList = (ListView) findViewById(R.id.friend_list);
-        //friendList.setOnItemClickListener(this);
-        //friendList.setAdapter(new FriendListAdapter(this));
+        friendList = (ListView) findViewById(R.id.friend_list);
+        friendList.setOnItemClickListener(this);
+        friendList.setAdapter(new FriendListAdapter(this));
 
         requestManager.addRequestWithoutStarting(
             new SLInitialFetchRequest(
@@ -77,7 +77,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     }
                     
                     public void onComplete(final Object userArray) {
-                        User[] users = (User[]) userArray;
+                        final User[] users = (User[]) userArray;
                         
                         Util.showToast("Initial fetch OK", SLActivity.this);
                         
@@ -89,6 +89,9 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                             public void run() {
                                 ownName.setText(ownUser.getName());
                                 ownName.invalidate();
+                                
+                                // Update list view adapter
+                                ((FriendListAdapter) friendList.getAdapter()).updateFriends(users);
                             }
                         });
                         
@@ -182,6 +185,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     }
     
     public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
+        
     }
     
     @Override
