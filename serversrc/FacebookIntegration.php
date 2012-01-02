@@ -78,7 +78,7 @@ class FacebookIntegration {
 
     private function getFriends($light) {
         if (!$light) {
-            $query = 'SELECT uid, name, pic_square FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY name';
+            $query = 'SELECT uid, name, pic FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY name';
         } else {
             $query = 'SELECT uid FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY name';
         }
@@ -108,7 +108,7 @@ class FacebookIntegration {
                 $friend_map[$friend['uid']] = array(
                     'id' => $friend['uid'],
                     'name' => $friend['name'],
-                    'pic' => $friend['pic_square']
+                    'pic' => $friend['pic']
                 );
             } else {
                 $friend_map[$friend['uid']] = array(
