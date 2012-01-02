@@ -2,6 +2,7 @@ package com.inflatablegoldfish.sociallocate;
 
 import java.util.List;
 
+import com.commonsware.cwac.locpoll.LocationPoller;
 import com.facebook.android.Facebook;
 import com.foound.widget.AmazingListView;
 import com.google.android.maps.MapActivity;
@@ -11,29 +12,29 @@ import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
-import com.inflatablegoldfish.sociallocate.service.SLService;
-import com.inflatablegoldfish.sociallocate.service.SLService.SLServiceListener;
+import com.inflatablegoldfish.sociallocate.service.LocationReceiver;
 
-import android.content.ComponentName;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.os.Handler;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class SLActivity extends MapActivity implements OnItemClickListener, SLServiceListener {
-    private SLService service = null;
-    private ServiceConnection serviceConnection;
-    
+public class SLActivity extends MapActivity implements OnItemClickListener {
     private Facebook facebook = new Facebook("162900730478788");
     private SocialLocate socialLocate = new SocialLocate();
     private Foursquare foursquare = new Foursquare();
     
+    private ActivityLocationHandler activityLocHandler;
     private RequestManager requestManager;
     
     private User ownUser = null;
@@ -41,6 +42,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener, SLSe
     
     private TextView ownName;
     private ImageView ownPicture;
+    
     private AmazingListView friendList;
     private FriendListAdapter friendListAdapter;
     
@@ -49,20 +51,28 @@ public class SLActivity extends MapActivity implements OnItemClickListener, SLSe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        // Set up service connection
-        setUpService();
-    }
-    
-    /**
-     * Called by the ServiceConnection listener
-     * when the service is bound
-     */
-    private void continueCreate() {        
-        // Get request manager from service
-        requestManager = service.getRequestManager();
+        /*
+         * Starting UI so we'll ask for GPS updates
+         * as well
+         * 
+         * First, cancel the background updating
+         */
+        cancelAlarm();
         
-        // Set the request manager context as this activity
-        requestManager.updateContext(this);
+        // Set up custom IG SSL socket factory
+        Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
+        
+        // Set up request manager
+        requestManager = new RequestManager(this);
+        
+        // Set up GPS location updates
+        activityLocHandler = new ActivityLocationHandler(this);
+        
+        // Create a handler for this thread
+        Util.uiHandler = new Handler();
+        
+        // Get preferences reference
+        Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
         
         ownName = (TextView) findViewById(R.id.own_name);
         ownName.setText("Loading...");
@@ -77,9 +87,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener, SLSe
         // Set the adapter
         friendListAdapter = new FriendListAdapter(this);
         friendList.setAdapter(friendListAdapter);
-        
-        // Register as service location update listener
-        service.addListener(this);
 
         requestManager.addRequestWithoutStarting(
             new SLInitialFetchRequest(
@@ -186,28 +193,54 @@ public class SLActivity extends MapActivity implements OnItemClickListener, SLSe
         requestManager.startProcessing();
     }
     
-    private void setUpService() {
-        serviceConnection = new ServiceConnection() {
-            public void onServiceConnected(ComponentName className, IBinder service) {
-                SLActivity.this.service = ((SLService.SLServiceBinder) service).getService();
-                
-                // Start service if not already running
-                if (!SLActivity.this.service.isStarted()) {
-                    startService(new Intent(SLActivity.this, SLService.class));
-                }
-                
-                // Continue creation
-                continueCreate();
-            }
+    /**
+     * Cancels the background updating alarm
+     */
+    private void cancelAlarm() {
+        AlarmManager mgr = (AlarmManager) getSystemService(ALARM_SERVICE);
         
-            public void onServiceDisconnected(ComponentName className) {
-                SLActivity.this.service = null;
-            }
-        };
+        mgr.cancel(PendingIntent.getBroadcast(this, 0, getAlarmIntent(), 0));
+    }
+    
+    /**
+     * Schedule the background updating alarm
+     */
+    private void setUpAlarm() {
+        AlarmManager mgr = (AlarmManager) getSystemService(ALARM_SERVICE);
         
-        // Service is vital for application so raise priority when binding
-        bindService(new Intent(this, 
-                SLService.class), serviceConnection, BIND_AUTO_CREATE | BIND_IMPORTANT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+                getAlarmIntent(), 0);
+        
+        long interval = 60000 / (SocialLocate.UPDATES_PER_HOUR / 60);
+        
+        mgr.setRepeating(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + interval,
+            interval,
+            pendingIntent
+        );
+    }
+    
+    /**
+     * Get the intent for the background updating
+     * alarm
+     * @return Intent for cancelling and scheduling
+     */
+    public Intent getAlarmIntent() {
+        Intent intent = new Intent(this, LocationPoller.class);
+        intent.setAction("com.inflatablegoldfish.com.sociallocate.LOCATION_CHANGED");
+        
+        intent.putExtra(
+            LocationPoller.EXTRA_INTENT,
+            new Intent(this, LocationReceiver.class)
+        );
+        
+        intent.putExtra(
+            LocationPoller.EXTRA_PROVIDER,
+            LocationManager.NETWORK_PROVIDER
+        );
+        
+        return intent;
     }
     
     public void locationUpdated(final Location newLocation) {
@@ -228,15 +261,26 @@ public class SLActivity extends MapActivity implements OnItemClickListener, SLSe
     }
     
     @Override
+    public void onResume() {
+        super.onResume();
+        
+        // Start GPS updates and stop background updates
+        cancelAlarm();
+        activityLocHandler.startUpdates();
+    }
+    
+    @Override
     public void onPause() {
         super.onPause();
+        
+        // Stop GPS updates and resume background updates
+        activityLocHandler.stopUpdates();
+        setUpAlarm();
     }
     
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        unbindService(serviceConnection);
     }
 
     @Override

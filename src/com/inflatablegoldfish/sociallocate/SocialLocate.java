@@ -17,7 +17,7 @@ import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 public class SocialLocate {
     private static final String URL_PREFIX = "https://www.inflatablegoldfish.com/sociallocate/api.php?";
     
-    public static final int UPDATES_PER_MINUTE = 2;
+    public static final int UPDATES_PER_HOUR = 60;
     
     public SocialLocate() {
         CookieManager manager = new CookieManager();
