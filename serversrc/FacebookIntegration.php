@@ -72,7 +72,7 @@ class FacebookIntegration {
             null,
             null,
             $own_details[0]['name'],
-            $own_details[0]['pic_square']
+            $own_details[0]['pic']
         );
     }
 
