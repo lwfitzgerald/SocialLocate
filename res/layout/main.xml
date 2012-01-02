@@ -4,30 +4,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:background="@color/black">
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:padding="6dip"
-        android:layout_height="?android:attr/listPreferredItemHeight">
-        <ImageView
-            android:id="@+id/own_picture"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginRight="6dip" />
-        <TextView
-            android:id="@+id/own_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/own_picture" />
-    </RelativeLayout>
     
-    <View
-        android:background="@color/grey"
-        android:layout_width="fill_parent"
-        android:layout_height="1dip" />
-        
     <!-- Include empty view (but hidden) -->
     <include layout="@layout/empty_view"
         android:id="@+id/empty_view"

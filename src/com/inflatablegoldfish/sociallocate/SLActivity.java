@@ -42,9 +42,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     private User ownUser = null;
     private Location currentLocation = null;
     
-    private TextView ownName;
-    private ImageView ownPicture;
-    
     private AmazingListView friendList;
     private FriendListAdapter friendListAdapter;
     
@@ -75,10 +72,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        
-        ownName = (TextView) findViewById(R.id.own_name);
-        ownName.setText("Loading...");
-        ownPicture = (ImageView) findViewById(R.id.own_picture);
         
         // Set up the the friend list
         friendList = (AmazingListView) findViewById(R.id.friend_list);
@@ -116,20 +109,10 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                         // Store own details and get photo
                         ownUser = users.get(0);
                         
-                        // Create new thread to fetch own profile pic
-                        fetchOwnProfilePic();
-                        
-                        // Get sublist of friends
-                        final List<User> friends = users.subList(1, users.size());
-                        
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
-                                // Set name and invalidate to redraw
-                                ownName.setText(ownUser.getName());
-                                ownName.invalidate();
-                                
                                 // Update list view adapter
-                                friendListAdapter.updateFriends(friends);
+                                friendListAdapter.updateUsers(users);
                                 
                                 // If we have a location fix, calculate distances
                                 if (currentLocation != null) {
@@ -256,31 +239,10 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         friendListAdapter.updateDistances(currentLocation);
     }
     
-    /**
-     * Performs an asyncronous request to fetch
-     * and set the user's profile picture
-     */
-    private void fetchOwnProfilePic() {
-        new Thread(
-            new Runnable() {
-                public void run() {
-                    final Bitmap ownPictureBitmap = Util.getBitmap(ownUser.getPic());
-                    
-                    // Post to UI thread for update
-                    Util.uiHandler.post(
-                        new Runnable() {
-                            public void run() {
-                                ownPicture.setImageBitmap(ownPictureBitmap);
-                            }
-                        }
-                    );
-                }
-            }
-        ).start();
-    }
-    
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
+        if (position != 0) {
+            Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
+        }
     }
     
     @Override

@@ -14,22 +14,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class FriendListAdapter extends AmazingAdapter {
-    private List<User> friends = null;
-    private Object friendLock = new Object();
+    private List<User> friends;
+    private Object friendLock;
     
     private ProfilePicRunner picRunner = new ProfilePicRunner(this);
     
     private LayoutInflater mInflater;
     private CharSequence[] sectionTitles;
     
-    private int section1Start = 0;
-    private int section2Start = 0;
+    private int youSectionStart = 0;
+    private int nearSectionStart = 1;
+    private int farSectionStart = 0;
     
     private static final int NEAR_DISTANCE = 1000;
     
     public FriendListAdapter(Context context) {
+        friends = null;
+        friendLock = new Object();
+        
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         sectionTitles = new CharSequence[] {
+            context.getText(R.string.you_section_title),
             context.getText(R.string.near_section_title),
             context.getText(R.string.far_section_title)
         };
@@ -70,7 +75,7 @@ public class FriendListAdapter extends AmazingAdapter {
         return position;
     }
     
-    public void updateFriends(List<User> users) {
+    public void updateUsers(List<User> users) {
         this.friends = users;
         
         notifyDataSetChanged();
@@ -92,7 +97,7 @@ public class FriendListAdapter extends AmazingAdapter {
                             User.calculateDistances(friends, currentLocation);
                             
                             // Re-sort friends by distance
-                            User.sortByDistance(friends);
+                            User.sortByDistance(friends.subList(1, friends.size()));
                             
                             // Recalculate the sections
                             recalculateSections();
@@ -169,17 +174,13 @@ public class FriendListAdapter extends AmazingAdapter {
     }
     
     private void recalculateSections() {
-        section2Start = 0;
+        farSectionStart = 0;
         
-        int counter = 0;
-        
-        for (User friend : friends) {
-            if (friend.getDistance() > NEAR_DISTANCE) {
-                section2Start = counter;
+        for (int i=1; i < friends.size(); i++) {
+            if (friends.get(i).getDistance() > NEAR_DISTANCE) {
+                farSectionStart = i;
                 break;
             }
-                
-            counter++;
         }
     }
 
@@ -193,18 +194,24 @@ public class FriendListAdapter extends AmazingAdapter {
     @Override
     public int getPositionForSection(int section) {
         if (section == 0) {
-            return section1Start;
+            return youSectionStart;
+        } else if (section == 1) {
+            return nearSectionStart;
         } else {
-            return section2Start;
+            return farSectionStart;
         }
     }
 
     @Override
     public int getSectionForPosition(int position) {
-        if (position >= section2Start) {
-            return 1;
-        } else {
+        if (position == 0) {
             return 0;
+        }
+        
+        if (position >= farSectionStart) {
+            return 2;
+        } else {
+            return 1;
         }
     }
 
