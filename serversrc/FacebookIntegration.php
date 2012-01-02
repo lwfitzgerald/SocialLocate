@@ -57,7 +57,7 @@ class FacebookIntegration {
     }
 
     public function getOwnDetails() {
-        $query = 'SELECT uid, name, pic_square FROM user WHERE uid=me()';
+        $query = 'SELECT uid, name, pic FROM user WHERE uid=me()';
         try {
             $own_details = $this->facebook->api(array(
                 'method' => 'fql.query',
@@ -72,13 +72,13 @@ class FacebookIntegration {
             null,
             null,
             $own_details[0]['name'],
-            $own_details[0]['pic_square']
+            $own_details[0]['pic']
         );
     }
 
     private function getFriends($light) {
         if (!$light) {
-            $query = 'SELECT uid, name, pic_square FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY name';
+            $query = 'SELECT uid, name, pic FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY name';
         } else {
             $query = 'SELECT uid FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY name';
         }
@@ -108,7 +108,7 @@ class FacebookIntegration {
                 $friend_map[$friend['uid']] = array(
                     'id' => $friend['uid'],
                     'name' => $friend['name'],
-                    'pic' => $friend['pic_square']
+                    'pic' => $friend['pic']
                 );
             } else {
                 $friend_map[$friend['uid']] = array(
@@ -118,38 +118,39 @@ class FacebookIntegration {
         }
 
         $in_values = '';
-
-        foreach ($friend_map as $friend) {
-            $in_values .= $friend['id'] . ',';
-        }
-        
-        // Chop off extra ','
-        $in_values = substr($in_values, 0, strlen($in_values)-1-1);
-
-        $stmt = DB::prepareStatement("SELECT * FROM `user` WHERE `id` IN ($in_values)");
-
-        $stmt->bind_result($friend_id, $lat, $long);
-        $stmt->execute();
-
         $sl_friends = array();
 
-        while ($stmt->fetch()) {
-            if (!$light) {
-                $sl_friend = new User(
-                    $friend_id,
-                    $lat,
-                    $long,
-                    $friend_map[$friend_id]['name'],
-                    $friend_map[$friend_id]['pic']
-                );
-            } else {
-                $sl_friend = new User($friend_id, $lat, $long);
+        if (!empty($friend_map)) {
+            foreach ($friend_map as $friend) {
+                $in_values .= $friend['id'] . ',';
+            }
+            
+            // Chop off extra ','
+            $in_values = substr($in_values, 0, strlen($in_values)-1-1);
+
+            $stmt = DB::prepareStatement("SELECT * FROM `user` WHERE `id` IN ($in_values)");
+
+            $stmt->bind_result($friend_id, $lat, $long);
+            $stmt->execute();
+
+            while ($stmt->fetch()) {
+                if (!$light) {
+                    $sl_friend = new User(
+                        $friend_id,
+                        $lat,
+                        $long,
+                        $friend_map[$friend_id]['name'],
+                        $friend_map[$friend_id]['pic']
+                    );
+                } else {
+                    $sl_friend = new User($friend_id, $lat, $long);
+                }
+
+                $sl_friends[$friend_id] = $sl_friend;
             }
 
-            $sl_friends[$friend_id] = $sl_friend;
+            $stmt->close();
         }
-
-        $stmt->close();
 
         return $sl_friends;
     }
