@@ -118,38 +118,39 @@ class FacebookIntegration {
         }
 
         $in_values = '';
-
-        foreach ($friend_map as $friend) {
-            $in_values .= $friend['id'] . ',';
-        }
-        
-        // Chop off extra ','
-        $in_values = substr($in_values, 0, strlen($in_values)-1-1);
-
-        $stmt = DB::prepareStatement("SELECT * FROM `user` WHERE `id` IN ($in_values)");
-
-        $stmt->bind_result($friend_id, $lat, $long);
-        $stmt->execute();
-
         $sl_friends = array();
 
-        while ($stmt->fetch()) {
-            if (!$light) {
-                $sl_friend = new User(
-                    $friend_id,
-                    $lat,
-                    $long,
-                    $friend_map[$friend_id]['name'],
-                    $friend_map[$friend_id]['pic']
-                );
-            } else {
-                $sl_friend = new User($friend_id, $lat, $long);
+        if (!empty($friend_map)) {
+            foreach ($friend_map as $friend) {
+                $in_values .= $friend['id'] . ',';
+            }
+            
+            // Chop off extra ','
+            $in_values = substr($in_values, 0, strlen($in_values)-1-1);
+
+            $stmt = DB::prepareStatement("SELECT * FROM `user` WHERE `id` IN ($in_values)");
+
+            $stmt->bind_result($friend_id, $lat, $long);
+            $stmt->execute();
+
+            while ($stmt->fetch()) {
+                if (!$light) {
+                    $sl_friend = new User(
+                        $friend_id,
+                        $lat,
+                        $long,
+                        $friend_map[$friend_id]['name'],
+                        $friend_map[$friend_id]['pic']
+                    );
+                } else {
+                    $sl_friend = new User($friend_id, $lat, $long);
+                }
+
+                $sl_friends[$friend_id] = $sl_friend;
             }
 
-            $sl_friends[$friend_id] = $sl_friend;
+            $stmt->close();
         }
-
-        $stmt->close();
 
         return $sl_friends;
     }
