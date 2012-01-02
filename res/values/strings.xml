@@ -9,5 +9,5 @@
     <string name="authfail_no_activity">SocialLocate authentication failed\n\nPlease open the app to reauthenticate</string>
     <string name="near_section_title">Nearby friends</string>
     <string name="far_section_title">Further away</string>
-
+	<string name="no_friends">No friends using SocialLocate</string>
 </resources>

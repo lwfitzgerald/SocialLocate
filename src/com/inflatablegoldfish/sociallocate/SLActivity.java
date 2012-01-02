@@ -17,6 +17,7 @@ import com.inflatablegoldfish.sociallocate.service.LocationReceiver;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 
 public class SLActivity extends MapActivity implements OnItemClickListener {
     private Facebook facebook = new Facebook("162900730478788");
+    
     private SocialLocate socialLocate = new SocialLocate();
     private Foursquare foursquare = new Foursquare();
     
@@ -81,7 +83,9 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Set up the the friend list
         friendList = (AmazingListView) findViewById(R.id.friend_list);
         friendList.setLoadingView(getLayoutInflater().inflate(R.layout.loading_view, null));
+        friendList.setPinnedHeaderView(getLayoutInflater().inflate(R.layout.list_header, friendList, false));
         friendList.mayHaveMorePages();
+        friendList.setEmptyView(findViewById(R.id.empty_view));
         friendList.setOnItemClickListener(this);
         
         // Set the adapter
@@ -109,15 +113,18 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                         
                         Util.showToast("Initial fetch OK", SLActivity.this);
                         
-                        // Store own details
+                        // Store own details and get photo
                         ownUser = users.get(0);
+                        
+                        // Create new thread to fetch own profile pic
+                        fetchOwnProfilePic();
                         
                         // Get sublist of friends
                         final List<User> friends = users.subList(1, users.size());
                         
-                        // Set our name
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
+                                // Set name and invalidate to redraw
                                 ownName.setText(ownUser.getName());
                                 ownName.invalidate();
                                 
@@ -247,6 +254,29 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         currentLocation = newLocation;
         
         friendListAdapter.updateDistances(currentLocation);
+    }
+    
+    /**
+     * Performs an asyncronous request to fetch
+     * and set the user's profile picture
+     */
+    private void fetchOwnProfilePic() {
+        new Thread(
+            new Runnable() {
+                public void run() {
+                    final Bitmap ownPictureBitmap = Util.getBitmap(ownUser.getPic());
+                    
+                    // Post to UI thread for update
+                    Util.uiHandler.post(
+                        new Runnable() {
+                            public void run() {
+                                ownPicture.setImageBitmap(ownPictureBitmap);
+                            }
+                        }
+                    );
+                }
+            }
+        ).start();
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {

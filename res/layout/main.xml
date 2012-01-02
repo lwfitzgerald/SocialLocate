@@ -8,8 +8,7 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:padding="6dip"
-        android:layout_height="?android:attr/listPreferredItemHeight"
-        android:background="@color/offblack">
+        android:layout_height="?android:attr/listPreferredItemHeight">
         <ImageView
             android:id="@+id/own_picture"
             android:layout_width="wrap_content"
@@ -24,11 +23,21 @@
             android:layout_toRightOf="@id/own_picture" />
     </RelativeLayout>
     
+    <View
+        android:background="@color/grey"
+        android:layout_width="fill_parent"
+        android:layout_height="1dip" />
+        
+    <!-- Include empty view (but hidden) -->
+    <include layout="@layout/empty_view"
+        android:id="@+id/empty_view"
+        android:visibility="gone" />
+    
 	<RelativeLayout
 	android:layout_width="fill_parent"
-	android:padding="6dip"
-	android:layout_height="fill_parent"
-	android:background="@color/offblack">
+	android:paddingLeft="6dip"
+	android:paddingRight="6dip"
+	android:layout_height="fill_parent">
 
 <!-- 	    <com.google.android.maps.MapView -->
 <!-- 	        xmlns:android="http://schemas.android.com/apk/res/android" -->
@@ -41,7 +50,7 @@
 	    <com.foound.widget.AmazingListView
 	        android:id="@+id/friend_list"
 	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content" />
+	        android:layout_height="fill_parent" />
 <!-- 	        android:layout_below="@id/mapview" /> -->
     </RelativeLayout>
 

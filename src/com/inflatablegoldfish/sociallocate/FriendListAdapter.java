@@ -10,14 +10,22 @@ import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class FriendListAdapter extends AmazingAdapter {
     private List<User> friends = null;
     private Object friendLock = new Object();
     
+    private ProfilePicRunner picRunner = new ProfilePicRunner(this);
+    
     private LayoutInflater mInflater;
     private CharSequence[] sectionTitles;
+    
+    private int section1Start = 0;
+    private int section2Start = 0;
+    
+    private static final int NEAR_DISTANCE = 1000;
     
     public FriendListAdapter(Context context) {
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -31,6 +39,19 @@ public class FriendListAdapter extends AmazingAdapter {
         this(context);
         
         this.friends = friends;
+    }
+    
+    public boolean isEmpty() {
+        if (friends == null) {
+            /*
+             * Whilst we're loading we need to
+             * show the loading indicator,
+             * not the empty view
+             */
+            return false;
+        }
+       
+        return getCount() == 0;
     }
     
     public int getCount() {
@@ -73,6 +94,9 @@ public class FriendListAdapter extends AmazingAdapter {
                             // Re-sort friends by distance
                             User.sortByDistance(friends);
                             
+                            // Recalculate the sections
+                            recalculateSections();
+                            
                             // Refresh the UI
                             Util.uiHandler.post(new Runnable() {
                                 public void run() {
@@ -94,8 +118,13 @@ public class FriendListAdapter extends AmazingAdapter {
     @Override
     protected void bindSectionHeader(View view, int position,
             boolean displaySectionHeader) {
-        // TODO Auto-generated method stub
-        
+        if (displaySectionHeader) {
+            view.findViewById(R.id.list_header).setVisibility(View.VISIBLE);
+            TextView lSectionTitle = (TextView) view.findViewById(R.id.list_header);
+            lSectionTitle.setText((CharSequence) getSections()[getSectionForPosition(position)]);
+        } else {
+            view.findViewById(R.id.list_header).setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -105,23 +134,30 @@ public class FriendListAdapter extends AmazingAdapter {
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.friend_item, null);
             holder = new ViewHolder();
+            holder.picView = (ImageView) convertView.findViewById(R.id.profile_pic);
             holder.nameView = (TextView) convertView.findViewById(R.id.name);
             holder.distanceView = (TextView) convertView.findViewById(R.id.distance);
             convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
         }
         
+        holder = (ViewHolder) convertView.getTag();
+        
+        // Get friend for this view
         User friend = friends.get(position);
         
+        // Attempt to get photo from ready images or issue request
+        holder.picView.setImageBitmap(picRunner.getImage(friend.getId(), friend.getPic()));
+        
+        // Set name
         holder.nameView.setText(friend.getName());
         
+        // Calculate and set distance
         if (friend.getDistance() != null) {
             double distance = friend.getDistance().intValue();
             
             // Show in kilometers if greater than 100m
             if (distance >= 100) {
-                DecimalFormat formatter = new DecimalFormat(".0");
+                DecimalFormat formatter = new DecimalFormat("0.0");
                 
                 holder.distanceView.setText(formatter.format(distance / 1000) + "km");
             } else {
@@ -131,20 +167,45 @@ public class FriendListAdapter extends AmazingAdapter {
         
         return convertView;
     }
+    
+    private void recalculateSections() {
+        section2Start = 0;
+        
+        int counter = 0;
+        
+        for (User friend : friends) {
+            if (friend.getDistance() > NEAR_DISTANCE) {
+                section2Start = counter;
+                break;
+            }
+                
+            counter++;
+        }
+    }
 
     @Override
-    public void configurePinnedHeader(View header, int position, int alpha) {}
+    public void configurePinnedHeader(View header, int position, int alpha) {
+        TextView lSectionHeader = (TextView)header;
+        
+        lSectionHeader.setText((CharSequence) getSections()[getSectionForPosition(position)]);
+    }
 
     @Override
     public int getPositionForSection(int section) {
-        // TODO Auto-generated method stub
-        return 0;
+        if (section == 0) {
+            return section1Start;
+        } else {
+            return section2Start;
+        }
     }
 
     @Override
     public int getSectionForPosition(int position) {
-        // TODO Auto-generated method stub
-        return 0;
+        if (position >= section2Start) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -153,6 +214,7 @@ public class FriendListAdapter extends AmazingAdapter {
     }
     
     private static class ViewHolder {
+        public ImageView picView;
         public TextView nameView;
         public TextView distanceView;
     }

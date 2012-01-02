@@ -107,12 +107,7 @@ public class FBAuthRequest extends Request {
     }
 
     @Override
-    public void onAuthFail(Deque<Request> requestQueue) {
-        /*
-         * TODO: Don't think we actually need to do anything
-         * here
-         */
-    }
+    public void onAuthFail(Deque<Request> requestQueue) {}
 
     @Override
     public void onError(Deque<Request> requestQueue) {
