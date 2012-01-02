@@ -57,7 +57,7 @@ class FacebookIntegration {
     }
 
     public function getOwnDetails() {
-        $query = 'SELECT uid, name, pic_square FROM user WHERE uid=me()';
+        $query = 'SELECT uid, name, pic FROM user WHERE uid=me()';
         try {
             $own_details = $this->facebook->api(array(
                 'method' => 'fql.query',
