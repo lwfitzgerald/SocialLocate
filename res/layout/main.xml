@@ -4,31 +4,17 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:background="@color/black">
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:padding="6dip"
-        android:layout_height="?android:attr/listPreferredItemHeight"
-        android:background="@color/offblack">
-        <ImageView
-            android:id="@+id/own_picture"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginRight="6dip" />
-        <TextView
-            android:id="@+id/own_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/own_picture" />
-    </RelativeLayout>
+    
+    <!-- Include empty view (but hidden) -->
+    <include layout="@layout/empty_view"
+        android:id="@+id/empty_view"
+        android:visibility="gone" />
     
 	<RelativeLayout
 	android:layout_width="fill_parent"
-	android:padding="6dip"
-	android:layout_height="fill_parent"
-	android:background="@color/offblack">
+	android:paddingLeft="6dip"
+	android:paddingRight="6dip"
+	android:layout_height="fill_parent">
 
 <!-- 	    <com.google.android.maps.MapView -->
 <!-- 	        xmlns:android="http://schemas.android.com/apk/res/android" -->
@@ -41,7 +27,7 @@
 	    <com.foound.widget.AmazingListView
 	        android:id="@+id/friend_list"
 	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content" />
+	        android:layout_height="fill_parent" />
 <!-- 	        android:layout_below="@id/mapview" /> -->
     </RelativeLayout>
 

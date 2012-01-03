@@ -68,7 +68,9 @@ public class User {
     
     public static void calculateDistances(List<User> list, Location currentLocation) {
         for (User user : list) {
-            user.setDistanceFrom(currentLocation);
+            if (user.getLocation() != null) {
+                user.setDistanceFrom(currentLocation);
+            }
         }
     }
     

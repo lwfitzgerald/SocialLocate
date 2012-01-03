@@ -1,10 +1,13 @@
 package com.inflatablegoldfish.sociallocate;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyStore;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -14,6 +17,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Handler;
 import android.widget.Toast;
@@ -87,6 +92,48 @@ public class Util {
         }
         in.close();
         return sb.toString();
+    }
+    
+    public static Bitmap getBitmap(String url) {
+        Bitmap bm = null;
+        try {
+            URL aURL = new URL(url);
+            URLConnection conn = aURL.openConnection();
+            conn.connect();
+            InputStream is = conn.getInputStream();
+            BufferedInputStream bis = new BufferedInputStream(is);
+            bm = BitmapFactory.decodeStream(new FlushedInputStream(is));
+            bis.close();
+            is.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return bm;
+    }
+
+    private static class FlushedInputStream extends FilterInputStream {
+        public FlushedInputStream(InputStream inputStream) {
+            super(inputStream);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long totalBytesSkipped = 0L;
+            while (totalBytesSkipped < n) {
+                long bytesSkipped = in.skip(n - totalBytesSkipped);
+                if (bytesSkipped == 0L) {
+                    int b = read();
+                    if (b < 0) {
+                        break; // we reached EOF
+                    } else {
+                        bytesSkipped = 1; // we read one byte
+                    }
+                }
+                totalBytesSkipped += bytesSkipped;
+            }
+            return totalBytesSkipped;
+        }
     }
     
     /**

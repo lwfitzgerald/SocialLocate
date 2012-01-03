@@ -2,7 +2,6 @@ package com.inflatablegoldfish.sociallocate;
 
 import java.util.List;
 
-import com.commonsware.cwac.locpoll.LocationPoller;
 import com.facebook.android.Facebook;
 import com.foound.widget.AmazingListView;
 import com.google.android.maps.MapActivity;
@@ -12,36 +11,27 @@ import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
-import com.inflatablegoldfish.sociallocate.service.LocationReceiver;
+import com.inflatablegoldfish.sociallocate.service.BackgroundUpdater;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 public class SLActivity extends MapActivity implements OnItemClickListener {
     private Facebook facebook = new Facebook("162900730478788");
+    
     private SocialLocate socialLocate = new SocialLocate();
     private Foursquare foursquare = new Foursquare();
     
     private ActivityLocationHandler activityLocHandler;
     private RequestManager requestManager;
     
-    private User ownUser = null;
     private Location currentLocation = null;
-    
-    private TextView ownName;
-    private ImageView ownPicture;
     
     private AmazingListView friendList;
     private FriendListAdapter friendListAdapter;
@@ -57,7 +47,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
          * 
          * First, cancel the background updating
          */
-        cancelAlarm();
+        BackgroundUpdater.cancelAlarm(this);
         
         // Set up custom IG SSL socket factory
         Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
@@ -74,14 +64,12 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
         
-        ownName = (TextView) findViewById(R.id.own_name);
-        ownName.setText("Loading...");
-        ownPicture = (ImageView) findViewById(R.id.own_picture);
-        
         // Set up the the friend list
         friendList = (AmazingListView) findViewById(R.id.friend_list);
         friendList.setLoadingView(getLayoutInflater().inflate(R.layout.loading_view, null));
+        friendList.setPinnedHeaderView(getLayoutInflater().inflate(R.layout.list_header, friendList, false));
         friendList.mayHaveMorePages();
+        friendList.setEmptyView(findViewById(R.id.empty_view));
         friendList.setOnItemClickListener(this);
         
         // Set the adapter
@@ -109,20 +97,10 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                         
                         Util.showToast("Initial fetch OK", SLActivity.this);
                         
-                        // Store own details
-                        ownUser = users.get(0);
-                        
-                        // Get sublist of friends
-                        final List<User> friends = users.subList(1, users.size());
-                        
-                        // Set our name
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
-                                ownName.setText(ownUser.getName());
-                                ownName.invalidate();
-                                
                                 // Update list view adapter
-                                friendListAdapter.updateFriends(friends);
+                                friendListAdapter.updateUsers(users);
                                 
                                 // If we have a location fix, calculate distances
                                 if (currentLocation != null) {
@@ -147,8 +125,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     }
                 },
                 facebook,
-                socialLocate,
-                foursquare
+                socialLocate
             )
         );
         
@@ -169,8 +146,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     }
                 },
                 facebook,
-                socialLocate,
-                foursquare
+                socialLocate
             )
         );
         
@@ -185,72 +161,34 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     public void onCancel() {}
                 },
                 facebook,
-                socialLocate,
-                foursquare
+                socialLocate
             )
         );
         
         requestManager.startProcessing();
     }
     
-    /**
-     * Cancels the background updating alarm
-     */
-    private void cancelAlarm() {
-        AlarmManager mgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-        
-        mgr.cancel(PendingIntent.getBroadcast(this, 0, getAlarmIntent(), 0));
-    }
-    
-    /**
-     * Schedule the background updating alarm
-     */
-    private void setUpAlarm() {
-        AlarmManager mgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-        
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
-                getAlarmIntent(), 0);
-        
-        long interval = 60000 / (SocialLocate.UPDATES_PER_HOUR / 60);
-        
-        mgr.setRepeating(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + interval,
-            interval,
-            pendingIntent
-        );
-    }
-    
-    /**
-     * Get the intent for the background updating
-     * alarm
-     * @return Intent for cancelling and scheduling
-     */
-    public Intent getAlarmIntent() {
-        Intent intent = new Intent(this, LocationPoller.class);
-        intent.setAction("com.inflatablegoldfish.com.sociallocate.LOCATION_CHANGED");
-        
-        intent.putExtra(
-            LocationPoller.EXTRA_INTENT,
-            new Intent(this, LocationReceiver.class)
-        );
-        
-        intent.putExtra(
-            LocationPoller.EXTRA_PROVIDER,
-            LocationManager.NETWORK_PROVIDER
-        );
-        
-        return intent;
-    }
-    
     public void locationUpdated(final Location newLocation) {
         currentLocation = newLocation;
         
         friendListAdapter.updateDistances(currentLocation);
+        
+//        requestManager.addRequest(
+//            new SLUpdateRequest(
+//                location,
+//                manager,
+//                listener,
+//                facebook,
+//                socialLocate,
+//                foursquare
+//            )
+//        );
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
+        if (position != 0) {
+            Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
+        }
     }
     
     @Override
@@ -265,7 +203,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         super.onResume();
         
         // Start GPS updates and stop background updates
-        cancelAlarm();
+        BackgroundUpdater.cancelAlarm(this);
         activityLocHandler.startUpdates();
     }
     
@@ -275,7 +213,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         // Stop GPS updates and resume background updates
         activityLocHandler.stopUpdates();
-        setUpAlarm();
+        BackgroundUpdater.setUpAlarm(this);
     }
     
     @Override

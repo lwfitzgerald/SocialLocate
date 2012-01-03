@@ -8,19 +8,15 @@ import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
-import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
-import com.inflatablegoldfish.sociallocate.R;
-
-import android.app.Activity;
 import android.content.SharedPreferences;
 
 public class SLAuthRequest extends SLRequest {
     public SLAuthRequest(RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare) {
+            SocialLocate socialLocate) {
 
-        super(manager, listener, facebook, socialLocate, foursquare);
+        super(manager, listener, facebook, socialLocate);
     }
     
     @Override
@@ -41,7 +37,7 @@ public class SLAuthRequest extends SLRequest {
         
         facebook.setAccessToken(null);
         
-        if (manager.getContext() instanceof Activity) {
+        if (manager.getContext() != null) {
             // Create new FB auth request and queue it!
             new FBAuthRequest(
                 manager,
@@ -53,8 +49,7 @@ public class SLAuthRequest extends SLRequest {
                     public void onCancel() {}
                 },
                 facebook,
-                socialLocate,
-                foursquare
+                socialLocate
             ).addToQueue(requestQueue);
         } else {
             /*
@@ -62,12 +57,6 @@ public class SLAuthRequest extends SLRequest {
              * 
              * So silently remove all dependent requests from queue
              */
-            
-            Util.showToast(
-                manager.getContext().getText(R.string.authfail_no_activity),
-                manager.getContext()
-            );
-            
             synchronized (requestQueue) {
                 Iterator<Request> itr = requestQueue.iterator();
                 
