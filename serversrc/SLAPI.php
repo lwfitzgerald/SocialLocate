@@ -97,9 +97,9 @@ class SLAPI {
         
             // Lat and long provided so update
             $user = new User(
-                $this->facebookInt->getFBID(),
-                $lat,
-                $long
+                $this->facebookInt->getID(),
+                $_GET['lat'],
+                $_GET['long']
             );
 
             $user->save();
