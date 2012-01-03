@@ -10,7 +10,12 @@ import com.inflatablegoldfish.sociallocate.request.Request.RequestResult;
 
 public class RequestManager implements Runnable {
     private Deque<Request> queue;
-    private Boolean running = false;
+    
+    private boolean running = false;
+    private Object runningLock = new Object();
+    
+    private volatile boolean abort = false;
+    
     private volatile Context context;
     
     public RequestManager(Context context) {
@@ -53,7 +58,7 @@ public class RequestManager implements Runnable {
      * requests if we are not already
      */
     public void startProcessing() {
-        synchronized(running) {
+        synchronized(runningLock) {
             if (!running) {
                 running = true;
                 // Start processing
@@ -71,6 +76,10 @@ public class RequestManager implements Runnable {
         
         // Loop until no more requests to execute
         while (true) {
+            if (abort) {
+                return;
+            }
+            
             synchronized(queue) {
                 request = queue.peek();
             }
@@ -79,6 +88,12 @@ public class RequestManager implements Runnable {
                 // Execute the request
                 Log.w("SocialLocate", "Executing " + request.getClass().getSimpleName());
                 RequestResult<?> result = request.execute();
+                
+                // Don't perform callbacks / listener calls
+                // if aborting
+                if (abort) {
+                    return;
+                }
                 
                 switch (result.code) {
                 case SUCCESS:
@@ -109,7 +124,7 @@ public class RequestManager implements Runnable {
             }
         }
         
-        synchronized(running) {
+        synchronized(runningLock) {
             boolean empty;
             
             synchronized(queue) {
@@ -133,6 +148,19 @@ public class RequestManager implements Runnable {
             } else {
                 running = false;
             }
+        }
+    }
+    
+    /**
+     * Clear the queue of requests
+     * 
+     * Currently executing requests will still complete
+     */
+    public void abortAll() {
+        abort = true;
+        
+        synchronized(queue) {
+            queue.clear();
         }
     }
     

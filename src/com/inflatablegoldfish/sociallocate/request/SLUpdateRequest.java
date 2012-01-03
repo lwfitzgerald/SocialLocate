@@ -43,7 +43,7 @@ public class SLUpdateRequest extends SLRequest {
                 requestQueue.poll();
             }
             
-            listener.onError();
+            listener.onError(ResultCode.ERROR);
         }
     }
 

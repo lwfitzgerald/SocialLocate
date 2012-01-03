@@ -12,6 +12,7 @@ import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.service.BackgroundUpdater;
 
 import android.content.Intent;
@@ -85,7 +86,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     }
     
     private void initialAuth() {
-        // Only FB auth if we haven't already got a key
+        // Only FB auth if we haven't already got a token
         if (!Util.prefs.contains("access_token")) {
             requestManager.addRequestWithoutStarting(
                 new FBAuthRequest(
@@ -93,7 +94,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     new RequestListener<User[]>() {
                         public void onComplete(Object result) {}
     
-                        public void onError() {}
+                        public void onError(ResultCode resultCode) {}
     
                         public void onCancel() {}
                     },
@@ -109,12 +110,12 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                 new SLAuthRequest(
                     requestManager,
                     new RequestListener<List<User>>() {
-                        public void onError() {
-                            Util.showToast("SL auth error", SLActivity.this);
-                        }
-                        
                         public void onComplete(Object users) {
                             Util.showToast("SL auth OK", SLActivity.this);
+                        }
+                        
+                        public void onError(ResultCode resultCode) {
+                            Util.showToast("SL auth error", SLActivity.this);
                         }
                         
                         public void onCancel() {
@@ -131,17 +132,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
             new SLInitialFetchRequest(
                 requestManager,
                 new RequestListener<List<User>>() {
-                    public void onError() {
-                        Util.showToast("Initial fetch error", SLActivity.this);
-                        
-                        Util.uiHandler.post(new Runnable() {
-                            public void run() {
-                                // Hide loading spinner
-                                friendList.noMorePages();
-                            }
-                        });
-                    }
-                    
                     public void onComplete(final Object userList) {
                         @SuppressWarnings("unchecked")
                         final List<User> users = (List<User>) userList;
@@ -158,6 +148,17 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                                     friendListAdapter.updateDistances(currentLocation);
                                 }
                                 
+                                // Hide loading spinner
+                                friendList.noMorePages();
+                            }
+                        });
+                    }
+
+                    public void onError(ResultCode resultCode) {
+                        Util.showToast("Initial fetch error", SLActivity.this);
+                        
+                        Util.uiHandler.post(new Runnable() {
+                            public void run() {
                                 // Hide loading spinner
                                 friendList.noMorePages();
                             }
@@ -194,7 +195,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                 requestManager,
                 new RequestListener<List<User>>() {
                     public void onComplete(Object result) {}
-                    public void onError() {}
+                    public void onError(ResultCode resultCode) {}
                     public void onCancel() {}
                 },
                 facebook,
@@ -239,6 +240,8 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     
     @Override
     public void onDestroy() {
+        requestManager.abortAll();
+        
         super.onDestroy();
     }
 

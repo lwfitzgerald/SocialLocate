@@ -7,6 +7,7 @@ import com.inflatablegoldfish.sociallocate.R;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
@@ -29,7 +30,7 @@ public class BackgroundUpdater extends BroadcastReceiver {
     public void onReceive(final Context context, final Intent intent) {
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             // Boot notification recieved so set up recurring alarm
-            //setUpAlarm(context);
+            setUpAlarm(context);
         } else {
             new Thread(
                 new Runnable() {
@@ -62,7 +63,6 @@ public class BackgroundUpdater extends BroadcastReceiver {
                                 // Set up request manager and cookies
                                 RequestManager requestManager = new RequestManager(null);
                                 final SocialLocate socialLocate = new SocialLocate();
-                                
                                 socialLocate.loadCookies();
                                 
                                 requestManager.addRequest(
@@ -85,7 +85,12 @@ public class BackgroundUpdater extends BroadcastReceiver {
                                                 // Save any new cookies
                                                 socialLocate.saveCookies();
                                             }
-                                            public void onError() {}
+                                            public void onError(ResultCode resultCode) {
+                                                if (resultCode == ResultCode.AUTHFAIL) {
+                                                    // Auth fail so stop attempting updates
+                                                    cancelAlarm(context);
+                                                }
+                                            }
                                             public void onCancel() {}
                                         },
                                         null,

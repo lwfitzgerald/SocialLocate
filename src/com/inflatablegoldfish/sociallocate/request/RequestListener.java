@@ -1,5 +1,7 @@
 package com.inflatablegoldfish.sociallocate.request;
 
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
+
 /**
  * Callbacks for when requests complete/abort
  *
@@ -18,8 +20,9 @@ public interface RequestListener<ReturnType> {
     /**
      * Called when a request fails. This may be
      * after a number of retries.
+     * @param resultCode Either ERROR or AUTHFAIL
      */
-    public void onError();
+    public void onError(final ResultCode resultCode);
     
     /**
      * Called when the request is cancelled

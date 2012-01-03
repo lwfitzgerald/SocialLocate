@@ -29,9 +29,9 @@ public abstract class SLRequest extends Request {
                     
                     // Listener with no operations
                     new RequestListener<List<User>>() {
-                        public void onError() {}
-                        
                         public void onComplete(Object users) {}
+                        
+                        public void onError(ResultCode resultCode) {}
                         
                         public void onCancel() {}
                     },

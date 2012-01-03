@@ -135,7 +135,7 @@ public class FBAuthRequest extends Request {
                         
                         // Call listener's error handler
                         if (request.listener != null) {
-                            request.listener.onError();
+                            request.listener.onError(ResultCode.ERROR);
                         }
                     }
                 }

@@ -38,7 +38,7 @@ public class SLFetchRequest extends SLRequest {
                 requestQueue.poll();
             }
             
-            listener.onError();
+            listener.onError(ResultCode.ERROR);
         }
     }
     

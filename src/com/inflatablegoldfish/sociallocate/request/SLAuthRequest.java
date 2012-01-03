@@ -52,7 +52,7 @@ public class SLAuthRequest extends SLRequest {
                         new RequestListener<User[]>() {
                             public void onComplete(Object result) {}
             
-                            public void onError() {}
+                            public void onError(ResultCode resultCode) {}
             
                             public void onCancel() {}
                         },
@@ -77,6 +77,9 @@ public class SLAuthRequest extends SLRequest {
                             || request instanceof FBAuthRequest) {
                         // Remove from queue
                         itr.remove();
+                        
+                        // Call authfail listeners
+                        listener.onError(ResultCode.AUTHFAIL);
                     }
                 }
             }
@@ -110,7 +113,7 @@ public class SLAuthRequest extends SLRequest {
                         
                         // Call listener's error handler
                         if (request.listener != null) {
-                            request.listener.onError();
+                            request.listener.onError(ResultCode.ERROR);
                         }
                         
                         // Remove from queue
