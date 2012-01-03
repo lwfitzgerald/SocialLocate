@@ -2,7 +2,6 @@ package com.inflatablegoldfish.sociallocate;
 
 import java.util.List;
 
-import com.commonsware.cwac.locpoll.LocationPoller;
 import com.facebook.android.Facebook;
 import com.foound.widget.AmazingListView;
 import com.google.android.maps.MapActivity;
@@ -12,16 +11,12 @@ import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
-import com.inflatablegoldfish.sociallocate.service.LocationReceiver;
+import com.inflatablegoldfish.sociallocate.service.BackgroundUpdater;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
@@ -36,7 +31,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     private ActivityLocationHandler activityLocHandler;
     private RequestManager requestManager;
     
-    private User ownUser = null;
     private Location currentLocation = null;
     
     private AmazingListView friendList;
@@ -53,7 +47,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
          * 
          * First, cancel the background updating
          */
-        cancelAlarm();
+        BackgroundUpdater.cancelAlarm(this);
         
         // Set up custom IG SSL socket factory
         Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
@@ -102,9 +96,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                         final List<User> users = (List<User>) userList;
                         
                         Util.showToast("Initial fetch OK", SLActivity.this);
-                        
-                        // Store own details and get photo
-                        ownUser = users.get(0);
                         
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
@@ -177,56 +168,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         requestManager.startProcessing();
     }
     
-    /**
-     * Cancels the background updating alarm
-     */
-    private void cancelAlarm() {
-        AlarmManager mgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-        
-        mgr.cancel(PendingIntent.getBroadcast(this, 0, getAlarmIntent(), 0));
-    }
-    
-    /**
-     * Schedule the background updating alarm
-     */
-    private void setUpAlarm() {
-        AlarmManager mgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-        
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
-                getAlarmIntent(), 0);
-        
-        long interval = 60000 / (SocialLocate.UPDATES_PER_HOUR / 60);
-        
-        mgr.setRepeating(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + interval,
-            interval,
-            pendingIntent
-        );
-    }
-    
-    /**
-     * Get the intent for the background updating
-     * alarm
-     * @return Intent for cancelling and scheduling
-     */
-    public Intent getAlarmIntent() {
-        Intent intent = new Intent(this, LocationPoller.class);
-        intent.setAction("com.inflatablegoldfish.com.sociallocate.LOCATION_CHANGED");
-        
-        intent.putExtra(
-            LocationPoller.EXTRA_INTENT,
-            new Intent(this, LocationReceiver.class)
-        );
-        
-        intent.putExtra(
-            LocationPoller.EXTRA_PROVIDER,
-            LocationManager.NETWORK_PROVIDER
-        );
-        
-        return intent;
-    }
-    
     public void locationUpdated(final Location newLocation) {
         currentLocation = newLocation;
         
@@ -262,7 +203,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         super.onResume();
         
         // Start GPS updates and stop background updates
-        cancelAlarm();
+        BackgroundUpdater.cancelAlarm(this);
         activityLocHandler.startUpdates();
     }
     
@@ -272,7 +213,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         // Stop GPS updates and resume background updates
         activityLocHandler.stopUpdates();
-        setUpAlarm();
+        BackgroundUpdater.setUpAlarm(this);
     }
     
     @Override

@@ -25,7 +25,11 @@
         <service android:name="com.commonsware.cwac.locpoll.LocationPollerService" />
         <receiver android:name="com.commonsware.cwac.locpoll.LocationPoller" >
         </receiver> 
-        <receiver android:name=".service.LocationReceiver"></receiver><uses-library android:name="com.google.android.maps" android:required="true"/>
+        <receiver android:name=".service.BackgroundUpdater">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver><uses-library android:name="com.google.android.maps" android:required="true"/>
         
     </application>
 

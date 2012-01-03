@@ -9,9 +9,6 @@ import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
 
-import com.inflatablegoldfish.sociallocate.R;
-
-import android.app.Activity;
 import android.content.SharedPreferences;
 
 public class SLAuthRequest extends SLRequest {
@@ -40,7 +37,7 @@ public class SLAuthRequest extends SLRequest {
         
         facebook.setAccessToken(null);
         
-        if (manager.getContext() instanceof Activity) {
+        if (manager.getContext() != null) {
             // Create new FB auth request and queue it!
             new FBAuthRequest(
                 manager,
@@ -60,12 +57,6 @@ public class SLAuthRequest extends SLRequest {
              * 
              * So silently remove all dependent requests from queue
              */
-            
-            Util.showToast(
-                manager.getContext().getText(R.string.authfail_no_activity),
-                manager.getContext()
-            );
-            
             synchronized (requestQueue) {
                 Iterator<Request> itr = requestQueue.iterator();
                 
