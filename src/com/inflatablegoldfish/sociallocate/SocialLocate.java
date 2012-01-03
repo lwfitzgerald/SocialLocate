@@ -159,18 +159,28 @@ public class SocialLocate {
     }
     
     public void saveCookies() {
-        // Save cookies
-        HashMap<String, String> cookie = cookieToStrings();
-        if (cookie != null) {
-            SharedPreferences.Editor editor = Util.prefs.edit();
-            editor.putString("cookie_name", cookie.get("name"));
-            editor.putString("cookie_value", cookie.get("value"));
-            editor.putString("cookie_domain", cookie.get("domain"));
-            editor.putString("cookie_path", cookie.get("path"));
-            editor.putString("cookie_expires", cookie.get("expires"));
-            editor.putString("cookie_version", cookie.get("version"));
-            editor.commit();
+        CookieManager mgr = (CookieManager) CookieHandler.getDefault();
+        
+        List<HttpCookie> cookieList = null;
+        
+        try {
+            cookieList = mgr.getCookieStore().get(new URI(URL_PREFIX));
+        } catch (URISyntaxException e) {}
+        
+        if (cookieList.size() == 0) {
+            return;
         }
+        
+        HttpCookie cookie = cookieList.get(0);
+        
+        SharedPreferences.Editor editor = Util.prefs.edit();
+        editor.putString("cookie_name", cookie.getName());
+        editor.putString("cookie_value", cookie.getValue());
+        editor.putString("cookie_domain", cookie.getDomain());
+        editor.putString("cookie_path", cookie.getPath());
+        editor.putLong("cookie_expires", cookie.getMaxAge());
+        editor.putInt("cookie_version", cookie.getVersion());
+        editor.commit();
     }
     
     public void loadCookies() {
@@ -183,8 +193,8 @@ public class SocialLocate {
             
             cookie.setDomain(Util.prefs.getString("cookie_domain", ""));
             cookie.setPath(Util.prefs.getString("cookie_path", ""));
-            cookie.setVersion(Integer.valueOf(Util.prefs.getString("cookie_version", "")));
-            cookie.setMaxAge(Long.valueOf(Util.prefs.getString("cookie_expires", "")));
+            cookie.setMaxAge(Util.prefs.getLong("cookie_expires", 0));
+            cookie.setVersion(Util.prefs.getInt("cookie_version", 0));
             
             CookieManager mgr = (CookieManager) CookieHandler.getDefault();
             
@@ -203,32 +213,5 @@ public class SocialLocate {
         editor.remove("cookie_expires");
         editor.remove("cookie_version");
         editor.commit();
-    }
-    
-    private HashMap<String, String> cookieToStrings() {
-        HashMap<String, String> map = new HashMap<String, String>();
-        
-        CookieManager mgr = (CookieManager) CookieHandler.getDefault();
-        
-        List<HttpCookie> cookieList = null;
-        
-        try {
-            cookieList = mgr.getCookieStore().get(new URI(URL_PREFIX));
-        } catch (URISyntaxException e) {}
-        
-        if (cookieList.size() == 0) {
-            return null;
-        }
-        
-        HttpCookie cookie = cookieList.get(0);
-        
-        map.put("name", cookie.getName());
-        map.put("value", cookie.getValue());
-        map.put("domain", cookie.getDomain());
-        map.put("path", cookie.getPath());
-        map.put("expires", String.valueOf(cookie.getMaxAge()));
-        map.put("version", String.valueOf(cookie.getVersion()));
-        
-        return map;
     }
 }
