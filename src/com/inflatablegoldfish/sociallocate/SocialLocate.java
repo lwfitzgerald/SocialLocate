@@ -76,7 +76,7 @@ public class SocialLocate {
                         new User(
                             friend.getInt("id"),
                             friend.getDouble("lat"),
-                            friend.getDouble("long"),
+                            friend.getDouble("lng"),
                             friend.getString("name"),
                             friend.getString("pic")
                         )
@@ -128,7 +128,7 @@ public class SocialLocate {
     
     public RequestResult<List<User>> updateLocation(Location location) {
         String url = URL_PREFIX + "action=update_location" + "&lat="
-                + location.getLatitude() + "&long=" + location.getLongitude();
+                + location.getLatitude() + "&lng=" + location.getLongitude();
 
         try {
             String response = Util.getURL(url, true);

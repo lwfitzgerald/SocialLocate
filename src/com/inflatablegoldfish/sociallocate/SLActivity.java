@@ -11,6 +11,7 @@ import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
+import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
 import com.inflatablegoldfish.sociallocate.service.BackgroundUpdater;
 
 import android.content.Intent;
@@ -173,16 +174,19 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         friendListAdapter.updateDistances(currentLocation);
         
-//        requestManager.addRequest(
-//            new SLUpdateRequest(
-//                location,
-//                manager,
-//                listener,
-//                facebook,
-//                socialLocate,
-//                foursquare
-//            )
-//        );
+        requestManager.addRequest(
+            new SLUpdateRequest(
+                currentLocation,
+                requestManager,
+                new RequestListener<List<User>>() {
+                    public void onComplete(Object result) {}
+                    public void onError() {}
+                    public void onCancel() {}
+                },
+                facebook,
+                socialLocate
+            )
+        );
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
@@ -209,11 +213,11 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     
     @Override
     public void onPause() {
-        super.onPause();
-        
         // Stop GPS updates and resume background updates
         activityLocHandler.stopUpdates();
         BackgroundUpdater.setUpAlarm(this);
+        
+        super.onPause();
     }
     
     @Override
