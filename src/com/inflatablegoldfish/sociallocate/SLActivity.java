@@ -219,7 +219,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     @Override
     public void onResume() {
         // Start GPS updates and stop background updates
-        //BackgroundUpdater.cancelAlarm(this);
+        BackgroundUpdater.cancelAlarm(this);
         activityLocHandler.startUpdates();
         
         super.onResume();
@@ -232,7 +232,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         // Stop GPS updates and resume background updates
         activityLocHandler.stopUpdates();
-        //BackgroundUpdater.setUpAlarm(this);
+        BackgroundUpdater.setUpAlarm(this);
         
         super.onPause();
     }
