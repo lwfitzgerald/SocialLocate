@@ -93,13 +93,13 @@ class SLAPI {
 
     private function handleUpdateLocation() {
         if (isset($_GET['lat'])
-            && isset($_GET['long'])) {
+            && isset($_GET['lng'])) {
         
-            // Lat and long provided so update
+            // Lat and lng provided so update
             $user = new User(
-                $this->facebookInt->getFBID(),
-                $lat,
-                $long
+                $this->facebookInt->getID(),
+                $_GET['lat'],
+                $_GET['lng']
             );
 
             $user->save();
