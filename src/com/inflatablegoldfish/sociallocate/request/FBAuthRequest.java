@@ -14,7 +14,6 @@ import com.facebook.android.Facebook.DialogListener;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
-import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class FBAuthRequest extends Request {
     private RequestResult<User[]> result;
@@ -23,10 +22,10 @@ public class FBAuthRequest extends Request {
     
     private static final int NUM_RETRIES = 3;
     
-    public FBAuthRequest(RequestManager manager, RequestListener<?> listener, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare) {
+    public FBAuthRequest(RequestManager manager, RequestListener<?> listener,
+            Facebook facebook, SocialLocate socialLocate) {
         
-        super(manager, listener, facebook, socialLocate, foursquare);
+        super(manager, listener, facebook, socialLocate);
     }
 
     @Override

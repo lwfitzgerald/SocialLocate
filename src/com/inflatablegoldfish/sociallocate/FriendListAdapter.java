@@ -96,7 +96,7 @@ public class FriendListAdapter extends AmazingAdapter {
                             // Recalculate distances to friends
                             User.calculateDistances(friends, currentLocation);
                             
-                            // Re-sort friends by distance
+                            // Re-sort friends (exclude own user) by distance
                             User.sortByDistance(friends.subList(1, friends.size()));
                             
                             // Recalculate the sections

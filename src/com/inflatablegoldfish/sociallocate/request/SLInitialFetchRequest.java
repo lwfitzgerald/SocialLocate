@@ -7,15 +7,14 @@ import java.util.List;
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
-import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class SLInitialFetchRequest extends SLRequest {
 
     public SLInitialFetchRequest(RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare) {
+            SocialLocate socialLocate) {
         
-        super(manager, listener, facebook, socialLocate, foursquare);
+        super(manager, listener, facebook, socialLocate);
     }
 
     @Override

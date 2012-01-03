@@ -9,16 +9,15 @@ import android.location.Location;
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
-import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public class SLUpdateRequest extends SLRequest {
     private Location location;
     
     public SLUpdateRequest(Location location, RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare) {
+            SocialLocate socialLocate) {
         
-        super(manager, listener, facebook, socialLocate, foursquare);
+        super(manager, listener, facebook, socialLocate);
         
         this.location = location;
     }

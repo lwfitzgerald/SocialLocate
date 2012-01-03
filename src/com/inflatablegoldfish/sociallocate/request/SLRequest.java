@@ -6,16 +6,15 @@ import java.util.List;
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
-import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 public abstract class SLRequest extends Request {
     protected static final int NUM_RETRIES = 3;
     
     protected SLRequest(RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
-            SocialLocate socialLocate, Foursquare foursquare) {
+            SocialLocate socialLocate) {
         
-        super(manager, listener, facebook, socialLocate, foursquare);
+        super(manager, listener, facebook, socialLocate);
     }
     
     /**
@@ -38,8 +37,7 @@ public abstract class SLRequest extends Request {
                     },
                     
                     facebook,
-                    socialLocate,
-                    foursquare
+                    socialLocate
                 )
             );
         }

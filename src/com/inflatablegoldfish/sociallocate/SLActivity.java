@@ -17,7 +17,6 @@ import com.inflatablegoldfish.sociallocate.service.LocationReceiver;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -27,8 +26,6 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 public class SLActivity extends MapActivity implements OnItemClickListener {
     private Facebook facebook = new Facebook("162900730478788");
@@ -137,8 +134,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     }
                 },
                 facebook,
-                socialLocate,
-                foursquare
+                socialLocate
             )
         );
         
@@ -159,8 +155,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     }
                 },
                 facebook,
-                socialLocate,
-                foursquare
+                socialLocate
             )
         );
         
@@ -175,8 +170,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                     public void onCancel() {}
                 },
                 facebook,
-                socialLocate,
-                foursquare
+                socialLocate
             )
         );
         
@@ -237,6 +231,17 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         currentLocation = newLocation;
         
         friendListAdapter.updateDistances(currentLocation);
+        
+//        requestManager.addRequest(
+//            new SLUpdateRequest(
+//                location,
+//                manager,
+//                listener,
+//                facebook,
+//                socialLocate,
+//                foursquare
+//            )
+//        );
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {

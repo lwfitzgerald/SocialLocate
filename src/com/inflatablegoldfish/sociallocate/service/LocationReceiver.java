@@ -77,8 +77,7 @@ public class LocationReceiver extends BroadcastReceiver {
                                                 public void onCancel() {}
                                             },
                                             null,
-                                            socialLocate,
-                                            null
+                                            socialLocate
                                         ).execute();
                                     }
                                 }
