@@ -76,7 +76,57 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Set the adapter
         friendListAdapter = new FriendListAdapter(this);
         friendList.setAdapter(friendListAdapter);
-
+        
+        // Load cookies
+        socialLocate.loadCookies();
+        
+        // Authenticate
+        initialAuth();
+    }
+    
+    private void initialAuth() {
+        // Only FB auth if we haven't already got a key
+        if (!Util.prefs.contains("access_token")) {
+            requestManager.addRequestWithoutStarting(
+                new FBAuthRequest(
+                    requestManager,
+                    new RequestListener<User[]>() {
+                        public void onComplete(Object result) {}
+    
+                        public void onError() {}
+    
+                        public void onCancel() {}
+                    },
+                    facebook,
+                    socialLocate
+                )
+            );
+        }
+        
+        // Only SL auth if we've not got a cookie
+        if (!Util.prefs.contains("cookie_name")) {
+            requestManager.addRequestWithoutStarting(
+                new SLAuthRequest(
+                    requestManager,
+                    new RequestListener<List<User>>() {
+                        public void onError() {
+                            Util.showToast("SL auth error", SLActivity.this);
+                        }
+                        
+                        public void onComplete(Object users) {
+                            Util.showToast("SL auth OK", SLActivity.this);
+                        }
+                        
+                        public void onCancel() {
+                            Util.showToast("FB auth cancelled so cancelling SL auth", SLActivity.this);
+                        }
+                    },
+                    facebook,
+                    socialLocate
+                )
+            );
+        }
+            
         requestManager.addRequestWithoutStarting(
             new SLInitialFetchRequest(
                 requestManager,
@@ -130,42 +180,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
             )
         );
         
-        requestManager.addRequestWithoutStarting(
-            new SLAuthRequest(
-                requestManager,
-                new RequestListener<List<User>>() {
-                    public void onError() {
-                        Util.showToast("SL auth error", SLActivity.this);
-                    }
-                    
-                    public void onComplete(Object users) {
-                        Util.showToast("SL auth OK", SLActivity.this);
-                    }
-                    
-                    public void onCancel() {
-                        Util.showToast("FB auth cancelled so cancelling SL auth", SLActivity.this);
-                    }
-                },
-                facebook,
-                socialLocate
-            )
-        );
-        
-        requestManager.addRequestWithoutStarting(
-            new FBAuthRequest(
-                requestManager,
-                new RequestListener<User[]>() {
-                    public void onComplete(Object result) {}
-
-                    public void onError() {}
-
-                    public void onCancel() {}
-                },
-                facebook,
-                socialLocate
-            )
-        );
-        
         requestManager.startProcessing();
     }
     
@@ -204,18 +218,21 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     
     @Override
     public void onResume() {
-        super.onResume();
-        
         // Start GPS updates and stop background updates
-        BackgroundUpdater.cancelAlarm(this);
+        //BackgroundUpdater.cancelAlarm(this);
         activityLocHandler.startUpdates();
+        
+        super.onResume();
     }
     
     @Override
     public void onPause() {
+        // Save cookies
+        socialLocate.saveCookies();
+        
         // Stop GPS updates and resume background updates
         activityLocHandler.stopUpdates();
-        BackgroundUpdater.setUpAlarm(this);
+        //BackgroundUpdater.setUpAlarm(this);
         
         super.onPause();
     }

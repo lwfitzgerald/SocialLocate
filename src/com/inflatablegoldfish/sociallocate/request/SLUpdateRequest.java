@@ -70,7 +70,7 @@ public class SLUpdateRequest extends SLRequest {
             }
             
             // No other SL update requests so add to the queue
-            requestQueue.addFirst(this);
+            requestQueue.addLast(this);
         }
     }
     

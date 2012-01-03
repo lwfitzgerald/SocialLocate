@@ -4,6 +4,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.inflatablegoldfish.sociallocate.request.Request.RequestResult;
 
@@ -76,6 +77,7 @@ public class RequestManager implements Runnable {
             
             if (request != null) {
                 // Execute the request
+                Log.w("SocialLocate", "Executing " + request.getClass().getSimpleName());
                 RequestResult<?> result = request.execute();
                 
                 switch (result.code) {

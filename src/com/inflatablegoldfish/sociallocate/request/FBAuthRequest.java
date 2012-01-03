@@ -191,7 +191,7 @@ public class FBAuthRequest extends Request {
             }
             
             // No other SL auth requests so add to the queue
-            requestQueue.addFirst(this);
+            requestQueue.addLast(this);
         }
     }
 }
