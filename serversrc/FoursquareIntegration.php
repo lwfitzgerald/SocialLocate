@@ -12,9 +12,9 @@ class FoursquareIntegration {
         $this->lastModified = $config['fs_last_modified'];
     }
 
-    public function getVenuesNear($lat, $long) {
+    public function getVenuesNear($lat, $lng) {
         $url = 'https://api.foursquare.com/v2/venues/search?';
-        $url .= "ll=$lat,$long";
+        $url .= "ll=$lat,$lng";
         $url .= "&client_id=$this->clientID";
         $url .= "&client_secret=$this->clientSecret";
         $url .= '&intent=browse&radius=100';
@@ -42,7 +42,7 @@ class FoursquareIntegration {
                     'id'       => $venue->id,
                     'name'     => $venue->name,
                     'lat'      => $venue->location->lat,
-                    'long'     => $venue->location->lng,
+                    'lng'     => $venue->location->lng,
                     'distance' => $venue->location->distance,
                 );
             }

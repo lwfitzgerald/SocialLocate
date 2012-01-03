@@ -130,7 +130,7 @@ class FacebookIntegration {
 
             $stmt = DB::prepareStatement("SELECT * FROM `user` WHERE `id` IN ($in_values)");
 
-            $stmt->bind_result($friend_id, $lat, $long);
+            $stmt->bind_result($friend_id, $lat, $lng);
             $stmt->execute();
 
             while ($stmt->fetch()) {
@@ -138,12 +138,12 @@ class FacebookIntegration {
                     $sl_friend = new User(
                         $friend_id,
                         $lat,
-                        $long,
+                        $lng,
                         $friend_map[$friend_id]['name'],
                         $friend_map[$friend_id]['pic']
                     );
                 } else {
-                    $sl_friend = new User($friend_id, $lat, $long);
+                    $sl_friend = new User($friend_id, $lat, $lng);
                 }
 
                 $sl_friends[$friend_id] = $sl_friend;

@@ -2,7 +2,7 @@
 class User {
     private $id;
     private $lat;
-    private $long;
+    private $lng;
     private $name;
     private $pic;
 
@@ -11,10 +11,10 @@ class User {
      *
      * Performs no changes to db until save()
      */
-    public function __construct($id, $lat = null, $long = null, $name = null, $pic = null) {
+    public function __construct($id, $lat = null, $lng = null, $name = null, $pic = null) {
         $this->id = $id;
         $this->lat = $lat;
-        $this->long = $long;
+        $this->lng = $lng;
         $this->name = $name;
         $this->pic = $pic;
     }
@@ -22,14 +22,14 @@ class User {
     /**
      * Updates the location of this user
      */
-    public function updateLocation($lat, $long) {
+    public function updateLocation($lat, $lng) {
         $this->lat = $lat;
-        $this->long = $long;
+        $this->lng = $lng;
         $this->save();
     }
 
     /**
-     * Load lat and long for this user
+     * Load lat and lng for this user
      * from the DB
      * @return True if load succeeded
      */
@@ -37,13 +37,13 @@ class User {
         $stmt = db::prepareStatement('SELECT * FROM `user` WHERE `id` = ?');
         $stmt->bind_param('i', $this->id);
         $stmt->execute();
-        $stmt->bind_result($id, $lat, $long);
+        $stmt->bind_result($id, $lat, $lng);
         $stmt->fetch();
 
         if ($stmt->num_rows > 0) {
             $this->id = $id;
             $this->lat = $lat;
-            $this->long = $long;
+            $this->lng = $lng;
             $stmt->close();
             return true;
         } else {
@@ -56,14 +56,14 @@ class User {
      * Save any changes to this user to the DB
      */
     public function save() {
-        $stmt = db::prepareStatement('INSERT INTO `user` (`id`, `lat`, `long`) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE `lat`=?, `long`=?');
+        $stmt = db::prepareStatement('INSERT INTO `user` (`id`, `lat`, `lng`) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE `lat`=?, `lng`=?');
         $stmt->bind_param(
             'idddd',
             $this->id,
             $this->lat,
-            $this->long,
+            $this->lng,
             $this->lat,
-            $this->long
+            $this->lng
         );
         $stmt->execute();
         $stmt->close();
@@ -80,7 +80,7 @@ class User {
 
         if ($this->lat !== null) {
             $toReturn['lat'] = $this->lat;
-            $toReturn['long'] = $this->long;
+            $toReturn['lng'] = $this->lng;
         }
 
         if ($this->name !== null) {
