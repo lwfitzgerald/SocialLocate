@@ -20,15 +20,12 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 public class BackgroundUpdater extends BroadcastReceiver {
     private static Object lock = new Object();
     
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        Log.i("SOCIALLOCATE", intent.getAction());
-        
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             // Boot notification recieved so set up recurring alarm
             setUpAlarm(context);
@@ -134,7 +131,8 @@ public class BackgroundUpdater extends BroadcastReceiver {
         
         intent.putExtra(
             LocationPoller.EXTRA_INTENT,
-            new Intent(context, BackgroundUpdater.class).setAction("com.inflatablegoldfish.sociallocate.LOCATION_UPDATED")
+            new Intent(context, BackgroundUpdater.class)
+                    .setAction("com.inflatablegoldfish.sociallocate.LOCATION_UPDATED")
         );
         
         intent.putExtra(
