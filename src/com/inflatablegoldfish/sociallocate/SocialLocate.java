@@ -40,14 +40,14 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                Log.w("SocialLocate", "Auth fail in authing");
+                Log.d("SocialLocate", "Auth fail in authing");
                 return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
-                Log.i("SocialLocate", "Authing OK");
+                Log.d("SocialLocate", "Authing OK");
                 return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            Log.e("SocialLocate", "Error in authing");
+            Log.d("SocialLocate", "Error in authing");
             return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
@@ -61,7 +61,7 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                Log.w("SocialLocate", "Auth fail in initial fetch");
+                Log.d("SocialLocate", "Auth fail in initial fetch");
                 return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
                 JSONObject ownDetails = jsonObject.getJSONObject("own_details");
@@ -92,10 +92,11 @@ public class SocialLocate {
                     );
                 }
                 
+                Log.d("SocialLocate", "Initial fetch OK");
                 return new RequestResult<List<User>>(toReturn, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            Log.e("SocialLocate", "Error in initial fetch");
+            Log.d("SocialLocate", "Error in initial fetch");
             return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
@@ -109,6 +110,7 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
+                Log.d("SocialLocate", "Auth fail in fetch");
                 return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
                 JSONArray friends = jsonObject.getJSONArray("friends");
@@ -129,9 +131,11 @@ public class SocialLocate {
                     );
                 }
                 
+                Log.d("SocialLocate", "Fetch OK");
                 return new RequestResult<List<User>>(toReturn, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
+            Log.d("SocialLocate", "Error in fetch");
             return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
@@ -146,13 +150,14 @@ public class SocialLocate {
             JSONObject jsonObject = new JSONObject(response);
             
             if (jsonObject.getInt("auth_status") == 0) {
-                Log.w("SocialLocate", "Auth fail in update");
+                Log.d("SocialLocate", "Auth fail in update location");
                 return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
             } else {
+                Log.d("SocialLocate", "Update location OK");
                 return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
-            Log.e("SocialLocate", "Error in update");
+            Log.d("SocialLocate", "Error in update location");
             return new RequestResult<List<User>>(null, ResultCode.ERROR);
         }
     }
@@ -184,7 +189,6 @@ public class SocialLocate {
     
     public void loadCookies() {
         if (Util.prefs.contains("cookie_name")) {
-            Log.i("SocialLocate", "Cookie loading...");
             HttpCookie cookie = new HttpCookie(
                 Util.prefs.getString("cookie_name", ""),
                 Util.prefs.getString("cookie_value", "")

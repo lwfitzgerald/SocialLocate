@@ -25,7 +25,7 @@
         <service android:name="com.commonsware.cwac.locpoll.LocationPollerService" />
         <receiver android:name="com.commonsware.cwac.locpoll.LocationPoller" >
         </receiver> 
-        <receiver android:name=".service.BackgroundUpdater">
+        <receiver android:name=".BackgroundUpdater">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>

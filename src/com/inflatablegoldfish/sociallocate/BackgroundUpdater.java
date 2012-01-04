@@ -1,12 +1,9 @@
-package com.inflatablegoldfish.sociallocate.service;
+package com.inflatablegoldfish.sociallocate;
 
 import java.util.List;
 
 import com.commonsware.cwac.locpoll.LocationPoller;
 import com.inflatablegoldfish.sociallocate.R;
-import com.inflatablegoldfish.sociallocate.SocialLocate;
-import com.inflatablegoldfish.sociallocate.User;
-import com.inflatablegoldfish.sociallocate.Util;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
@@ -22,6 +19,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class BackgroundUpdater extends BroadcastReceiver {
     private static Object lock = new Object();
@@ -68,7 +66,7 @@ public class BackgroundUpdater extends BroadcastReceiver {
                                 requestManager.addRequest(
                                     new SLUpdateRequest(
                                         location,
-                                        null,
+                                        requestManager,
                                         new RequestListener<List<User>>() {
                                             public void onComplete(Object result) {
                                                 // Store better location
@@ -110,6 +108,8 @@ public class BackgroundUpdater extends BroadcastReceiver {
      * @param context Context
      */
     public static void setUpAlarm(Context context) {
+        Log.d("SocialLocate", "Starting background updates");
+        
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
@@ -130,6 +130,8 @@ public class BackgroundUpdater extends BroadcastReceiver {
      * @param context Context
      */
     public static void cancelAlarm(Context context) {
+        Log.d("SocialLocate", "Stopping background updates");
+        
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         
         mgr.cancel(PendingIntent.getBroadcast(context, 0, getAlarmIntent(context), 0));

@@ -13,7 +13,6 @@ import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
-import com.inflatablegoldfish.sociallocate.service.BackgroundUpdater;
 
 import android.content.Intent;
 import android.location.Location;

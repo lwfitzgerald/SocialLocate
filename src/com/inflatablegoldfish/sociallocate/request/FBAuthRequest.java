@@ -6,6 +6,7 @@ import java.util.Iterator;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
@@ -145,6 +146,8 @@ public class FBAuthRequest extends Request {
     
     @Override
     public void onCancel(Deque<Request> requestQueue) {
+        Log.d("SocialLocate", "FB Auth cancelled");
+        
         /*
          * Need to remove all later dependent
          * operations

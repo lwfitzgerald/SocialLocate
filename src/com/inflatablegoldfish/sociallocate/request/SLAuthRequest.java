@@ -78,8 +78,10 @@ public class SLAuthRequest extends SLRequest {
                         // Remove from queue
                         itr.remove();
                         
-                        // Call authfail listeners
-                        listener.onError(ResultCode.AUTHFAIL);
+                        // Call authfail on listeners
+                        if (request.listener != null) {
+                            request.listener.onError(ResultCode.AUTHFAIL);
+                        }
                     }
                 }
             }

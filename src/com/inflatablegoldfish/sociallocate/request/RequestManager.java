@@ -77,21 +77,24 @@ public class RequestManager implements Runnable {
         // Loop until no more requests to execute
         while (true) {
             if (abort) {
+                Log.d("SocialLocate", "Aborting requests before check");
                 return;
             }
             
+            // Try to get a request from the front of the queue
             synchronized(queue) {
                 request = queue.peek();
             }
             
             if (request != null) {
                 // Execute the request
-                Log.w("SocialLocate", "Executing " + request.getClass().getSimpleName());
+                Log.d("SocialLocate", "Executing " + request.getClass().getSimpleName());
                 RequestResult<?> result = request.execute();
                 
                 // Don't perform callbacks / listener calls
                 // if aborting
                 if (abort) {
+                    Log.d("SocialLocate", "Aborting before callback of request " + request.getClass().getSimpleName());
                     return;
                 }
                 
