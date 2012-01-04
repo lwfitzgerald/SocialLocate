@@ -71,6 +71,7 @@ class FacebookIntegration {
             $own_details[0]['uid'],
             null,
             null,
+            null,
             $own_details[0]['name'],
             $own_details[0]['pic']
         );
@@ -128,9 +129,9 @@ class FacebookIntegration {
             // Chop off extra ','
             $in_values = substr($in_values, 0, strlen($in_values)-1-1);
 
-            $stmt = DB::prepareStatement("SELECT * FROM `user` WHERE `id` IN ($in_values)");
+            $stmt = DB::prepareStatement("SELECT `id`, `lat`, `lng`, UNIX_TIMESTAMP(`last_updated`) AS `last_updated` FROM `user` WHERE `id` IN ($in_values)");
 
-            $stmt->bind_result($friend_id, $lat, $lng);
+            $stmt->bind_result($friend_id, $lat, $lng, $lastUpdated);
             $stmt->execute();
 
             while ($stmt->fetch()) {
@@ -139,6 +140,7 @@ class FacebookIntegration {
                         $friend_id,
                         $lat,
                         $lng,
+                        $lastUpdated,
                         $friend_map[$friend_id]['name'],
                         $friend_map[$friend_id]['pic']
                     );

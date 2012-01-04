@@ -3,6 +3,7 @@ class User {
     private $id;
     private $lat;
     private $lng;
+    private $lastUpdated;
     private $name;
     private $pic;
 
@@ -11,10 +12,11 @@ class User {
      *
      * Performs no changes to db until save()
      */
-    public function __construct($id, $lat = null, $lng = null, $name = null, $pic = null) {
+    public function __construct($id, $lat = null, $lng = null, $lastUpdated = null, $name = null, $pic = null) {
         $this->id = $id;
         $this->lat = $lat;
         $this->lng = $lng;
+        $this->lastUpdated = $lastUpdated;
         $this->name = $name;
         $this->pic = $pic;
     }
@@ -25,6 +27,7 @@ class User {
     public function updateLocation($lat, $lng) {
         $this->lat = $lat;
         $this->lng = $lng;
+        $this->lastUpdated = time();
         $this->save();
     }
 
@@ -34,16 +37,17 @@ class User {
      * @return True if load succeeded
      */
     public function load() {
-        $stmt = db::prepareStatement('SELECT * FROM `user` WHERE `id` = ?');
+        $stmt = db::prepareStatement('SELECT `id`, `lat`, `lng`, UNIX_TIMESTAMP(`last_updated`) AS `last_updated` FROM `user` WHERE `id` = ?');
         $stmt->bind_param('i', $this->id);
         $stmt->execute();
-        $stmt->bind_result($id, $lat, $lng);
+        $stmt->bind_result($id, $lat, $lng, $lastUpdated);
         $stmt->fetch();
 
         if ($stmt->num_rows > 0) {
             $this->id = $id;
             $this->lat = $lat;
             $this->lng = $lng;
+            $this->lastUpdated = $lastUpdated;
             $stmt->close();
             return true;
         } else {
@@ -81,6 +85,7 @@ class User {
         if ($this->lat !== null) {
             $toReturn['lat'] = $this->lat;
             $toReturn['lng'] = $this->lng;
+            $toReturn['last_updated'] = $this->lastUpdated;
         }
 
         if ($this->name !== null) {
