@@ -22,7 +22,13 @@ public class FriendListAdapter extends AmazingAdapter {
     private LayoutInflater mInflater;
     private CharSequence[] sectionTitles;
     
+    private static final int YOU_SECTION_NO = 0;
+    private static final int NEAR_SECTION_NO = 1;
+    private static final int FAR_SECTION_NO = 2;
+    private static final int FRIENDS_SECTION_NO = 3;
+    
     private int youSectionStart = 0;
+    private int friendsSectionStart = 1;
     private int nearSectionStart = 1;
     private int farSectionStart = 0;
     
@@ -36,7 +42,8 @@ public class FriendListAdapter extends AmazingAdapter {
         sectionTitles = new CharSequence[] {
             context.getText(R.string.you_section_title),
             context.getText(R.string.near_section_title),
-            context.getText(R.string.far_section_title)
+            context.getText(R.string.far_section_title),
+            context.getText(R.string.friends_section_title),
         };
     }
     
@@ -199,25 +206,46 @@ public class FriendListAdapter extends AmazingAdapter {
 
     @Override
     public int getPositionForSection(int section) {
-        if (section == 0) {
+        if (section == YOU_SECTION_NO) {
             return youSectionStart;
-        } else if (section == 1) {
+        } else if (section == NEAR_SECTION_NO) {
             return nearSectionStart;
-        } else {
+        } else if (section == FAR_SECTION_NO) {
             return farSectionStart;
+        } else { // section == FRIENDS_SECTION_NO
+            return friendsSectionStart;
         }
     }
 
+    private boolean distancesAvailable() {
+        if (friends == null) {
+            // No friends so obviously ready
+            return true;
+        }
+        
+        if (friends.get(1) == null) {
+            // No friends so obviously ready
+            return true;
+        }
+        
+        return friends.get(1).getDistance() != null;
+    }
+    
     @Override
     public int getSectionForPosition(int position) {
         if (position == 0) {
-            return 0;
+            return YOU_SECTION_NO;
+        }
+        
+        // No distances so just show "FRIENDS"
+        if (!distancesAvailable()) {
+            return FRIENDS_SECTION_NO;
         }
         
         if (position >= farSectionStart) {
-            return 2;
+            return FAR_SECTION_NO;
         } else {
-            return 1;
+            return NEAR_SECTION_NO;
         }
     }
 

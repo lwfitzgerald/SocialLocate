@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical"
     android:background="@color/black">
     
-    <include layout="@layout/friend_item" />
+    <include layout="@layout/friend_item_body"
+        android:id="@+id/top_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:layout_alignParentTop="true" />
     
-	<RelativeLayout
-	android:layout_width="fill_parent"
-	android:paddingLeft="6dip"
-	android:paddingRight="6dip"
-	android:layout_height="fill_parent">
+  	<include layout="@layout/friend_item_body"
+        android:id="@+id/bottom_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:layout_alignParentBottom="true" />
+    
+  	<com.google.android.maps.MapView
+        android:id="@+id/mapview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:apiKey="@string/maps_api_key"
+        android:clickable="true"
+        android:layout_below="@id/top_bar"
+        android:layout_above="@id/bottom_bar" />
 
-	    <com.google.android.maps.MapView
-	        xmlns:android="http://schemas.android.com/apk/res/android"
-	        android:id="@+id/mapview"
-	        android:layout_width="fill_parent"
-	        android:layout_height="fill_parent"
-	        android:apiKey="@string/maps_api_key"
-	        android:clickable="true" />
-	    
-    </RelativeLayout>
-
-</LinearLayout>
+</RelativeLayout>
