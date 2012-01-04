@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
+import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -21,6 +22,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Handler;
+import android.util.Pair;
 import android.widget.Toast;
 
 public class Util {
@@ -203,5 +205,46 @@ public class Util {
             return provider2 == null;
         }
         return provider1.equals(provider2);
+    }
+    
+    public static Location getCenter(Location[] points) {
+        // Convert to radians
+        ArrayList<Pair<Double, Double>> radianPoints = new ArrayList<Pair<Double, Double>>(points.length);
+        
+        // Store radian representations of the points
+        for (int i=0; i < points.length; i++) {
+            radianPoints.add(
+                new Pair<Double, Double>(
+                    Math.toRadians(points[i].getLatitude()),
+                    Math.toRadians(points[i].getLongitude())
+                )
+            );
+        }
+        
+        double x = 0, y = 0, z = 0;
+        
+        for (Pair<Double, Double> point : radianPoints) {
+            x += Math.cos(point.first) * Math.cos(point.second);
+            y += Math.cos(point.first) * Math.sin(point.second);
+            z += Math.sin(point.first);
+        }
+        
+        x /= points.length;
+        y /= points.length;
+        z /= points.length;
+        
+        double lng = Math.atan2(y, x);
+        double hyp = Math.sqrt(x * x + y * y);
+        double lat = Math.atan2(z, hyp);
+        
+        // Convert back to degrees
+        lng = Math.toDegrees(lng);
+        lat = Math.toDegrees(lat);
+        
+        Location location = new Location("sociallocate");
+        location.setLatitude(lat);
+        location.setLongitude(lng);
+        
+        return location;
     }
 }

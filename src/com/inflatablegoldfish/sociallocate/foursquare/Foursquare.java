@@ -2,7 +2,6 @@ package com.inflatablegoldfish.sociallocate.foursquare;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.location.Location;
-import android.util.Pair;
 
 import com.inflatablegoldfish.sociallocate.Util;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
@@ -38,7 +36,7 @@ public class Foursquare {
             points[i+1] = friendLocations[i];
         }
         
-        Location center = getCenter(points);
+        Location center = Util.getCenter(points);
         
         Venue[] venues = null;
         
@@ -50,47 +48,6 @@ public class Foursquare {
         }
         
         listener.onComplete(venues);
-    }
-    
-    private Location getCenter(Location[] points) {
-        // Convert to radians
-        ArrayList<Pair<Double, Double>> radianPoints = new ArrayList<Pair<Double, Double>>(points.length);
-        
-        // Store radian representations of the points
-        for (int i=0; i < points.length; i++) {
-            radianPoints.add(
-                new Pair<Double, Double>(
-                    Math.toRadians(points[i].getLatitude()),
-                    Math.toRadians(points[i].getLongitude())
-                )
-            );
-        }
-        
-        double x = 0, y = 0, z = 0;
-        
-        for (Pair<Double, Double> point : radianPoints) {
-            x += Math.cos(point.first) * Math.cos(point.second);
-            y += Math.cos(point.first) * Math.sin(point.second);
-            z += Math.sin(point.first);
-        }
-        
-        x /= points.length;
-        y /= points.length;
-        z /= points.length;
-        
-        double lng = Math.atan2(y, x);
-        double hyp = Math.sqrt(x * x + y * y);
-        double lat = Math.atan2(z, hyp);
-        
-        // Convert back to degrees
-        lng = Math.toDegrees(lng);
-        lat = Math.toDegrees(lat);
-        
-        Location location = new Location("sociallocate");
-        location.setLatitude(lat);
-        location.setLongitude(lng);
-        
-        return location;
     }
     
     private Venue[] getVenuesNear(Location ourLocation, Location center) throws Exception {
