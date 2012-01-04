@@ -5,6 +5,11 @@
     android:orientation="vertical"
     android:background="@color/black">
     
+    <!-- Include initial fail view (but hidden) -->
+    <include layout="@layout/initial_fail"
+        android:id="@+id/initial_fail"
+        android:visibility="gone" />
+    
     <!-- Include empty view (but hidden) -->
     <include layout="@layout/empty_view"
         android:id="@+id/empty_view"

@@ -11,4 +11,5 @@
     <string name="near_section_title">Nearby friends</string>
     <string name="far_section_title">Further away</string>
 	<string name="no_friends">No friends using SocialLocate</string>
+	<string name="initial_fail">Initial fetch failed\nPlease restart</string>
 </resources>

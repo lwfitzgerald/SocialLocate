@@ -26,7 +26,7 @@ public class SocialLocate {
     
     public SocialLocate() {
         CookieManager manager = new CookieManager();
-        manager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+        manager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
         CookieHandler.setDefault(manager);
     }
     

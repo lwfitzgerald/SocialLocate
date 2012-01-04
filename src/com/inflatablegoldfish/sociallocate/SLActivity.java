@@ -160,6 +160,12 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                             public void run() {
                                 // Hide loading spinner
                                 friendList.noMorePages();
+                                
+                                // Show fail message
+                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                
+                                // Stop location updates
+                                activityLocHandler.stopUpdates();
                             }
                         });
                     }
@@ -171,6 +177,12 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                             public void run() {
                                 // Hide loading spinner
                                 friendList.noMorePages();
+                                
+                                // Show fail message
+                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                
+                                // Stop location updates
+                                activityLocHandler.stopUpdates();
                             }
                         });
                     }
