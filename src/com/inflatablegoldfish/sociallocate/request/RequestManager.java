@@ -4,12 +4,18 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.inflatablegoldfish.sociallocate.request.Request.RequestResult;
 
 public class RequestManager implements Runnable {
     private Deque<Request> queue;
-    private Boolean running = false;
+    
+    private boolean running = false;
+    private Object runningLock = new Object();
+    
+    private volatile boolean abort = false;
+    
     private volatile Context context;
     
     public RequestManager(Context context) {
@@ -52,7 +58,7 @@ public class RequestManager implements Runnable {
      * requests if we are not already
      */
     public void startProcessing() {
-        synchronized(running) {
+        synchronized(runningLock) {
             if (!running) {
                 running = true;
                 // Start processing
@@ -70,13 +76,27 @@ public class RequestManager implements Runnable {
         
         // Loop until no more requests to execute
         while (true) {
+            if (abort) {
+                Log.d("SocialLocate", "Aborting requests before check");
+                return;
+            }
+            
+            // Try to get a request from the front of the queue
             synchronized(queue) {
                 request = queue.peek();
             }
             
             if (request != null) {
                 // Execute the request
+                Log.d("SocialLocate", "Executing " + request.getClass().getSimpleName());
                 RequestResult<?> result = request.execute();
+                
+                // Don't perform callbacks / listener calls
+                // if aborting
+                if (abort) {
+                    Log.d("SocialLocate", "Aborting before callback of request " + request.getClass().getSimpleName());
+                    return;
+                }
                 
                 switch (result.code) {
                 case SUCCESS:
@@ -107,7 +127,7 @@ public class RequestManager implements Runnable {
             }
         }
         
-        synchronized(running) {
+        synchronized(runningLock) {
             boolean empty;
             
             synchronized(queue) {
@@ -131,6 +151,19 @@ public class RequestManager implements Runnable {
             } else {
                 running = false;
             }
+        }
+    }
+    
+    /**
+     * Clear the queue of requests
+     * 
+     * Currently executing requests will still complete
+     */
+    public void abortAll() {
+        abort = true;
+        
+        synchronized(queue) {
+            queue.clear();
         }
     }
     

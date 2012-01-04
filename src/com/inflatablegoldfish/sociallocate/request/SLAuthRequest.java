@@ -35,22 +35,32 @@ public class SLAuthRequest extends SLRequest {
         editor.remove("access_expires");
         editor.commit();
         
-        facebook.setAccessToken(null);
+        // Clear stored cookies
+        socialLocate.clearCookies();
+        
+        // Might not be set if called from receiver
+        if (facebook != null) {
+            facebook.setAccessToken(null);
+        }
         
         if (manager.getContext() != null) {
-            // Create new FB auth request and queue it!
-            new FBAuthRequest(
-                manager,
-                new RequestListener<User[]>() {
-                    public void onComplete(Object result) {}
-
-                    public void onError() {}
-
-                    public void onCancel() {}
-                },
-                facebook,
-                socialLocate
-            ).addToQueue(requestQueue);
+            // Create new FB auth request and put at front of queue
+            synchronized(requestQueue) {
+                requestQueue.addFirst(
+                    new FBAuthRequest(
+                        manager,
+                        new RequestListener<User[]>() {
+                            public void onComplete(Object result) {}
+            
+                            public void onError(ResultCode resultCode) {}
+            
+                            public void onCancel() {}
+                        },
+                        facebook,
+                        socialLocate
+                    )
+                );
+            }
         } else {
             /*
              * Activity not open so cannot do Facebook auth
@@ -67,6 +77,11 @@ public class SLAuthRequest extends SLRequest {
                             || request instanceof FBAuthRequest) {
                         // Remove from queue
                         itr.remove();
+                        
+                        // Call authfail on listeners
+                        if (request.listener != null) {
+                            request.listener.onError(ResultCode.AUTHFAIL);
+                        }
                     }
                 }
             }
@@ -100,7 +115,7 @@ public class SLAuthRequest extends SLRequest {
                         
                         // Call listener's error handler
                         if (request.listener != null) {
-                            request.listener.onError();
+                            request.listener.onError(ResultCode.ERROR);
                         }
                         
                         // Remove from queue
@@ -133,7 +148,7 @@ public class SLAuthRequest extends SLRequest {
             }
             
             // No other SL auth requests so add to the queue
-            requestQueue.addFirst(this);
+            requestQueue.addLast(this);
         }
     }
 }

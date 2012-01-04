@@ -1,11 +1,10 @@
-package com.inflatablegoldfish.sociallocate.service;
+package com.inflatablegoldfish.sociallocate;
 
 import java.util.List;
 
 import com.commonsware.cwac.locpoll.LocationPoller;
-import com.inflatablegoldfish.sociallocate.SocialLocate;
-import com.inflatablegoldfish.sociallocate.User;
-import com.inflatablegoldfish.sociallocate.Util;
+import com.inflatablegoldfish.sociallocate.R;
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
@@ -20,6 +19,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class BackgroundUpdater extends BroadcastReceiver {
     private static Object lock = new Object();
@@ -36,16 +36,16 @@ public class BackgroundUpdater extends BroadcastReceiver {
                         synchronized(lock) {
                             final Location location = (Location) intent.getExtras().get(LocationPoller.EXTRA_LOCATION);
                             
-                            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                            Util.prefs = PreferenceManager.getDefaultSharedPreferences(context);
                             
                             Location lastLocation = null;
                             
-                            if (prefs.contains("last_lat")) {
-                                float lat = prefs.getFloat("last_lat", Float.MIN_VALUE);
-                                float lng = prefs.getFloat("last_lng", Float.MIN_VALUE);
-                                float acc = prefs.getFloat("last_acc", Float.MIN_VALUE);
-                                long time = prefs.getLong("last_time", Long.MIN_VALUE);
-                                String provider = prefs.getString("last_provider", "");
+                            if (Util.prefs.contains("last_lat")) {
+                                float lat = Util.prefs.getFloat("last_lat", Float.MIN_VALUE);
+                                float lng = Util.prefs.getFloat("last_lng", Float.MIN_VALUE);
+                                float acc = Util.prefs.getFloat("last_acc", Float.MIN_VALUE);
+                                long time = Util.prefs.getLong("last_time", Long.MIN_VALUE);
+                                String provider = Util.prefs.getString("last_provider", "");
                                 
                                 lastLocation = new Location(provider);
                                 lastLocation.setLatitude(lat);
@@ -55,17 +55,22 @@ public class BackgroundUpdater extends BroadcastReceiver {
                             }
                             
                             if (Util.isBetterLocation(location, lastLocation)) {
+                                // Set up IG SSL socket factory override
+                                Util.initIGSSLSocketFactory(context.getResources().openRawResource(R.raw.igkeystore));
+                                
+                                // Set up request manager and cookies
                                 RequestManager requestManager = new RequestManager(null);
-                                SocialLocate socialLocate = new SocialLocate();
+                                final SocialLocate socialLocate = new SocialLocate();
+                                socialLocate.loadCookies();
                                 
                                 requestManager.addRequest(
                                     new SLUpdateRequest(
                                         location,
-                                        null,
+                                        requestManager,
                                         new RequestListener<List<User>>() {
                                             public void onComplete(Object result) {
                                                 // Store better location
-                                                SharedPreferences.Editor editor = prefs.edit();
+                                                SharedPreferences.Editor editor = Util.prefs.edit();
                                                 
                                                 editor.putFloat("last_lat", (float) location.getLatitude());
                                                 editor.putFloat("last_lng", (float) location.getLongitude());
@@ -74,8 +79,16 @@ public class BackgroundUpdater extends BroadcastReceiver {
                                                 editor.putString("last_provider", location.getProvider());
                                                 
                                                 editor.commit();
+                                                
+                                                // Save any new cookies
+                                                socialLocate.saveCookies();
                                             }
-                                            public void onError() {}
+                                            public void onError(ResultCode resultCode) {
+                                                if (resultCode == ResultCode.AUTHFAIL) {
+                                                    // Auth fail so stop attempting updates
+                                                    cancelAlarm(context);
+                                                }
+                                            }
                                             public void onCancel() {}
                                         },
                                         null,
@@ -95,6 +108,8 @@ public class BackgroundUpdater extends BroadcastReceiver {
      * @param context Context
      */
     public static void setUpAlarm(Context context) {
+        Log.d("SocialLocate", "Starting background updates");
+        
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
@@ -115,6 +130,8 @@ public class BackgroundUpdater extends BroadcastReceiver {
      * @param context Context
      */
     public static void cancelAlarm(Context context) {
+        Log.d("SocialLocate", "Stopping background updates");
+        
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         
         mgr.cancel(PendingIntent.getBroadcast(context, 0, getAlarmIntent(context), 0));

@@ -39,7 +39,7 @@ public class SLInitialFetchRequest extends SLRequest {
                 requestQueue.poll();
             }
 
-            listener.onError();
+            listener.onError(ResultCode.ERROR);
         }
     }
     
@@ -65,7 +65,7 @@ public class SLInitialFetchRequest extends SLRequest {
             }
             
             // No other SL fetch requests so add to the queue
-            requestQueue.addFirst(this);
+            requestQueue.addLast(this);
         }
     }
 

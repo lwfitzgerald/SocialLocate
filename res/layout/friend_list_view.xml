@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="@color/black">
+    
+    <!-- Include initial fail view (but hidden) -->
+    <include layout="@layout/initial_fail"
+        android:id="@+id/initial_fail"
+        android:visibility="gone" />
+    
+    <!-- Include empty view (but hidden) -->
+    <include layout="@layout/empty_view"
+        android:id="@+id/empty_view"
+        android:visibility="gone" />
+    
+	<RelativeLayout
+	android:layout_width="fill_parent"
+	android:paddingLeft="6dip"
+	android:paddingRight="6dip"
+	android:layout_height="fill_parent">
+	
+	    <com.foound.widget.AmazingListView
+	        android:id="@+id/friend_list"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent" />
+	    
+    </RelativeLayout>
+
+</LinearLayout>

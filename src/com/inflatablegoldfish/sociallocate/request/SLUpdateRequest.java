@@ -43,7 +43,7 @@ public class SLUpdateRequest extends SLRequest {
                 requestQueue.poll();
             }
             
-            listener.onError();
+            listener.onError(ResultCode.ERROR);
         }
     }
 
@@ -70,7 +70,7 @@ public class SLUpdateRequest extends SLRequest {
             }
             
             // No other SL update requests so add to the queue
-            requestQueue.addFirst(this);
+            requestQueue.addLast(this);
         }
     }
     

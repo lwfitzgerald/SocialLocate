@@ -6,6 +6,7 @@ import java.util.Iterator;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
@@ -135,7 +136,7 @@ public class FBAuthRequest extends Request {
                         
                         // Call listener's error handler
                         if (request.listener != null) {
-                            request.listener.onError();
+                            request.listener.onError(ResultCode.ERROR);
                         }
                     }
                 }
@@ -145,6 +146,8 @@ public class FBAuthRequest extends Request {
     
     @Override
     public void onCancel(Deque<Request> requestQueue) {
+        Log.d("SocialLocate", "FB Auth cancelled");
+        
         /*
          * Need to remove all later dependent
          * operations
@@ -191,7 +194,7 @@ public class FBAuthRequest extends Request {
             }
             
             // No other SL auth requests so add to the queue
-            requestQueue.addFirst(this);
+            requestQueue.addLast(this);
         }
     }
 }

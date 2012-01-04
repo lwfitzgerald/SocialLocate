@@ -11,7 +11,8 @@ import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
-import com.inflatablegoldfish.sociallocate.service.BackgroundUpdater;
+import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 import android.content.Intent;
 import android.location.Location;
@@ -21,6 +22,7 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ViewFlipper;
 
 public class SLActivity extends MapActivity implements OnItemClickListener {
     private Facebook facebook = new Facebook("162900730478788");
@@ -32,6 +34,8 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     private RequestManager requestManager;
     
     private Location currentLocation = null;
+    
+    private ViewFlipper viewFlipper;
     
     private AmazingListView friendList;
     private FriendListAdapter friendListAdapter;
@@ -64,6 +68,11 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
         
+        // Set up the flipper
+        viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
+        viewFlipper.setInAnimation(this, android.R.anim.fade_in);
+        viewFlipper.setOutAnimation(this, android.R.anim.fade_out);
+        
         // Set up the the friend list
         friendList = (AmazingListView) findViewById(R.id.friend_list);
         friendList.setLoadingView(getLayoutInflater().inflate(R.layout.loading_view, null));
@@ -75,22 +84,61 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Set the adapter
         friendListAdapter = new FriendListAdapter(this);
         friendList.setAdapter(friendListAdapter);
-
+        
+        // Load cookies
+        socialLocate.loadCookies();
+        
+        // Authenticate
+        initialAuth();
+    }
+    
+    private void initialAuth() {
+        // Only FB auth if we haven't already got a token
+        if (!Util.prefs.contains("access_token")) {
+            requestManager.addRequestWithoutStarting(
+                new FBAuthRequest(
+                    requestManager,
+                    new RequestListener<User[]>() {
+                        public void onComplete(Object result) {}
+    
+                        public void onError(ResultCode resultCode) {}
+    
+                        public void onCancel() {}
+                    },
+                    facebook,
+                    socialLocate
+                )
+            );
+        }
+        
+        // Only SL auth if we've not got a cookie
+        if (!Util.prefs.contains("cookie_name")) {
+            requestManager.addRequestWithoutStarting(
+                new SLAuthRequest(
+                    requestManager,
+                    new RequestListener<List<User>>() {
+                        public void onComplete(Object users) {
+                            Util.showToast("SL auth OK", SLActivity.this);
+                        }
+                        
+                        public void onError(ResultCode resultCode) {
+                            Util.showToast("SL auth error", SLActivity.this);
+                        }
+                        
+                        public void onCancel() {
+                            Util.showToast("FB auth cancelled so cancelling SL auth", SLActivity.this);
+                        }
+                    },
+                    facebook,
+                    socialLocate
+                )
+            );
+        }
+            
         requestManager.addRequestWithoutStarting(
             new SLInitialFetchRequest(
                 requestManager,
                 new RequestListener<List<User>>() {
-                    public void onError() {
-                        Util.showToast("Initial fetch error", SLActivity.this);
-                        
-                        Util.uiHandler.post(new Runnable() {
-                            public void run() {
-                                // Hide loading spinner
-                                friendList.noMorePages();
-                            }
-                        });
-                    }
-                    
                     public void onComplete(final Object userList) {
                         @SuppressWarnings("unchecked")
                         final List<User> users = (List<User>) userList;
@@ -112,6 +160,23 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                             }
                         });
                     }
+
+                    public void onError(ResultCode resultCode) {
+                        Util.showToast("Initial fetch error", SLActivity.this);
+                        
+                        Util.uiHandler.post(new Runnable() {
+                            public void run() {
+                                // Hide loading spinner
+                                friendList.noMorePages();
+                                
+                                // Show fail message
+                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                
+                                // Stop location updates
+                                activityLocHandler.stopUpdates();
+                            }
+                        });
+                    }
                     
                     public void onCancel() {
                         Util.showToast("FB auth cancelled so cancelling initial fetch", SLActivity.this);
@@ -120,45 +185,15 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                             public void run() {
                                 // Hide loading spinner
                                 friendList.noMorePages();
+                                
+                                // Show fail message
+                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                
+                                // Stop location updates
+                                activityLocHandler.stopUpdates();
                             }
                         });
                     }
-                },
-                facebook,
-                socialLocate
-            )
-        );
-        
-        requestManager.addRequestWithoutStarting(
-            new SLAuthRequest(
-                requestManager,
-                new RequestListener<List<User>>() {
-                    public void onError() {
-                        Util.showToast("SL auth error", SLActivity.this);
-                    }
-                    
-                    public void onComplete(Object users) {
-                        Util.showToast("SL auth OK", SLActivity.this);
-                    }
-                    
-                    public void onCancel() {
-                        Util.showToast("FB auth cancelled so cancelling SL auth", SLActivity.this);
-                    }
-                },
-                facebook,
-                socialLocate
-            )
-        );
-        
-        requestManager.addRequestWithoutStarting(
-            new FBAuthRequest(
-                requestManager,
-                new RequestListener<User[]>() {
-                    public void onComplete(Object result) {}
-
-                    public void onError() {}
-
-                    public void onCancel() {}
                 },
                 facebook,
                 socialLocate
@@ -173,20 +208,24 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         friendListAdapter.updateDistances(currentLocation);
         
-//        requestManager.addRequest(
-//            new SLUpdateRequest(
-//                location,
-//                manager,
-//                listener,
-//                facebook,
-//                socialLocate,
-//                foursquare
-//            )
-//        );
+        requestManager.addRequest(
+            new SLUpdateRequest(
+                currentLocation,
+                requestManager,
+                new RequestListener<List<User>>() {
+                    public void onComplete(Object result) {}
+                    public void onError(ResultCode resultCode) {}
+                    public void onCancel() {}
+                },
+                facebook,
+                socialLocate
+            )
+        );
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
         if (position != 0) {
+            viewFlipper.showNext();
             Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
         }
     }
@@ -200,25 +239,39 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     
     @Override
     public void onResume() {
-        super.onResume();
-        
         // Start GPS updates and stop background updates
         BackgroundUpdater.cancelAlarm(this);
         activityLocHandler.startUpdates();
+        
+        super.onResume();
     }
     
     @Override
     public void onPause() {
-        super.onPause();
+        // Save cookies
+        socialLocate.saveCookies();
         
         // Stop GPS updates and resume background updates
         activityLocHandler.stopUpdates();
         BackgroundUpdater.setUpAlarm(this);
+        
+        super.onPause();
     }
     
     @Override
     public void onDestroy() {
+        requestManager.abortAll();
+        
         super.onDestroy();
+    }
+    
+    @Override
+    public void onBackPressed() {
+        if (viewFlipper.getDisplayedChild() != 0) {
+            viewFlipper.showPrevious();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
