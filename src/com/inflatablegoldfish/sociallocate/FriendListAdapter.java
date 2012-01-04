@@ -165,8 +165,12 @@ public class FriendListAdapter extends AmazingAdapter {
         // Set name
         holder.name.setText(friend.getName());
         
-        // Set last updated if not own user
-        if (position != 0) {
+        
+        if (position == 0) {
+            // Own user so mark as not clickable
+            convertView.setClickable(false);
+        } else {
+            // Set last updated if not own user
             holder.lastUpdated.setText(friend.getPrettyLastUpdated());
         }
         
@@ -294,6 +298,18 @@ public class FriendListAdapter extends AmazingAdapter {
     @Override
     public Object[] getSections() {
         return sectionTitles;
+    }
+    
+    @Override
+    public boolean areAllItemsEnabled() {
+        // So we can disabled the top (own) row
+        return false;
+    }
+    
+    @Override
+    public boolean isEnabled(int position) {
+        // All rows enabled except own details row
+        return position != 0;
     }
     
     private static class ViewHolder {

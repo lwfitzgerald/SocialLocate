@@ -250,10 +250,8 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        if (position != 0) {
-            viewFlipper.showNext();
-            Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
-        }
+        viewFlipper.showNext();
+        Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
     }
     
     @Override
