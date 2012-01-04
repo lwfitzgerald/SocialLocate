@@ -86,6 +86,7 @@ public class SocialLocate {
                             friend.getInt("id"),
                             friend.getDouble("lat"),
                             friend.getDouble("lng"),
+                            friend.getLong("last_updated"),
                             friend.getString("name"),
                             friend.getString("pic")
                         )
@@ -125,6 +126,7 @@ public class SocialLocate {
                             friend.getInt("id"),
                             friend.getDouble("lat"),
                             friend.getDouble("long"),
+                            friend.getLong("last_updated"),
                             friend.getString("name"),
                             friend.getString("pic")
                         )

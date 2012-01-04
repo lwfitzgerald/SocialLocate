@@ -2,7 +2,10 @@ package com.inflatablegoldfish.sociallocate;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+
+import com.ocpsoft.pretty.time.PrettyTime;
 
 import android.location.Location;
 
@@ -10,14 +13,16 @@ public class User {
     private int id;
     private Location location;
     private Float distance;
+    private Date lastUpdated;
     private String name;
     private String pic;
     private boolean updatedInLastFetch = true;
     
-    public User(int id, double lat, double lng, String name, String pic) {
+    public User(int id, double lat, double lng, long lastUpdated, String name, String pic) {
         this.id = id;
         this.location = Util.getLocationObject(lat, lng);
         this.distance = null;
+        this.lastUpdated = new Date(lastUpdated * 1000);
         this.name = name;
         this.pic = pic;
     }
@@ -48,6 +53,15 @@ public class User {
 
     public Location getLocation() {
         return location;
+    }
+    
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+    
+    public String getPrettyLastUpdated() {
+        PrettyTime p = new PrettyTime();
+        return p.format(lastUpdated);
     }
     
     public Float getDistance() {

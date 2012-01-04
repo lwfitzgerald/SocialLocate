@@ -142,6 +142,7 @@ public class FriendListAdapter extends AmazingAdapter {
             holder.picView = (ImageView) convertView.findViewById(R.id.profile_pic);
             holder.nameView = (TextView) convertView.findViewById(R.id.name);
             holder.distanceView = (TextView) convertView.findViewById(R.id.distance);
+            holder.lastUpdatedView = (TextView) convertView.findViewById(R.id.last_updated);
             convertView.setTag(holder);
         }
         
@@ -155,6 +156,11 @@ public class FriendListAdapter extends AmazingAdapter {
         
         // Set name
         holder.nameView.setText(friend.getName());
+        
+        // Set last updated if not own user
+        if (position != 0) {
+            holder.lastUpdatedView.setText(friend.getPrettyLastUpdated());
+        }
         
         // Calculate and set distance
         if (friend.getDistance() != null) {
@@ -224,5 +230,6 @@ public class FriendListAdapter extends AmazingAdapter {
         public ImageView picView;
         public TextView nameView;
         public TextView distanceView;
+        public TextView lastUpdatedView;
     }
 }
