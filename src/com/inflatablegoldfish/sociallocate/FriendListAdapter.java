@@ -146,10 +146,11 @@ public class FriendListAdapter extends AmazingAdapter {
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.friend_item, null);
             holder = new ViewHolder();
-            holder.picView = (ImageView) convertView.findViewById(R.id.profile_pic);
-            holder.nameView = (TextView) convertView.findViewById(R.id.name);
-            holder.distanceView = (TextView) convertView.findViewById(R.id.distance);
-            holder.lastUpdatedView = (TextView) convertView.findViewById(R.id.last_updated);
+            holder.pic = (ImageView) convertView.findViewById(R.id.profile_pic);
+            holder.name = (TextView) convertView.findViewById(R.id.name);
+            holder.distance = (TextView) convertView.findViewById(R.id.distance);
+            holder.lastUpdated = (TextView) convertView.findViewById(R.id.last_updated);
+            holder.separatorBar = convertView.findViewById(R.id.list_separator_bar);
             convertView.setTag(holder);
         }
         
@@ -159,14 +160,14 @@ public class FriendListAdapter extends AmazingAdapter {
         User friend = friends.get(position);
         
         // Attempt to get photo from ready images or issue request
-        holder.picView.setImageBitmap(picRunner.getImage(friend.getId(), friend.getPic()));
+        holder.pic.setImageBitmap(picRunner.getImage(friend.getId(), friend.getPic()));
         
         // Set name
-        holder.nameView.setText(friend.getName());
+        holder.name.setText(friend.getName());
         
         // Set last updated if not own user
         if (position != 0) {
-            holder.lastUpdatedView.setText(friend.getPrettyLastUpdated());
+            holder.lastUpdated.setText(friend.getPrettyLastUpdated());
         }
         
         // Calculate and set distance
@@ -177,13 +178,50 @@ public class FriendListAdapter extends AmazingAdapter {
             if (distance >= 100) {
                 DecimalFormat formatter = new DecimalFormat("0.0");
                 
-                holder.distanceView.setText(formatter.format(distance / 1000) + "km");
+                holder.distance.setText(formatter.format(distance / 1000) + "km");
             } else {
-                holder.distanceView.setText(distance + "m");
+                holder.distance.setText(distance + "m");
             }
         }
         
+        // Show / Hide section separator part
+        holder.separatorBar
+                .setVisibility(showSeparator(position) ? View.VISIBLE : View.GONE);
+        
         return convertView;
+    }
+    
+    /**
+     * Return whether or not the position should
+     * show it's separator part (at the bottom)
+     * @param position Position
+     * @return True if should be shown
+     */
+    private boolean showSeparator(int position) {
+        // No friends means no separators
+        if (getCount() == 0) {
+            return false;
+        }
+        
+        // If you have friends, you need a separator after "YOU"
+        if (position == 0) {
+            return true;
+        }
+        
+        /*
+         * No distances there can only be "FRIENDS"
+         * and the separator is already set above
+         */
+        if (!distancesAvailable()) {
+            return false;
+        }
+        
+        // Add separator for element before far section
+        if (position == farSectionStart - 1) {
+            return true;
+        }
+        
+        return false;
     }
     
     private void recalculateSections() {
@@ -199,7 +237,7 @@ public class FriendListAdapter extends AmazingAdapter {
 
     @Override
     public void configurePinnedHeader(View header, int position, int alpha) {
-        TextView lSectionHeader = (TextView)header;
+        TextView lSectionHeader = (TextView)header.findViewById(R.id.list_header);
         
         lSectionHeader.setText((CharSequence) getSections()[getSectionForPosition(position)]);
     }
@@ -217,6 +255,10 @@ public class FriendListAdapter extends AmazingAdapter {
         }
     }
 
+    /**
+     * Returns if distances are available
+     * @return True if distances available
+     */
     private boolean distancesAvailable() {
         if (friends == null) {
             // No friends so obviously ready
@@ -255,9 +297,10 @@ public class FriendListAdapter extends AmazingAdapter {
     }
     
     private static class ViewHolder {
-        public ImageView picView;
-        public TextView nameView;
-        public TextView distanceView;
-        public TextView lastUpdatedView;
+        public ImageView pic;
+        public TextView name;
+        public TextView distance;
+        public TextView lastUpdated;
+        public View separatorBar;
     }
 }
