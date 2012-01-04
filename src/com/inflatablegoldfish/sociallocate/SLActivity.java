@@ -22,6 +22,7 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ViewFlipper;
 
 public class SLActivity extends MapActivity implements OnItemClickListener {
     private Facebook facebook = new Facebook("162900730478788");
@@ -33,6 +34,8 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     private RequestManager requestManager;
     
     private Location currentLocation = null;
+    
+    private ViewFlipper viewFlipper;
     
     private AmazingListView friendList;
     private FriendListAdapter friendListAdapter;
@@ -64,6 +67,11 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        
+        // Set up the flipper
+        viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
+        viewFlipper.setInAnimation(this, android.R.anim.fade_in);
+        viewFlipper.setOutAnimation(this, android.R.anim.fade_out);
         
         // Set up the the friend list
         friendList = (AmazingListView) findViewById(R.id.friend_list);
@@ -217,6 +225,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
         if (position != 0) {
+            viewFlipper.showNext();
             Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
         }
     }
@@ -254,6 +263,15 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         requestManager.abortAll();
         
         super.onDestroy();
+    }
+    
+    @Override
+    public void onBackPressed() {
+        if (viewFlipper.getDisplayedChild() != 0) {
+            viewFlipper.showPrevious();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
