@@ -257,20 +257,14 @@ public class FriendView extends RelativeLayout implements
     }
 
     public void onProfilePicDownloaded() {
-        if (ownUser != null && ownCroppedBitmap == null) {
-            // Attempt to set cropped image for own user
-            final Bitmap ownBitmap = picRunner.getImage(ownUser.getId(), ownUser.getPic());
-            if (ownBitmap != null) {
-                ownCroppedBitmap = Util.cropBitmap(ownBitmap, 100, 100);
-            }
-        }
-        
         if (user != null) {
+            // Set cropped image for user
             final Bitmap userBitmap = picRunner.getImage(user.getId(), user.getPic());
             if (userBitmap != null) {
                 userCroppedBitmap = Util.cropBitmap(userBitmap, 100, 100);
             }
             
+            // Update top user picture
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
