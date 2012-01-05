@@ -161,8 +161,8 @@ public class Util {
      */
     public static GeoPoint getGeoPoint(Location location) {
         GeoPoint point = new GeoPoint(
-            (int) (location.getLatitude() * 1000000),
-            (int) (location.getLongitude() * 1000000)
+            (int) (location.getLatitude() * 1E6),
+            (int) (location.getLongitude() * 1E6)
         );
         
         return point;
