@@ -2,6 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:paddingLeft="6dip"
+    android:paddingRight="6dip"
     android:orientation="vertical"
     android:background="@color/black">
     
@@ -14,18 +16,11 @@
     <include layout="@layout/empty_view"
         android:id="@+id/empty_view"
         android:visibility="gone" />
-    
-	<RelativeLayout
-	android:layout_width="fill_parent"
-	android:paddingLeft="6dip"
-	android:paddingRight="6dip"
-	android:layout_height="fill_parent">
-	
-	    <com.foound.widget.AmazingListView
-	        android:id="@+id/friend_list"
-	        android:layout_width="fill_parent"
-	        android:layout_height="fill_parent" />
-	    
-    </RelativeLayout>
+
+    <com.inflatablegoldfish.sociallocate.FriendList
+        android:id="@+id/friend_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:divider="@null" />
 
 </LinearLayout>

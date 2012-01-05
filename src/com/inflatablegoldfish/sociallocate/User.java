@@ -1,8 +1,12 @@
 package com.inflatablegoldfish.sociallocate;
 
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+
+import com.ocpsoft.pretty.time.PrettyTime;
 
 import android.location.Location;
 
@@ -10,14 +14,16 @@ public class User {
     private int id;
     private Location location;
     private Float distance;
+    private Date lastUpdated;
     private String name;
     private String pic;
     private boolean updatedInLastFetch = true;
     
-    public User(int id, double lat, double lng, String name, String pic) {
+    public User(int id, double lat, double lng, long lastUpdated, String name, String pic) {
         this.id = id;
         this.location = Util.getLocationObject(lat, lng);
         this.distance = null;
+        this.lastUpdated = new Date(lastUpdated * 1000);
         this.name = name;
         this.pic = pic;
     }
@@ -50,8 +56,30 @@ public class User {
         return location;
     }
     
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+    
+    public String getPrettyLastUpdated() {
+        PrettyTime p = new PrettyTime();
+        return p.format(lastUpdated);
+    }
+    
     public Float getDistance() {
         return distance;
+    }
+    
+    public String getPrettyDistance() {
+        double distance = this.distance.intValue();
+        
+        // Show in kilometers if greater than 100m
+        if (distance >= 100) {
+            DecimalFormat formatter = new DecimalFormat("0.0");
+            
+            return formatter.format(distance / 1000) + "km";
+        } else {
+            return distance + "m";
+        }
     }
     
     public void setDistanceFrom(Location location) {

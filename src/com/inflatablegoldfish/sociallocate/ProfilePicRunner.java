@@ -6,11 +6,12 @@ package com.inflatablegoldfish.sociallocate;
  */
 
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.widget.BaseAdapter;
 
 /*
  * Fetch friends profile pictures request via AsyncTask
@@ -19,7 +20,7 @@ public class ProfilePicRunner {
 
     private Hashtable<Integer, Bitmap> friendsImages;
     private Hashtable<Integer, String> positionRequested;
-    private BaseAdapter listener;
+    private List<ProfilePicRunnerListener> listeners = new LinkedList<ProfilePicRunnerListener>();
     private int runningCount = 0;
     private Stack<ItemPair> queue;
 
@@ -38,23 +39,23 @@ public class ProfilePicRunner {
      * Create with the given listener
      * @param listener Listener to store
      */
-    public ProfilePicRunner(BaseAdapter listener) {
+    public ProfilePicRunner(ProfilePicRunnerListener listener) {
         this();
-        setListener(listener);
+        addListener(listener);
     }
 
-    /*
-     * Inform the listener when the image has been downloaded. listener is
-     * FriendsList here.
+    /**
+     * Add listener to be informed when image downloaded
+     * @param listener Listener to add
      */
-    public void setListener(BaseAdapter listener) {
-        this.listener = listener;
-        reset();
+    public void addListener(ProfilePicRunnerListener listener) {
+        listeners.add(listener);
     }
 
     public void reset() {
         positionRequested.clear();
         runningCount = 0;
+        listeners.clear();
         queue.clear();
     }
 
@@ -105,13 +106,17 @@ public class ProfilePicRunner {
             runningCount--;
             if (result != null) {
                 friendsImages.put(uid, result);
-                listener.notifyDataSetChanged();
+                
+                for (ProfilePicRunnerListener listener : listeners) {
+                    listener.onProfilePicDownloaded();
+                }
+                
                 getNextImage();
             }
         }
     }
 
-    class ItemPair {
+    private static class ItemPair {
         int uid;
         String url;
 
@@ -119,5 +124,9 @@ public class ProfilePicRunner {
             this.uid = uid;
             this.url = url;
         }
+    }
+    
+    public static interface ProfilePicRunnerListener {
+        public void onProfilePicDownloaded();
     }
 }

@@ -1,34 +1,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:id="@+id/friend_item">
+    android:orientation="vertical">
     <include layout="@layout/list_header" />
-	<RelativeLayout
+	<include layout="@layout/friend_item_body"
 	    android:layout_width="fill_parent"
-	    android:layout_height="?android:attr/listPreferredItemHeight">
-	    <ImageView
-	        android:id="@+id/profile_pic"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentTop="true"
-	        android:layout_alignParentBottom="true"
-	        android:layout_marginRight="6dip" />
-	    <TextView
-	        android:id="@+id/name"
+	    android:layout_height="?android:attr/listPreferredItemHeight"
+	    android:layout_marginLeft="6dip"/>
+	
+    <RelativeLayout
+        android:id="@+id/list_separator_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dip"
+        android:background="@color/black"
+        android:visibility="gone">
+	    <View
 	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_toRightOf="@id/profile_pic"
-	        android:layout_alignParentRight="true"
-	        android:layout_alignParentTop="true"
-	        android:layout_alignWithParentIfMissing="true"
-	        android:gravity="center_vertical" />
-	    <TextView
-	       	android:id="@+id/distance"
-	       	android:layout_width="wrap_content"
-	       	android:layout_height="wrap_content"
-	       	android:layout_alignParentRight="true"
-	       	android:layout_below="@id/name"
-	       	android:layout_marginRight="6dip" />
+	        android:layout_height="2px"
+	        android:background="?android:attr/listDivider" />
 	</RelativeLayout>
 </LinearLayout>

@@ -1,9 +1,9 @@
 package com.inflatablegoldfish.sociallocate;
 
-import java.text.DecimalFormat;
 import java.util.List;
 
 import com.foound.widget.AmazingAdapter;
+import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
 
 import android.content.Context;
 import android.location.Location;
@@ -13,35 +13,45 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class FriendListAdapter extends AmazingAdapter {
+public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunnerListener {
     private List<User> friends;
     private Object friendLock;
     
-    private ProfilePicRunner picRunner = new ProfilePicRunner(this);
+    private ProfilePicRunner picRunner;
     
     private LayoutInflater mInflater;
     private CharSequence[] sectionTitles;
     
+    private static final int YOU_SECTION_NO = 0;
+    private static final int NEAR_SECTION_NO = 1;
+    private static final int FAR_SECTION_NO = 2;
+    private static final int FRIENDS_SECTION_NO = 3;
+    
     private int youSectionStart = 0;
+    private int friendsSectionStart = 1;
     private int nearSectionStart = 1;
     private int farSectionStart = 0;
     
     private static final int NEAR_DISTANCE = 1000;
     
-    public FriendListAdapter(Context context) {
+    public FriendListAdapter(Context context, ProfilePicRunner picRunner) {
         friends = null;
         friendLock = new Object();
+        
+        this.picRunner = picRunner;
+        picRunner.addListener(this);
         
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         sectionTitles = new CharSequence[] {
             context.getText(R.string.you_section_title),
             context.getText(R.string.near_section_title),
-            context.getText(R.string.far_section_title)
+            context.getText(R.string.far_section_title),
+            context.getText(R.string.friends_section_title),
         };
     }
     
-    public FriendListAdapter(Context context, List<User> friends) {
-        this(context);
+    public FriendListAdapter(Context context, ProfilePicRunner picRunner, List<User> friends) {
+        this(context, picRunner);
         
         this.friends = friends;
     }
@@ -73,6 +83,11 @@ public class FriendListAdapter extends AmazingAdapter {
 
     public long getItemId(int position) {
         return position;
+    }
+    
+    public void onProfilePicDownloaded() {
+        // Called when profile pic download completes
+        notifyDataSetChanged();
     }
     
     public void updateUsers(List<User> users) {
@@ -139,9 +154,11 @@ public class FriendListAdapter extends AmazingAdapter {
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.friend_item, null);
             holder = new ViewHolder();
-            holder.picView = (ImageView) convertView.findViewById(R.id.profile_pic);
-            holder.nameView = (TextView) convertView.findViewById(R.id.name);
-            holder.distanceView = (TextView) convertView.findViewById(R.id.distance);
+            holder.pic = (ImageView) convertView.findViewById(R.id.profile_pic);
+            holder.name = (TextView) convertView.findViewById(R.id.name);
+            holder.distance = (TextView) convertView.findViewById(R.id.distance);
+            holder.lastUpdated = (TextView) convertView.findViewById(R.id.last_updated);
+            holder.separatorBar = convertView.findViewById(R.id.list_separator_bar);
             convertView.setTag(holder);
         }
         
@@ -151,26 +168,63 @@ public class FriendListAdapter extends AmazingAdapter {
         User friend = friends.get(position);
         
         // Attempt to get photo from ready images or issue request
-        holder.picView.setImageBitmap(picRunner.getImage(friend.getId(), friend.getPic()));
+        holder.pic.setImageBitmap(picRunner.getImage(friend.getId(), friend.getPic()));
         
         // Set name
-        holder.nameView.setText(friend.getName());
+        holder.name.setText(friend.getName());
+        
+        
+        if (position == 0) {
+            // Own user so mark as not clickable
+            convertView.setClickable(false);
+        } else {
+            // Set last updated if not own user
+            holder.lastUpdated.setText(friend.getPrettyLastUpdated());
+        }
         
         // Calculate and set distance
         if (friend.getDistance() != null) {
-            double distance = friend.getDistance().intValue();
-            
-            // Show in kilometers if greater than 100m
-            if (distance >= 100) {
-                DecimalFormat formatter = new DecimalFormat("0.0");
-                
-                holder.distanceView.setText(formatter.format(distance / 1000) + "km");
-            } else {
-                holder.distanceView.setText(distance + "m");
-            }
+            holder.distance.setText(friend.getPrettyDistance());
         }
         
+        // Show / Hide section separator part
+        holder.separatorBar
+                .setVisibility(showSeparator(position) ? View.VISIBLE : View.GONE);
+        
         return convertView;
+    }
+    
+    /**
+     * Return whether or not the position should
+     * show it's separator part (at the bottom)
+     * @param position Position
+     * @return True if should be shown
+     */
+    private boolean showSeparator(int position) {
+        // No friends means no separators
+        if (getCount() == 0) {
+            return false;
+        }
+        
+        // If you have friends, you need a separator after "YOU"
+        if (position == 0) {
+            return true;
+        }
+        
+        /*
+         * No distances there can only be "FRIENDS"
+         * and the separator is already set above
+         */
+        if (!distancesAvailable()) {
+            return false;
+        }
+        
+        // Add separator for element before far section
+        if (position == farSectionStart - 1) {
+            return true;
+        }
+        
+        return false;
     }
     
     private void recalculateSections() {
@@ -186,32 +240,57 @@ public class FriendListAdapter extends AmazingAdapter {
 
     @Override
     public void configurePinnedHeader(View header, int position, int alpha) {
-        TextView lSectionHeader = (TextView)header;
+        TextView lSectionHeader = (TextView)header.findViewById(R.id.list_header);
         
         lSectionHeader.setText((CharSequence) getSections()[getSectionForPosition(position)]);
     }
 
     @Override
     public int getPositionForSection(int section) {
-        if (section == 0) {
+        if (section == YOU_SECTION_NO) {
             return youSectionStart;
-        } else if (section == 1) {
+        } else if (section == NEAR_SECTION_NO) {
             return nearSectionStart;
-        } else {
+        } else if (section == FAR_SECTION_NO) {
             return farSectionStart;
+        } else { // section == FRIENDS_SECTION_NO
+            return friendsSectionStart;
         }
     }
 
+    /**
+     * Returns if distances are available
+     * @return True if distances available
+     */
+    private boolean distancesAvailable() {
+        if (friends == null) {
+            // No friends so obviously ready
+            return true;
+        }
+        
+        if (friends.get(1) == null) {
+            // No friends so obviously ready
+            return true;
+        }
+        
+        return friends.get(1).getDistance() != null;
+    }
+    
     @Override
     public int getSectionForPosition(int position) {
         if (position == 0) {
-            return 0;
+            return YOU_SECTION_NO;
+        }
+        
+        // No distances so just show "FRIENDS"
+        if (!distancesAvailable()) {
+            return FRIENDS_SECTION_NO;
         }
         
         if (position >= farSectionStart) {
-            return 2;
+            return FAR_SECTION_NO;
         } else {
-            return 1;
+            return NEAR_SECTION_NO;
         }
     }
 
@@ -220,9 +299,23 @@ public class FriendListAdapter extends AmazingAdapter {
         return sectionTitles;
     }
     
+    @Override
+    public boolean areAllItemsEnabled() {
+        // So we can disabled the top (own) row
+        return false;
+    }
+    
+    @Override
+    public boolean isEnabled(int position) {
+        // All rows enabled except own details row
+        return position != 0;
+    }
+    
     private static class ViewHolder {
-        public ImageView picView;
-        public TextView nameView;
-        public TextView distanceView;
+        public ImageView pic;
+        public TextView name;
+        public TextView distance;
+        public TextView lastUpdated;
+        public View separatorBar;
     }
 }
