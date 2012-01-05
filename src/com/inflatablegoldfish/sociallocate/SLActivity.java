@@ -3,17 +3,12 @@ package com.inflatablegoldfish.sociallocate;
 import java.util.List;
 
 import com.facebook.android.Facebook;
-import com.foound.widget.AmazingListView;
-import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
-import com.google.android.maps.MapController;
-import com.google.android.maps.MapView;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
-import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
@@ -24,10 +19,9 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ViewFlipper;
 
-public class SLActivity extends MapActivity implements OnItemClickListener {
+public class SLActivity extends MapActivity {
     private Facebook facebook = new Facebook("162900730478788");
     
     private SocialLocate socialLocate = new SocialLocate();
@@ -39,17 +33,9 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     private Location currentLocation = null;
     
     private ViewFlipper viewFlipper;
-    
-    private AmazingListView friendList;
-    private FriendListAdapter friendListAdapter;
+    private FriendList friendList;
     
     private FriendView friendView;
-    
-    private MapController mapController;
-    
-    private volatile boolean initialFetchCompleted = false;
-    
-    private User userToView = null;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,46 +65,33 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
         
-        // Set up the flipper
-        viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
-        viewFlipper.setInAnimation(this, android.R.anim.fade_in);
-        viewFlipper.setOutAnimation(this, android.R.anim.fade_out);
-        
-        // Set up the map controller
-        MapView mapView = (MapView) findViewById(R.id.mapview);
-        mapController = mapView.getController();
-        mapController.setZoom(12);
-        
-        // Set up the the friend list
-        friendList = (AmazingListView) findViewById(R.id.friend_list);
-        friendList.setLoadingView(getLayoutInflater().inflate(R.layout.loading_view, null));
-        friendList.setPinnedHeaderView(getLayoutInflater().inflate(R.layout.list_header, friendList, false));
-        friendList.mayHaveMorePages();
-        friendList.setEmptyView(findViewById(R.id.empty_view));
-        friendList.setOnItemClickListener(this);
-        
-        // Set up the pic runner
-        ProfilePicRunner picRunner = new ProfilePicRunner();
-        
-        // Set the adapter
-        friendListAdapter = new FriendListAdapter(this, picRunner);
-        friendList.setAdapter(friendListAdapter);
-        
-        // Set the friend view
-        friendView = (FriendView) findViewById(R.id.friend_view);
-        friendView.setPicRunner(picRunner);
-        
         // Load cookies
         socialLocate.loadCookies();
         
         // Authenticate
         initialAuth();
+        
+        // Set up the flipper
+        viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
+        viewFlipper.setInAnimation(this, android.R.anim.fade_in);
+        viewFlipper.setOutAnimation(this, android.R.anim.fade_out);
+        
+        // Set up the pic runner
+        ProfilePicRunner picRunner = new ProfilePicRunner();
+        
+        // Set up the the friend list
+        friendList = (FriendList) findViewById(R.id.friend_list);
+        friendList.setUp(this, picRunner);
+        
+        // Set the friend view
+        friendView = (FriendView) findViewById(R.id.friend_view);
+        friendView.setUp(this, picRunner);
     }
     
     private void initialAuth() {
         // Only FB auth if we haven't already got a token
         if (!Util.prefs.contains("access_token")) {
-            requestManager.addRequestWithoutStarting(
+            requestManager.addRequest(
                 new FBAuthRequest(
                     requestManager,
                     new RequestListener<User[]>() {
@@ -136,7 +109,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         
         // Only SL auth if we've not got a cookie
         if (!Util.prefs.contains("cookie_name")) {
-            requestManager.addRequestWithoutStarting(
+            requestManager.addRequest(
                 new SLAuthRequest(
                     requestManager,
                     new RequestListener<List<User>>() {
@@ -157,85 +130,17 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                 )
             );
         }
-            
-        requestManager.addRequestWithoutStarting(
-            new SLInitialFetchRequest(
-                requestManager,
-                new RequestListener<List<User>>() {
-                    public void onComplete(final Object userList) {
-                        @SuppressWarnings("unchecked")
-                        final List<User> users = (List<User>) userList;
-                        
-                        Util.showToast("Initial fetch OK", SLActivity.this);
-                        
-                        Util.uiHandler.post(new Runnable() {
-                            public void run() {
-                                // Mark as complete and start location updates
-                                initialFetchCompleted = true;
-                                activityLocHandler.startUpdates();
-                                
-                                // Update list view adapter
-                                friendListAdapter.updateUsers(users);
-                                
-                                // If we have a location fix, calculate distances
-                                if (currentLocation != null) {
-                                    friendListAdapter.updateDistances(currentLocation);
-                                }
-                                
-                                // Hide loading spinner
-                                friendList.noMorePages();
-                            }
-                        });
-                    }
-
-                    public void onError(ResultCode resultCode) {
-                        Util.showToast("Initial fetch error", SLActivity.this);
-                        
-                        Util.uiHandler.post(new Runnable() {
-                            public void run() {
-                                // Hide loading spinner
-                                friendList.noMorePages();
-                                
-                                // Show fail message
-                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
-                                
-                                // Stop location updates
-                                activityLocHandler.stopUpdates();
-                            }
-                        });
-                    }
-                    
-                    public void onCancel() {
-                        Util.showToast("FB auth cancelled so cancelling initial fetch", SLActivity.this);
-                        
-                        Util.uiHandler.post(new Runnable() {
-                            public void run() {
-                                // Hide loading spinner
-                                friendList.noMorePages();
-                                
-                                // Show fail message
-                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
-                                
-                                // Stop location updates
-                                activityLocHandler.stopUpdates();
-                            }
-                        });
-                    }
-                },
-                facebook,
-                socialLocate
-            )
-        );
-        
-        requestManager.startProcessing();
     }
     
     public void locationUpdated(final Location newLocation) {
         // Update current location
         currentLocation = newLocation;
         
-        // Update distances to friends
-        friendListAdapter.updateDistances(currentLocation);
+        // Pass on to friend list
+        friendList.onLocationUpdate(currentLocation);
+        
+        // Pass on to friend view
+        friendView.onLocationUpdate(currentLocation);
         
         // Send location update
         requestManager.addRequest(
@@ -251,46 +156,20 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                 socialLocate
             )
         );
+    }
+    
+    /**
+     * Switch to friend view
+     * @param user Friend to view
+     */
+    public void showFriendView(User user) {
+        friendView.updateUser(user);
         
-        // Center map if on map page
-        if (userToView != null) {
-            // Have current location so center on midpoint
-            Location center = Util.getCenter(
-                new Location[] {
-                    currentLocation,
-                    userToView.getLocation()
-                }
-            );
-            
-            // Set map center
-            mapController.animateTo(Util.getGeoPoint(center));
-        }
+        viewFlipper.showNext();
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        // Set user to view
-        userToView = ((User) adapterView.getItemAtPosition(position));
-        friendView.updateUser(userToView);
-        
-        GeoPoint centerPoint;
-        
-        if (currentLocation != null) {
-            // Have current location so center on midpoint
-            Location center = Util.getCenter(
-                new Location[] {
-                    currentLocation,
-                    userToView.getLocation()
-                }
-            );
-            
-            // Set map center
-            centerPoint = Util.getGeoPoint(center);
-        } else {
-            // No location so just center on friend
-            centerPoint = Util.getGeoPoint(userToView.getLocation());
-        }
-
-        mapController.animateTo(centerPoint);
+        friendView.updateUser((User) adapterView.getItemAtPosition(position));
         
         viewFlipper.showNext();
     }
@@ -307,7 +186,7 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Start GPS updates and stop background updates
         BackgroundUpdater.cancelAlarm(this);
         
-        if (initialFetchCompleted) {
+        if (friendList.initialFetchCompleted()) {
             // Only start if we're authenticated
             activityLocHandler.startUpdates();
         }
@@ -346,5 +225,37 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     @Override
     protected boolean isRouteDisplayed() {
         return false;
+    }
+    
+    public RequestManager getRequestManager() {
+        return requestManager;
+    }
+    
+    public ActivityLocationHandler getActivityLocationHandler() {
+        return activityLocHandler;
+    }
+    
+    public Location getCurrentLocation() {
+        return currentLocation;
+    }
+    
+    public Facebook getFacebook() {
+        return facebook;
+    }
+    
+    public SocialLocate getSocialLocate() {
+        return socialLocate;
+    }
+    
+    public Foursquare getFoursquare() {
+        return foursquare;
+    }
+    
+    public static interface LocationUpdateListener {
+        /**
+         * Called when a location update is received
+         * @param newLocation New location
+         */
+        public void onLocationUpdate(Location newLocation);
     }
 }

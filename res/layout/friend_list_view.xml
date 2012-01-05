@@ -17,7 +17,7 @@
         android:id="@+id/empty_view"
         android:visibility="gone" />
 
-    <com.foound.widget.AmazingListView
+    <com.inflatablegoldfish.sociallocate.FriendList
         android:id="@+id/friend_list"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

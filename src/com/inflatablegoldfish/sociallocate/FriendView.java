@@ -1,15 +1,21 @@
 package com.inflatablegoldfish.sociallocate;
 
+import com.google.android.maps.GeoPoint;
+import com.google.android.maps.MapController;
+import com.google.android.maps.MapView;
 import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
+import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 
 import android.content.Context;
+import android.location.Location;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class FriendView extends RelativeLayout implements ProfilePicRunnerListener {
-    private User user;
+public class FriendView extends RelativeLayout implements ProfilePicRunnerListener, LocationUpdateListener {
+    private SLActivity slActivity;
+    private User user = null;
     
     private ProfilePicRunner picRunner;
     
@@ -17,6 +23,8 @@ public class FriendView extends RelativeLayout implements ProfilePicRunnerListen
     private TextView name;
     private TextView lastUpdated;
     private TextView distance;
+    
+    private MapController mapController;
     
     public FriendView(Context context) {
         super(context);
@@ -38,13 +46,21 @@ public class FriendView extends RelativeLayout implements ProfilePicRunnerListen
         name = (TextView) findViewById(R.id.name);
         lastUpdated = (TextView) findViewById(R.id.last_updated);
         distance = (TextView) findViewById(R.id.distance);
+        
+        // Set up the map controller
+        MapView mapView = (MapView) findViewById(R.id.mapview);
+        mapController = mapView.getController();
+        mapController.setZoom(12);
     }
     
-    public void setPicRunner(ProfilePicRunner picRunner) {
+    public void setUp(SLActivity slActivity, ProfilePicRunner picRunner) {
+        this.slActivity = slActivity;
         this.picRunner = picRunner;
     }
     
     public void updateUser(final User user) {
+        this.user = user;
+        
         Util.uiHandler.post(
             new Runnable() {
                 public void run() {
@@ -56,6 +72,42 @@ public class FriendView extends RelativeLayout implements ProfilePicRunnerListen
                 }
             }
         );
+        
+        GeoPoint centerPoint;
+        
+        if (slActivity.getCurrentLocation() != null) {
+            // Have current location so center on midpoint
+            Location center = Util.getCenter(
+                new Location[] {
+                    slActivity.getCurrentLocation(),
+                    user.getLocation()
+                }
+            );
+            
+            // Set map center
+            centerPoint = Util.getGeoPoint(center);
+        } else {
+            // No location so just center on friend
+            centerPoint = Util.getGeoPoint(user.getLocation());
+        }
+
+        mapController.animateTo(centerPoint);
+    }
+    
+    public void onLocationUpdate(Location newLocation) {
+        // Center map
+        if (user != null) {
+            // Have current location so center on midpoint
+            Location center = Util.getCenter(
+                new Location[] {
+                    newLocation,
+                    user.getLocation()
+                }
+            );
+            
+            // Set map center
+            mapController.animateTo(Util.getGeoPoint(center));
+        }
     }
 
     public void onProfilePicDownloaded() {
