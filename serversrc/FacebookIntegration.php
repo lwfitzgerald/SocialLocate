@@ -145,7 +145,7 @@ class FacebookIntegration {
                         $friend_map[$friend_id]['pic']
                     );
                 } else {
-                    $sl_friend = new User($friend_id, $lat, $lng);
+                    $sl_friend = new User($friend_id, $lat, $lng, $lastUpdated);
                 }
 
                 $sl_friends[$friend_id] = $sl_friend;
