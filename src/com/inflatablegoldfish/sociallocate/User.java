@@ -17,13 +17,10 @@ public class User {
     private Date lastUpdated;
     private String name;
     private String pic;
-    private boolean updatedInLastFetch = true;
     
     public User(int id, double lat, double lng, long lastUpdated, String name, String pic) {
-        this.id = id;
-        this.location = Util.getLocationObject(lat, lng);
-        this.distance = null;
-        this.lastUpdated = new Date(lastUpdated * 1000);
+        this(id, lat, lng, lastUpdated);
+        
         this.name = name;
         this.pic = pic;
     }
@@ -36,16 +33,16 @@ public class User {
         this.pic = pic;
     }
     
-    public void updateLocation(Location location) {
-        this.location = location;
+    public User(int id, double lat, double lng, long lastUpdated) {
+        this.id = id;
+        this.location = Util.getLocationObject(lat, lng);
+        this.distance = null;
+        this.lastUpdated = new Date(lastUpdated * 1000);
     }
     
-    public void markUpdated(boolean updated) {
-        this.updatedInLastFetch = updated;
-    }
-    
-    public boolean wasUpdatedInLastFetch() {
-        return updatedInLastFetch;
+    public void updateFromUser(User toUpdateFrom) {
+        this.location = toUpdateFrom.location;
+        this.lastUpdated = toUpdateFrom.lastUpdated;
     }
     
     public int getId() {

@@ -1,10 +1,13 @@
 package com.inflatablegoldfish.sociallocate;
 
+import java.util.List;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
+import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 
 import android.content.Context;
 import android.location.Location;
@@ -13,7 +16,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class FriendView extends RelativeLayout implements ProfilePicRunnerListener, LocationUpdateListener {
+public class FriendView extends RelativeLayout implements
+        ProfilePicRunnerListener, LocationUpdateListener, SLUpdateListener {
+    
     private SLActivity slActivity;
     private User user = null;
     
@@ -107,6 +112,13 @@ public class FriendView extends RelativeLayout implements ProfilePicRunnerListen
             
             // Set map center
             mapController.animateTo(Util.getGeoPoint(center));
+        }
+    }
+    
+    public void onSLUpdate(List<User> friends) {
+        // Will refresh UI
+        if (user != null) {
+            updateUser(user);
         }
     }
 

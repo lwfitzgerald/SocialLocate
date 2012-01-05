@@ -12,12 +12,15 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import com.foound.widget.AmazingListView;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
+import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
-public class FriendList extends AmazingListView implements OnItemClickListener, LocationUpdateListener {
+public class FriendList extends AmazingListView implements OnItemClickListener,
+        LocationUpdateListener, SLUpdateListener {
+    
     private SLActivity slActivity;
     private volatile boolean initialFetchCompleted = false;
     private FriendListAdapter adapter;
@@ -59,8 +62,6 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
                         @SuppressWarnings("unchecked")
                         final List<User> users = (List<User>) userList;
                         
-                        Log.d("SocialLocate", "Initial fetch OK");
-                        
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
                                 // Mark as complete and start location updates
@@ -77,13 +78,14 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
                                 
                                 // Hide loading spinner
                                 noMorePages();
+                                
+                                // Start fetch requests
+                                slActivity.startFetchRequests();
                             }
                         });
                     }
 
                     public void onError(ResultCode resultCode) {
-                        Log.d("SocialLocate", "Initial fetch error");
-                        
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
                                 // Hide loading spinner
@@ -124,6 +126,15 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
     public void onLocationUpdate(Location newLocation) {
         // Update distances to friends
         adapter.updateDistances(newLocation);
+    }
+    
+    public void onSLUpdate(List<User> friends) {
+        // Update UI
+        adapter.updateUsers(friends);
+        
+        if (slActivity.getCurrentLocation() != null) {
+            adapter.updateDistances(slActivity.getCurrentLocation());
+        }
     }
     
     /**

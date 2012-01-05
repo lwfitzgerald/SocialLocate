@@ -1,5 +1,7 @@
 package com.inflatablegoldfish.sociallocate;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.foound.widget.AmazingAdapter;
@@ -14,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunnerListener {
-    private List<User> friends;
+    private volatile List<User> friends;
     private Object friendLock;
     
     private ProfilePicRunner picRunner;
@@ -78,7 +80,9 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
     }
 
     public Object getItem(int position) {
-        return friends.get(position);
+        synchronized (friendLock) {
+            return friends.get(position);
+        }
     }
 
     public long getItemId(int position) {
@@ -91,9 +95,47 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
     }
     
     public void updateUsers(List<User> users) {
-        this.friends = users;
+        if (friends == null) {
+            this.friends = users;
+        } else {
+            synchronized (friendLock) {
+                List<User> newUserList = new ArrayList<User>(friends.size());
+            
+                // Add own user
+                newUserList.add(friends.get(0));
+                
+                for (User updateUser : users) {
+                    Iterator<User> itr = friends.iterator();
+                    
+                    while (itr.hasNext()) {
+                        User oldUser = itr.next();
+                        
+                        if (oldUser.getId() == updateUser.getId()) {
+                            // Update old user using update user
+                            updateUser.updateFromUser(updateUser);
+                            
+                            // Add to new list
+                            newUserList.add(oldUser);
+                            
+                            // Remove from old list
+                            itr.remove();
+                            
+                            break;
+                        }
+                    }
+                }
+                
+                friends = newUserList;
+            }
+        }
         
-        notifyDataSetChanged();
+        Util.uiHandler.post(
+            new Runnable() {
+                public void run() {
+                    notifyDataSetChanged();
+                }
+            }
+        );
     }
     
     public void updateDistances(final Location currentLocation) {
@@ -107,7 +149,7 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
             new Thread(
                 new Runnable() {
                     public void run() {
-                        synchronized(friendLock) {
+                        synchronized (friendLock) {
                             // Recalculate distances to friends
                             User.calculateDistances(friends, currentLocation);
                             
@@ -165,7 +207,10 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
         holder = (ViewHolder) convertView.getTag();
         
         // Get friend for this view
-        User friend = friends.get(position);
+        User friend;
+        synchronized (friendLock) {
+             friend = friends.get(position);
+        }
         
         // Attempt to get photo from ready images or issue request
         holder.pic.setImageBitmap(picRunner.getImage(friend.getId(), friend.getPic()));
@@ -230,10 +275,12 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
     private void recalculateSections() {
         farSectionStart = 0;
         
-        for (int i=1; i < friends.size(); i++) {
-            if (friends.get(i).getDistance() > NEAR_DISTANCE) {
-                farSectionStart = i;
-                break;
+        synchronized (friendLock) {
+            for (int i=1; i < friends.size(); i++) {
+                if (friends.get(i).getDistance() > NEAR_DISTANCE) {
+                    farSectionStart = i;
+                    break;
+                }
             }
         }
     }
@@ -268,12 +315,14 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
             return true;
         }
         
-        if (friends.get(1) == null) {
-            // No friends so obviously ready
-            return true;
-        }
+        synchronized (friendLock) {
+            if (friends.get(1) == null) {
+                // No friends so obviously ready
+                return true;
+            }
         
-        return friends.get(1).getDistance() != null;
+            return friends.get(1).getDistance() != null;
+        }
     }
     
     @Override
