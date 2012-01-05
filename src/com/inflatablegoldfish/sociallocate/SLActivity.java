@@ -44,6 +44,10 @@ public class SLActivity extends MapActivity {
     
     private static final int FETCHES_PER_MINUTE = 2;
     
+    private static final int LIST_VIEW = 0;
+    private static final int FRIEND_VIEW = 1;
+    private static final int VENUE_LIST = 2;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -225,6 +229,14 @@ public class SLActivity extends MapActivity {
         viewFlipper.showNext();
     }
     
+    /**
+     * Updates the own user object
+     * @param ownUser New user object
+     */
+    public void updateOwnUser(User ownUser) {
+        friendView.setOwnUser(ownUser);
+    }
+    
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -270,7 +282,7 @@ public class SLActivity extends MapActivity {
     
     @Override
     public void onBackPressed() {
-        if (viewFlipper.getDisplayedChild() != 0) {
+        if (viewFlipper.getDisplayedChild() != LIST_VIEW) {
             viewFlipper.showPrevious();
         } else {
             super.onBackPressed();

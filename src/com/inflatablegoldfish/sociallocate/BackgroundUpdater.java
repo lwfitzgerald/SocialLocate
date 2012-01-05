@@ -27,7 +27,7 @@ public class BackgroundUpdater extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            // Boot notification recieved so set up recurring alarm
+            // Boot notification received so set up recurring alarm
             setUpAlarm(context);
         } else {
             new Thread(

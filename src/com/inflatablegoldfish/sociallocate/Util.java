@@ -22,6 +22,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.location.Location;
 import android.os.Handler;
 import android.util.Pair;
@@ -262,5 +264,27 @@ public class Util {
         location.setLongitude(lng);
         
         return location;
+    }
+    
+    public static Bitmap cropBitmap(Bitmap source, int desiredX, int desiredY) {
+        Bitmap croppedImage = Bitmap.createBitmap(desiredX, desiredY, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(croppedImage);
+     
+        Rect srcRect = new Rect(0, 0, source.getWidth(), source.getHeight());
+        Rect dstRect = new Rect(0, 0, desiredX, desiredY);
+     
+        int dx = (srcRect.width() - dstRect.width()) / 2;
+        int dy = (srcRect.height() - dstRect.height()) / 2;
+     
+        // If the srcRect is too big, use the center part of it.
+        srcRect.inset(Math.max(0, dx), Math.max(0, dy));
+     
+        // If the dstRect is too big, use the center part of it.
+        dstRect.inset(Math.max(0, -dx), Math.max(0, -dy));
+     
+        // Draw the cropped bitmap in the center
+        canvas.drawBitmap(source, srcRect, dstRect, null);
+     
+        return croppedImage;
     }
 }

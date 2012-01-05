@@ -13,10 +13,14 @@ import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.location.Location;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,8 +29,14 @@ public class FriendView extends RelativeLayout implements
         ProfilePicRunnerListener, LocationUpdateListener, SLUpdateListener {
     
     private SLActivity slActivity;
+    
+    private User ownUser = null;
+    private GeoPoint ownUserGeoPoint;
+    private volatile Bitmap ownCroppedBitmap = null;
+    
     private User user = null;
     private GeoPoint userGeoPoint;
+    private volatile Bitmap userCroppedBitmap = null;
     
     private ProfilePicRunner picRunner;
     
@@ -61,6 +71,13 @@ public class FriendView extends RelativeLayout implements
         
         // Set up the map controller
         mapView = (MapView) findViewById(R.id.mapview);
+        /*
+         * Disable software rendering as android has no
+         * fallback when paths get too large to fit into
+         * textures
+         */
+        mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        
         mapController = mapView.getController();
         mapController.setZoom(12);
     }
@@ -78,28 +95,91 @@ public class FriendView extends RelativeLayout implements
         public void draw(Canvas canvas, MapView mapView, boolean shadow) {
             super.draw(canvas, mapView, shadow);
 
-            // ---translate the GeoPoint to screen pixels---
-            Point screenPts = new Point();
-            mapView.getProjection().toPixels(userGeoPoint, screenPts);
-
-            // ---add the marker---
-            Bitmap image = picRunner.getImage(user.getId(), user.getPic());
-            
-            if (image != null) {
-                canvas.drawBitmap(image,
-                        screenPts.x, screenPts.y - 100, null);
+            Point ownUserPoint = null;
+            if (ownUserGeoPoint != null) {
+                ownUserPoint = getAndDrawPoint(ownUser, ownUserGeoPoint, canvas, true);
             }
+            
+            Point userPoint = null;
+            if (userGeoPoint != null) {
+                userPoint = getAndDrawPoint(user, userGeoPoint, canvas, false);
+            }
+            
+            if (ownUserPoint != null && userPoint != null) {
+                Paint paint = new Paint();
+                paint.setDither(true);
+                paint.setColor(Color.BLACK);
+                paint.setStyle(Paint.Style.FILL_AND_STROKE);
+                paint.setStrokeJoin(Paint.Join.ROUND);
+                paint.setStrokeCap(Paint.Cap.ROUND);
+                paint.setStrokeWidth(4);
+                
+                Path path = new Path();
+                
+                path.moveTo(userPoint.x, userPoint.y);
+                path.lineTo(ownUserPoint.x, ownUserPoint.y);
+                
+                canvas.drawPath(path, paint);   
+            }
+        }
+        
+        private Point getAndDrawPoint(User user, GeoPoint geoPoint, Canvas canvas, boolean ownUser) {
+            Point point = new Point();
+            mapView.getProjection().toPixels(geoPoint, point);
+            
+            Bitmap croppedBitmap;
+            
+            if (ownUser) {
+                croppedBitmap = ownCroppedBitmap;
+            } else {
+                croppedBitmap = userCroppedBitmap;
+            }
+            
+            if (croppedBitmap == null) {
+                Bitmap image = picRunner.getImage(user.getId(), user.getPic());
+                
+                if (image != null) {
+                    croppedBitmap = Util.cropBitmap(image, 100, 100);
+                    
+                    canvas.drawBitmap(croppedBitmap,
+                            point.x, point.y - 100, null);
+                    
+                    if (ownUser) {
+                        ownCroppedBitmap = croppedBitmap;
+                    } else {
+                        userCroppedBitmap = croppedBitmap;
+                    }
+                }
+            } else {
+                canvas.drawBitmap(croppedBitmap,
+                        point.x, point.y - 100, null);
+            }
+            
+            return point;
+        }
+    }
+    
+    public void setOwnUser(final User ownUser) {
+        this.ownUser = ownUser;
+        
+        if (slActivity.getCurrentLocation() != null) {
+            this.ownUserGeoPoint = Util.getGeoPoint(slActivity.getCurrentLocation());
         }
     }
     
     public void updateUser(final User user) {
         this.user = user;
         this.userGeoPoint = Util.getGeoPoint(user.getLocation());
+        this.userCroppedBitmap = null;
+        
+        final Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
+        if (bitmap != null) {
+            userCroppedBitmap = Util.cropBitmap(bitmap, 100, 100);
+        }
         
         Util.uiHandler.post(
             new Runnable() {
                 public void run() {
-                    Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
                     if (bitmap != null) {
                         pic.setImageBitmap(bitmap);
                     }
@@ -144,6 +224,9 @@ public class FriendView extends RelativeLayout implements
     }
     
     public void onLocationUpdate(Location newLocation) {
+        // Update own user geopoint
+        this.ownUserGeoPoint = Util.getGeoPoint(slActivity.getCurrentLocation());
+        
         // Center map
         if (user != null) {
             // Have current location so center on midpoint
@@ -174,18 +257,30 @@ public class FriendView extends RelativeLayout implements
     }
 
     public void onProfilePicDownloaded() {
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    if (user != null) {
-                        Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
-                        if (bitmap != null) {
-                            pic.setImageBitmap(bitmap);
-                            pic.invalidate();
+        if (ownUser != null && ownCroppedBitmap == null) {
+            // Attempt to set cropped image for own user
+            final Bitmap ownBitmap = picRunner.getImage(ownUser.getId(), ownUser.getPic());
+            if (ownBitmap != null) {
+                ownCroppedBitmap = Util.cropBitmap(ownBitmap, 100, 100);
+            }
+        }
+        
+        if (user != null) {
+            final Bitmap userBitmap = picRunner.getImage(user.getId(), user.getPic());
+            if (userBitmap != null) {
+                userCroppedBitmap = Util.cropBitmap(userBitmap, 100, 100);
+            }
+            
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        if (userBitmap != null) {
+                            pic.setImageBitmap(userBitmap);
                         }
+                        pic.invalidate();
                     }
                 }
-            }
-        );
+            );
+        }
     }
 }

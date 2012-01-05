@@ -68,6 +68,9 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
                                 initialFetchCompleted = true;
                                 slActivity.getActivityLocationHandler().startUpdates();
                                 
+                                // Send on own user to friend view
+                                slActivity.updateOwnUser(users.get(0));
+                                
                                 // Update adapter
                                 adapter.updateUsers(users);
                                 
