@@ -5,6 +5,7 @@ import java.util.List;
 import android.content.Context;
 import android.location.Location;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -58,7 +59,7 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
                         @SuppressWarnings("unchecked")
                         final List<User> users = (List<User>) userList;
                         
-                        Util.showToast("Initial fetch OK", slActivity);
+                        Log.d("SocialLocate", "Initial fetch OK");
                         
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
@@ -81,7 +82,7 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
                     }
 
                     public void onError(ResultCode resultCode) {
-                        Util.showToast("Initial fetch error", slActivity);
+                        Log.d("SocialLocate", "Initial fetch error");
                         
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
@@ -89,7 +90,7 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
                                 noMorePages();
                                 
                                 // Show fail message
-                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                slActivity.findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
                                 
                                 // Stop location updates
                                 slActivity.getActivityLocationHandler().stopUpdates();
@@ -98,7 +99,7 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
                     }
                     
                     public void onCancel() {
-                        Util.showToast("FB auth cancelled so cancelling initial fetch", slActivity);
+                        Log.d("SocialLocate", "FB auth cancelled so cancelling initial fetch");
                         
                         Util.uiHandler.post(new Runnable() {
                             public void run() {
@@ -106,7 +107,7 @@ public class FriendList extends AmazingListView implements OnItemClickListener, 
                                 noMorePages();
                                 
                                 // Show fail message
-                                findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                slActivity.findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
                                 
                                 // Stop location updates
                                 slActivity.getActivityLocationHandler().stopUpdates();
