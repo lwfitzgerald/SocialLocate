@@ -17,6 +17,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ViewFlipper;
@@ -114,15 +115,15 @@ public class SLActivity extends MapActivity {
                     requestManager,
                     new RequestListener<List<User>>() {
                         public void onComplete(Object users) {
-                            Util.showToast("SL auth OK", SLActivity.this);
+                            Log.d("SocialLocate", "SL auth OK");
                         }
                         
                         public void onError(ResultCode resultCode) {
-                            Util.showToast("SL auth error", SLActivity.this);
+                            Log.d("SocialLocate", "SL auth error");
                         }
                         
                         public void onCancel() {
-                            Util.showToast("FB auth cancelled so cancelling SL auth", SLActivity.this);
+                            Log.d("SocialLocate", "FB auth cancelled so cancelling SL auth");
                         }
                     },
                     facebook,
@@ -164,12 +165,6 @@ public class SLActivity extends MapActivity {
      */
     public void showFriendView(User user) {
         friendView.updateUser(user);
-        
-        viewFlipper.showNext();
-    }
-    
-    public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        friendView.updateUser((User) adapterView.getItemAtPosition(position));
         
         viewFlipper.showNext();
     }
