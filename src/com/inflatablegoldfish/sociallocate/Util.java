@@ -16,6 +16,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import com.google.android.maps.GeoPoint;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -150,6 +152,20 @@ public class Util {
         location.setLatitude(lat);
         location.setLongitude(lng);
         return location;
+    }
+    
+    /**
+     * Get a GeoPoint from a location
+     * @param location Location
+     * @return GeoPoint version of provided location
+     */
+    public static GeoPoint getGeoPoint(Location location) {
+        GeoPoint point = new GeoPoint(
+            (int) (location.getLatitude() * 1000000),
+            (int) (location.getLongitude() * 1000000)
+        );
+        
+        return point;
     }
     
     /**

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.inflatablegoldfish.sociallocate.FriendView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/friend_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/black">
+    android:background="@color/black"
+    android:paddingLeft="6dip"
+    android:paddingRight="6dip">
     
     <include layout="@layout/friend_item_body"
         android:id="@+id/top_bar"
@@ -10,7 +13,7 @@
         android:layout_height="?android:attr/listPreferredItemHeight"
         android:layout_alignParentTop="true" />
     
-  	<include layout="@layout/friend_item_body"
+  	<RelativeLayout
         android:id="@+id/bottom_bar"
         android:layout_width="fill_parent"
         android:layout_height="?android:attr/listPreferredItemHeight"
@@ -25,4 +28,4 @@
         android:layout_below="@id/top_bar"
         android:layout_above="@id/bottom_bar" />
 
-</RelativeLayout>
+</com.inflatablegoldfish.sociallocate.FriendView>

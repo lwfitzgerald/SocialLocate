@@ -1,9 +1,9 @@
 package com.inflatablegoldfish.sociallocate;
 
-import java.text.DecimalFormat;
 import java.util.List;
 
 import com.foound.widget.AmazingAdapter;
+import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
 
 import android.content.Context;
 import android.location.Location;
@@ -13,11 +13,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class FriendListAdapter extends AmazingAdapter {
+public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunnerListener {
     private List<User> friends;
     private Object friendLock;
     
-    private ProfilePicRunner picRunner = new ProfilePicRunner(this);
+    private ProfilePicRunner picRunner;
     
     private LayoutInflater mInflater;
     private CharSequence[] sectionTitles;
@@ -34,9 +34,12 @@ public class FriendListAdapter extends AmazingAdapter {
     
     private static final int NEAR_DISTANCE = 1000;
     
-    public FriendListAdapter(Context context) {
+    public FriendListAdapter(Context context, ProfilePicRunner picRunner) {
         friends = null;
         friendLock = new Object();
+        
+        this.picRunner = picRunner;
+        picRunner.addListener(this);
         
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         sectionTitles = new CharSequence[] {
@@ -47,8 +50,8 @@ public class FriendListAdapter extends AmazingAdapter {
         };
     }
     
-    public FriendListAdapter(Context context, List<User> friends) {
-        this(context);
+    public FriendListAdapter(Context context, ProfilePicRunner picRunner, List<User> friends) {
+        this(context, picRunner);
         
         this.friends = friends;
     }
@@ -80,6 +83,11 @@ public class FriendListAdapter extends AmazingAdapter {
 
     public long getItemId(int position) {
         return position;
+    }
+    
+    public void onProfilePicDownloaded() {
+        // Called when profile pic download completes
+        notifyDataSetChanged();
     }
     
     public void updateUsers(List<User> users) {
@@ -176,16 +184,7 @@ public class FriendListAdapter extends AmazingAdapter {
         
         // Calculate and set distance
         if (friend.getDistance() != null) {
-            double distance = friend.getDistance().intValue();
-            
-            // Show in kilometers if greater than 100m
-            if (distance >= 100) {
-                DecimalFormat formatter = new DecimalFormat("0.0");
-                
-                holder.distance.setText(formatter.format(distance / 1000) + "km");
-            } else {
-                holder.distance.setText(distance + "m");
-            }
+            holder.distance.setText(friend.getPrettyDistance());
         }
         
         // Show / Hide section separator part

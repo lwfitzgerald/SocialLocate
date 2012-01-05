@@ -43,9 +43,13 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
     private AmazingListView friendList;
     private FriendListAdapter friendListAdapter;
     
+    private FriendView friendView;
+    
     private MapController mapController;
     
     private volatile boolean initialFetchCompleted = false;
+    
+    private User userToView = null;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -93,9 +97,16 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         friendList.setEmptyView(findViewById(R.id.empty_view));
         friendList.setOnItemClickListener(this);
         
+        // Set up the pic runner
+        ProfilePicRunner picRunner = new ProfilePicRunner();
+        
         // Set the adapter
-        friendListAdapter = new FriendListAdapter(this);
+        friendListAdapter = new FriendListAdapter(this, picRunner);
         friendList.setAdapter(friendListAdapter);
+        
+        // Set the friend view
+        friendView = (FriendView) findViewById(R.id.friend_view);
+        friendView.setPicRunner(picRunner);
         
         // Load cookies
         socialLocate.loadCookies();
@@ -226,13 +237,6 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
         // Update distances to friends
         friendListAdapter.updateDistances(currentLocation);
         
-        // Set map center
-        GeoPoint centerPoint = new GeoPoint(
-            (int) (currentLocation.getLatitude() * 1000000),
-            (int) (currentLocation.getLongitude() * 1000000)
-        );
-        mapController.animateTo(centerPoint);
-        
         // Send location update
         requestManager.addRequest(
             new SLUpdateRequest(
@@ -247,11 +251,48 @@ public class SLActivity extends MapActivity implements OnItemClickListener {
                 socialLocate
             )
         );
+        
+        // Center map if on map page
+        if (userToView != null) {
+            // Have current location so center on midpoint
+            Location center = Util.getCenter(
+                new Location[] {
+                    currentLocation,
+                    userToView.getLocation()
+                }
+            );
+            
+            // Set map center
+            mapController.animateTo(Util.getGeoPoint(center));
+        }
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
+        // Set user to view
+        userToView = ((User) adapterView.getItemAtPosition(position));
+        friendView.updateUser(userToView);
+        
+        GeoPoint centerPoint;
+        
+        if (currentLocation != null) {
+            // Have current location so center on midpoint
+            Location center = Util.getCenter(
+                new Location[] {
+                    currentLocation,
+                    userToView.getLocation()
+                }
+            );
+            
+            // Set map center
+            centerPoint = Util.getGeoPoint(center);
+        } else {
+            // No location so just center on friend
+            centerPoint = Util.getGeoPoint(userToView.getLocation());
+        }
+
+        mapController.animateTo(centerPoint);
+        
         viewFlipper.showNext();
-        Util.showToast("You clicked " + ((User) adapterView.getItemAtPosition(position)).getName(), this);
     }
     
     @Override
