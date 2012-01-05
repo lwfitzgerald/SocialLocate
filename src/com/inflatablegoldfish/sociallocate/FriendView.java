@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
+import com.google.android.maps.Overlay;
 import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
@@ -69,13 +70,12 @@ public class FriendView extends RelativeLayout implements
         this.picRunner = picRunner;
         picRunner.addListener(this);
         
-        //mapView.getOverlays().add(new MapOverlay());
+        mapView.getOverlays().add(new MapOverlay());
     }
     
-    private class MapOverlay extends com.google.android.maps.Overlay {
+    private class MapOverlay extends Overlay {
         @Override
-        public boolean draw(Canvas canvas, MapView mapView, boolean shadow,
-                long when) {
+        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
             super.draw(canvas, mapView, shadow);
 
             // ---translate the GeoPoint to screen pixels---
@@ -89,8 +89,6 @@ public class FriendView extends RelativeLayout implements
                 canvas.drawBitmap(image,
                         screenPts.x, screenPts.y - 100, null);
             }
-            
-            return true;
         }
     }
     
@@ -101,7 +99,10 @@ public class FriendView extends RelativeLayout implements
         Util.uiHandler.post(
             new Runnable() {
                 public void run() {
-                    pic.setImageBitmap(picRunner.getImage(user.getId(), user.getPic()));
+                    Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
+                    if (bitmap != null) {
+                        pic.setImageBitmap(bitmap);
+                    }
                     
                     name.setText(user.getName());
                     lastUpdated.setText(user.getPrettyLastUpdated());
@@ -113,7 +114,7 @@ public class FriendView extends RelativeLayout implements
             }
         );
         
-        GeoPoint centerPoint;
+        final GeoPoint centerPoint;
         
         if (slActivity.getCurrentLocation() != null) {
             // Have current location so center on midpoint
@@ -133,18 +134,20 @@ public class FriendView extends RelativeLayout implements
         
         Log.d("SocialLocate", "Animating to point due to fetch update");
         
-        try {
-            mapController.animateTo(centerPoint);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Util.uiHandler.post(
+            new Runnable() {
+                public void run() {
+                    mapController.animateTo(centerPoint);
+                }
+            }
+        );
     }
     
     public void onLocationUpdate(Location newLocation) {
         // Center map
         if (user != null) {
             // Have current location so center on midpoint
-            Location center = Util.getCenter(
+            final Location center = Util.getCenter(
                 new Location[] {
                     newLocation,
                     user.getLocation()
@@ -153,7 +156,13 @@ public class FriendView extends RelativeLayout implements
             
             Log.d("SocialLocate", "Animating to point due to location update");
             
-            mapController.animateTo(Util.getGeoPoint(center));
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        mapController.animateTo(Util.getGeoPoint(center));
+                    }
+                }
+            );
         }
     }
     
@@ -170,8 +179,10 @@ public class FriendView extends RelativeLayout implements
                 public void run() {
                     if (user != null) {
                         Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
-                        pic.setImageBitmap(bitmap);
-                        pic.invalidate();
+                        if (bitmap != null) {
+                            pic.setImageBitmap(bitmap);
+                            pic.invalidate();
+                        }
                     }
                 }
             }
