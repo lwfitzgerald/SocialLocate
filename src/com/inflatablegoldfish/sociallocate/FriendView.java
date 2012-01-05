@@ -10,8 +10,12 @@ import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Point;
 import android.location.Location;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -21,6 +25,7 @@ public class FriendView extends RelativeLayout implements
     
     private SLActivity slActivity;
     private User user = null;
+    private GeoPoint userGeoPoint;
     
     private ProfilePicRunner picRunner;
     
@@ -29,6 +34,7 @@ public class FriendView extends RelativeLayout implements
     private TextView lastUpdated;
     private TextView distance;
     
+    private MapView mapView;
     private MapController mapController;
     
     public FriendView(Context context) {
@@ -53,7 +59,7 @@ public class FriendView extends RelativeLayout implements
         distance = (TextView) findViewById(R.id.distance);
         
         // Set up the map controller
-        MapView mapView = (MapView) findViewById(R.id.mapview);
+        mapView = (MapView) findViewById(R.id.mapview);
         mapController = mapView.getController();
         mapController.setZoom(12);
     }
@@ -61,10 +67,36 @@ public class FriendView extends RelativeLayout implements
     public void setUp(SLActivity slActivity, ProfilePicRunner picRunner) {
         this.slActivity = slActivity;
         this.picRunner = picRunner;
+        picRunner.addListener(this);
+        
+        //mapView.getOverlays().add(new MapOverlay());
+    }
+    
+    private class MapOverlay extends com.google.android.maps.Overlay {
+        @Override
+        public boolean draw(Canvas canvas, MapView mapView, boolean shadow,
+                long when) {
+            super.draw(canvas, mapView, shadow);
+
+            // ---translate the GeoPoint to screen pixels---
+            Point screenPts = new Point();
+            mapView.getProjection().toPixels(userGeoPoint, screenPts);
+
+            // ---add the marker---
+            Bitmap image = picRunner.getImage(user.getId(), user.getPic());
+            
+            if (image != null) {
+                canvas.drawBitmap(image,
+                        screenPts.x, screenPts.y - 100, null);
+            }
+            
+            return true;
+        }
     }
     
     public void updateUser(final User user) {
         this.user = user;
+        this.userGeoPoint = Util.getGeoPoint(user.getLocation());
         
         Util.uiHandler.post(
             new Runnable() {
@@ -73,7 +105,10 @@ public class FriendView extends RelativeLayout implements
                     
                     name.setText(user.getName());
                     lastUpdated.setText(user.getPrettyLastUpdated());
-                    distance.setText(user.getPrettyDistance());
+                    
+                    if (user.getDistance() != null) {
+                        distance.setText(user.getPrettyDistance());
+                    }
                 }
             }
         );
@@ -95,8 +130,14 @@ public class FriendView extends RelativeLayout implements
             // No location so just center on friend
             centerPoint = Util.getGeoPoint(user.getLocation());
         }
-
-        mapController.animateTo(centerPoint);
+        
+        Log.d("SocialLocate", "Animating to point due to fetch update");
+        
+        try {
+            mapController.animateTo(centerPoint);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     public void onLocationUpdate(Location newLocation) {
@@ -110,7 +151,8 @@ public class FriendView extends RelativeLayout implements
                 }
             );
             
-            // Set map center
+            Log.d("SocialLocate", "Animating to point due to location update");
+            
             mapController.animateTo(Util.getGeoPoint(center));
         }
     }
@@ -126,8 +168,11 @@ public class FriendView extends RelativeLayout implements
         Util.uiHandler.post(
             new Runnable() {
                 public void run() {
-                    pic.setImageBitmap(picRunner.getImage(user.getId(), user.getPic()));
-                    pic.invalidate();
+                    if (user != null) {
+                        Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
+                        pic.setImageBitmap(bitmap);
+                        pic.invalidate();
+                    }
                 }
             }
         );
