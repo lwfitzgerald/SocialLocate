@@ -32,7 +32,7 @@ public class FriendView extends RelativeLayout implements
     
     private User ownUser = null;
     private GeoPoint ownUserGeoPoint;
-    private volatile Bitmap ownCroppedBitmap = null;
+    private Bitmap ownCroppedBitmap = null;
     
     private User user = null;
     private GeoPoint userGeoPoint;
@@ -173,9 +173,6 @@ public class FriendView extends RelativeLayout implements
         this.userCroppedBitmap = null;
         
         final Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
-        if (bitmap != null) {
-            userCroppedBitmap = Util.cropBitmap(bitmap, 100, 100);
-        }
         
         Util.uiHandler.post(
             new Runnable() {
@@ -260,9 +257,6 @@ public class FriendView extends RelativeLayout implements
         if (user != null) {
             // Set cropped image for user
             final Bitmap userBitmap = picRunner.getImage(user.getId(), user.getPic());
-            if (userBitmap != null) {
-                userCroppedBitmap = Util.cropBitmap(userBitmap, 100, 100);
-            }
             
             // Update top user picture
             Util.uiHandler.post(
