@@ -205,7 +205,7 @@ public class FriendView extends RelativeLayout implements
     }
     
     private class UserItem extends OverlayItem {
-        private Bitmap croppedBitmap = null;
+        private BitmapDrawable drawableImage = null;
         private boolean isOwnUser;
         
         public UserItem(User user, GeoPoint point, boolean isOwnUser) {
@@ -216,22 +216,26 @@ public class FriendView extends RelativeLayout implements
         
         @Override
         public Drawable getMarker(int stateBitset) {
-            Bitmap image;
-            if (isOwnUser) {
-                image = picRunner.getImage(ownUser.getId(), ownUser.getPic());
-            } else {
-                image = picRunner.getImage(friendUser.getId(), friendUser.getPic());
+            if (drawableImage == null) {
+                Bitmap image;
+                if (isOwnUser) {
+                    image = picRunner.getImage(ownUser.getId(), ownUser.getPic());
+                } else {
+                    image = picRunner.getImage(friendUser.getId(), friendUser.getPic());
+                }
+                
+                if (image != null) {
+                    Bitmap croppedBitmap = Util.cropBitmap(image, 100, 100);
+                    drawableImage = new BitmapDrawable(slActivity.getResources(), croppedBitmap);
+                    drawableImage.setBounds(0, 0, croppedBitmap.getWidth(), croppedBitmap.getHeight());
+                    return drawableImage;
+                } else {
+                    Bitmap emptyBitmap = Bitmap.createBitmap(0, 0, Bitmap.Config.ALPHA_8);
+                    return new BitmapDrawable(slActivity.getResources(), emptyBitmap);
+                }
             }
             
-            if (image != null) {
-                croppedBitmap = Util.cropBitmap(image, 100, 100);
-            } else {
-                croppedBitmap = Bitmap.createBitmap(0, 0, Bitmap.Config.ARGB_8888);
-            }
-            
-            BitmapDrawable drawable = new BitmapDrawable(slActivity.getResources(), croppedBitmap);
-            drawable.setBounds(0, 0, croppedBitmap.getWidth(), croppedBitmap.getHeight());
-            return drawable;
+            return drawableImage;
         }
     }
     
