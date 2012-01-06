@@ -98,7 +98,9 @@ public class ProfilePicRunner {
         protected Bitmap doInBackground(Object... params) {
             this.uid = (Integer) params[0];
             String url = (String) params[1];
-            return Util.getBitmap(url);
+            
+            // Crop and return
+            return Util.cropBitmap(Util.getBitmap(url), 100, 100);
         }
 
         @Override
