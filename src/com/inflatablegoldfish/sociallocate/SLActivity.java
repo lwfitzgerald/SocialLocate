@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.facebook.android.Facebook;
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;
@@ -226,9 +227,16 @@ public class SLActivity extends MapActivity {
      * @param user Friend to view
      */
     public void showFriendView(User user) {
-        friendView.updateUser(user);
+        friendView.updateUser(user, true);
         
         viewFlipper.showNext();
+    }
+    
+    /**
+     * Switch to the venue list view
+     */
+    public void showVenueList(GeoPoint center) {
+        
     }
     
     /**

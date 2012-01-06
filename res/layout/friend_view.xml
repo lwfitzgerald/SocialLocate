@@ -17,7 +17,15 @@
         android:id="@+id/bottom_bar"
         android:layout_width="fill_parent"
         android:layout_height="?android:attr/listPreferredItemHeight"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true">
+        
+  	    <Button
+  	        android:id="@+id/lets_meet_button"
+  	        android:text="@string/lets_meet_button"
+  	        android:layout_width="fill_parent"
+  	        android:layout_height="?android:attr/listPreferredItemHeight"
+  	        style="@android:style/Widget.DeviceDefault.ActionButton" />
+    </RelativeLayout>
     
   	<com.google.android.maps.MapView
         android:id="@+id/mapview"
