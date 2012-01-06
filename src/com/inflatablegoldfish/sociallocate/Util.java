@@ -267,6 +267,9 @@ public class Util {
     }
     
     public static Bitmap cropBitmap(Bitmap source, int desiredX, int desiredY) {
+        desiredX = Math.min(desiredX, source.getWidth());
+        desiredY = Math.min(desiredY, source.getHeight());
+        
         Bitmap croppedImage = Bitmap.createBitmap(desiredX, desiredY, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(croppedImage);
      
