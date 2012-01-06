@@ -274,13 +274,14 @@ public class Util {
         Rect dstRect = new Rect(0, 0, desiredX, desiredY);
      
         int dx = (srcRect.width() - dstRect.width()) / 2;
-        int dy = (srcRect.height() - dstRect.height()) / 2;
+        int dy = (srcRect.height() - dstRect.height());
      
         // If the srcRect is too big, use the center part of it.
-        srcRect.inset(Math.max(0, dx), Math.max(0, dy));
+        srcRect.inset(Math.max(0, dx), 0);
+        srcRect.bottom = srcRect.bottom - dy;
      
         // If the dstRect is too big, use the center part of it.
-        dstRect.inset(Math.max(0, -dx), Math.max(0, -dy));
+        dstRect.inset(Math.max(0, -dx), 0);
      
         // Draw the cropped bitmap in the center
         canvas.drawBitmap(source, srcRect, dstRect, null);
