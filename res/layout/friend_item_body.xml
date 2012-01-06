@@ -10,8 +10,7 @@
         android:layout_width="100px"
         android:layout_height="fill_parent"
         android:layout_marginRight="6dip"
-        android:layout_centerVertical="true"
-        android:scaleType="centerCrop" />
+        android:layout_centerVertical="true" />
     <TextView
         android:id="@+id/name"
         android:layout_width="fill_parent"
@@ -33,7 +32,5 @@
        	android:layout_height="wrap_content"
        	android:layout_alignParentRight="true"
        	android:layout_marginRight="6dip"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:gravity="center_vertical" />
+        android:layout_centerVertical="true" />
 </RelativeLayout>

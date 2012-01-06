@@ -225,12 +225,11 @@ public class FriendView extends RelativeLayout implements
                 }
                 
                 if (image != null) {
-                    Bitmap croppedBitmap = Util.cropBitmap(image, 100, 100);
-                    drawableImage = new BitmapDrawable(slActivity.getResources(), croppedBitmap);
-                    drawableImage.setBounds(0, 0, croppedBitmap.getWidth(), croppedBitmap.getHeight());
+                    drawableImage = new BitmapDrawable(slActivity.getResources(), image);
+                    drawableImage.setBounds(0, 0, image.getWidth(), image.getHeight());
                     return drawableImage;
                 } else {
-                    Bitmap emptyBitmap = Bitmap.createBitmap(0, 0, Bitmap.Config.ALPHA_8);
+                    Bitmap emptyBitmap = Bitmap.createBitmap(0, 0, Bitmap.Config.ARGB_8888);
                     return new BitmapDrawable(slActivity.getResources(), emptyBitmap);
                 }
             }
@@ -350,7 +349,7 @@ public class FriendView extends RelativeLayout implements
         this.mapOverlay.refresh();
         
         if (friendUser != null) {
-            // Set cropped image for user
+            // Set image for user
             final Bitmap userBitmap = picRunner.getImage(friendUser.getId(), friendUser.getPic());
             
             // Update top user picture
