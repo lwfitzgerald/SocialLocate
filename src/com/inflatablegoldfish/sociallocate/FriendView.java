@@ -10,10 +10,15 @@ import com.google.android.maps.OverlayItem;
 import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
+import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -86,101 +91,98 @@ public class FriendView extends RelativeLayout implements
         mapView.getOverlays().add(mapOverlay);
     }
     
-//    private class MapOverlay extends Overlay {
-//        @Override
-//        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
-//            super.draw(canvas, mapView, shadow);
-//
-//            Point ownUserPoint = null;
-//            if (ownUserGeoPoint != null) {
-//                ownUserPoint = getAndDrawPoint(ownUser, ownUserGeoPoint, canvas, true);
-//            }
-//            
-//            Point userPoint = null;
-//            if (userGeoPoint != null) {
-//                userPoint = getAndDrawPoint(user, userGeoPoint, canvas, false);
-//            }
-//            
-//            if (ownUserPoint != null && userPoint != null) {
-//                Paint paint = new Paint();
-//                paint.setDither(true);
-//                paint.setColor(Color.BLACK);
-//                paint.setStyle(Paint.Style.FILL_AND_STROKE);
-//                paint.setStrokeJoin(Paint.Join.ROUND);
-//                paint.setStrokeCap(Paint.Cap.ROUND);
-//                paint.setStrokeWidth(4);
-//                
-//                Path path = new Path();
-//                
-//                path.moveTo(userPoint.x, userPoint.y);
-//                path.lineTo(ownUserPoint.x, ownUserPoint.y);
-//                
-//                canvas.drawPath(path, paint);   
-//            }
-//        }
-//        
-//        private Point getAndDrawPoint(User user, GeoPoint geoPoint, Canvas canvas, boolean ownUser) {
-//            Point point = new Point();
-//            mapView.getProjection().toPixels(geoPoint, point);
-//            
-//            Bitmap croppedBitmap;
-//            
-//            if (ownUser) {
-//                croppedBitmap = ownCroppedBitmap;
-//            } else {
-//                croppedBitmap = userCroppedBitmap;
-//            }
-//            
-//            if (croppedBitmap == null) {
-//                Bitmap image = picRunner.getImage(user.getId(), user.getPic());
-//                
-//                if (image != null) {
-//                    croppedBitmap = Util.cropBitmap(image, 100, 100);
-//                    
-//                    canvas.drawBitmap(croppedBitmap,
-//                            point.x, point.y - 100, null);
-//                    
-//                    if (ownUser) {
-//                        ownCroppedBitmap = croppedBitmap;
-//                    } else {
-//                        userCroppedBitmap = croppedBitmap;
-//                    }
-//                }
-//            } else {
-//                canvas.drawBitmap(croppedBitmap,
-//                        point.x, point.y - 100, null);
-//            }
-//            
-//            return point;
-//        }
-//    }
-    
     private class MapOverlay extends ItemizedOverlay<UserItem> {
         /*
          * userItems[0] = Own User
          * userItems[1] = Friend User
          */
         private UserItem[] userItems = new UserItem[] {null, null};
+        private volatile GeoPoint center;
         
         public MapOverlay() {
             super(null);
         }
         
         public void setOwnUser(Location currentLocation) {
-            Log.d("SocialLocate", "Own user set / updated");
             userItems[0] = new UserItem(ownUser, Util.getGeoPoint(currentLocation), true);
+            center = null;
             populate();
         }
         
         public void updateFriendUser(User friendUser) {
-            Log.d("SocialLocate", "Friend user set / updated");
             userItems[1] = new UserItem(friendUser, Util.getGeoPoint(friendUser.getLocation()), false);
+            center = null;
             populate();
         }
         
         @Override
         public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+            Paint paint = new Paint();
+            paint.setDither(true);
+            paint.setColor(Color.BLACK);
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setStrokeJoin(Paint.Join.ROUND);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setStrokeWidth(4);
+            
+            Point ownUserPoint = null;
+            if (userItems[0] != null) {
+                ownUserPoint = getAndDrawItemPoint(userItems[0], canvas, paint);
+            }
+            
+            Point friendUserPoint = null;
+            if (userItems[1] != null) {
+                friendUserPoint = getAndDrawItemPoint(userItems[1], canvas, paint);
+            }
+            
+            /*if (center == null) {
+                // Center not calculated so calculate
+                if (ownUserPoint != null && friendUserPoint != null) {
+                    center = Util.getGeoPoint(
+                        Util.getCenter(
+                            new Location[] {
+                                slActivity.getCurrentLocation(),
+                                friendUser.getLocation()
+                            }
+                        )
+                    );
+                    
+                    drawLinesAndSearchRadius(ownUserPoint, friendUserPoint, canvas, paint);
+                }
+            } else {
+                drawLinesAndSearchRadius(ownUserPoint, friendUserPoint, canvas, paint);
+            }*/
+            
             super.draw(canvas, mapView, false);
+        }
+        
+        private Point getAndDrawItemPoint(UserItem item, Canvas canvas, Paint paint) {
+            Point point = new Point();
+            mapView.getProjection().toPixels(item.getPoint(), point);
+            
+            canvas.drawCircle(point.x, point.y, 3, paint);
+            
+            return point;
+        }
+        
+        private void drawLinesAndSearchRadius(Point ownUserPoint, Point friendUserPoint, Canvas canvas, Paint paint) {
+            Point centerPoint = new Point();
+            mapView.getProjection().toPixels(center, centerPoint);
+            
+            Path path = new Path();
+
+            path.moveTo(ownUserPoint.x, ownUserPoint.y);
+            path.lineTo(centerPoint.x, centerPoint.y);
+            path.moveTo(centerPoint.x, centerPoint.y);
+            path.lineTo(friendUserPoint.x, friendUserPoint.y);
+
+            canvas.drawPath(path, paint);
+            
+            paint.setStyle(Paint.Style.STROKE);
+            
+            float searchRadius = mapView.getProjection().metersToEquatorPixels(Foursquare.SEARCH_RADIUS);
+            
+            canvas.drawCircle(centerPoint.x, centerPoint.y, searchRadius, paint);
         }
         
         public void refresh() {

@@ -18,6 +18,9 @@ public class Foursquare {
     private static final String clientSecret = "4ECVND4FTFX0DELN1BL2E2UKRWF3F24VSNPVG5B3DXF5544L";
     private static final String lastModified = "20111222";
     
+    // Search radius in metres
+    public static final int SEARCH_RADIUS = 1000;
+    
     public void startFindMeetingPlaces(final Location ourLocation,
             final Location[] friendLocations, final FSRequestListener listener) {
         new Thread(new Runnable() {
