@@ -223,13 +223,10 @@ public class FriendView extends RelativeLayout implements
                 image = picRunner.getImage(friendUser.getId(), friendUser.getPic());
             }
             
-            Bitmap markerBitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
-            
             if (image != null) {
                 croppedBitmap = Util.cropBitmap(image, 100, 100);
-                
-                Canvas canvas = new Canvas(markerBitmap);
-                canvas.drawBitmap(croppedBitmap, 100, 0, null);
+            } else {
+                croppedBitmap = Bitmap.createBitmap(0, 0, Bitmap.Config.ARGB_8888);
             }
             
             BitmapDrawable drawable = new BitmapDrawable(slActivity.getResources(), croppedBitmap);
