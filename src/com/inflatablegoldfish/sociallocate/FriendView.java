@@ -3,9 +3,10 @@ package com.inflatablegoldfish.sociallocate;
 import java.util.List;
 
 import com.google.android.maps.GeoPoint;
+import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
-import com.google.android.maps.Overlay;
+import com.google.android.maps.OverlayItem;
 import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
@@ -13,10 +14,8 @@ import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -30,13 +29,8 @@ public class FriendView extends RelativeLayout implements
     
     private SLActivity slActivity;
     
-    private User ownUser = null;
-    private GeoPoint ownUserGeoPoint;
-    private Bitmap ownCroppedBitmap = null;
-    
-    private User user = null;
-    private GeoPoint userGeoPoint;
-    private volatile Bitmap userCroppedBitmap = null;
+    private volatile User ownUser = null;
+    private volatile User friendUser = null;
     
     private ProfilePicRunner picRunner;
     
@@ -46,6 +40,7 @@ public class FriendView extends RelativeLayout implements
     private TextView distance;
     
     private MapView mapView;
+    private MapOverlay mapOverlay;
     private MapController mapController;
     
     public FriendView(Context context) {
@@ -87,75 +82,159 @@ public class FriendView extends RelativeLayout implements
         this.picRunner = picRunner;
         picRunner.addListener(this);
         
-        mapView.getOverlays().add(new MapOverlay());
+        mapOverlay = new MapOverlay();
+        mapView.getOverlays().add(mapOverlay);
     }
     
-    private class MapOverlay extends Overlay {
-        @Override
-        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
-            super.draw(canvas, mapView, shadow);
-
-            Point ownUserPoint = null;
-            if (ownUserGeoPoint != null) {
-                ownUserPoint = getAndDrawPoint(ownUser, ownUserGeoPoint, canvas, true);
-            }
-            
-            Point userPoint = null;
-            if (userGeoPoint != null) {
-                userPoint = getAndDrawPoint(user, userGeoPoint, canvas, false);
-            }
-            
-            if (ownUserPoint != null && userPoint != null) {
-                Paint paint = new Paint();
-                paint.setDither(true);
-                paint.setColor(Color.BLACK);
-                paint.setStyle(Paint.Style.FILL_AND_STROKE);
-                paint.setStrokeJoin(Paint.Join.ROUND);
-                paint.setStrokeCap(Paint.Cap.ROUND);
-                paint.setStrokeWidth(4);
-                
-                Path path = new Path();
-                
-                path.moveTo(userPoint.x, userPoint.y);
-                path.lineTo(ownUserPoint.x, ownUserPoint.y);
-                
-                canvas.drawPath(path, paint);   
-            }
+//    private class MapOverlay extends Overlay {
+//        @Override
+//        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+//            super.draw(canvas, mapView, shadow);
+//
+//            Point ownUserPoint = null;
+//            if (ownUserGeoPoint != null) {
+//                ownUserPoint = getAndDrawPoint(ownUser, ownUserGeoPoint, canvas, true);
+//            }
+//            
+//            Point userPoint = null;
+//            if (userGeoPoint != null) {
+//                userPoint = getAndDrawPoint(user, userGeoPoint, canvas, false);
+//            }
+//            
+//            if (ownUserPoint != null && userPoint != null) {
+//                Paint paint = new Paint();
+//                paint.setDither(true);
+//                paint.setColor(Color.BLACK);
+//                paint.setStyle(Paint.Style.FILL_AND_STROKE);
+//                paint.setStrokeJoin(Paint.Join.ROUND);
+//                paint.setStrokeCap(Paint.Cap.ROUND);
+//                paint.setStrokeWidth(4);
+//                
+//                Path path = new Path();
+//                
+//                path.moveTo(userPoint.x, userPoint.y);
+//                path.lineTo(ownUserPoint.x, ownUserPoint.y);
+//                
+//                canvas.drawPath(path, paint);   
+//            }
+//        }
+//        
+//        private Point getAndDrawPoint(User user, GeoPoint geoPoint, Canvas canvas, boolean ownUser) {
+//            Point point = new Point();
+//            mapView.getProjection().toPixels(geoPoint, point);
+//            
+//            Bitmap croppedBitmap;
+//            
+//            if (ownUser) {
+//                croppedBitmap = ownCroppedBitmap;
+//            } else {
+//                croppedBitmap = userCroppedBitmap;
+//            }
+//            
+//            if (croppedBitmap == null) {
+//                Bitmap image = picRunner.getImage(user.getId(), user.getPic());
+//                
+//                if (image != null) {
+//                    croppedBitmap = Util.cropBitmap(image, 100, 100);
+//                    
+//                    canvas.drawBitmap(croppedBitmap,
+//                            point.x, point.y - 100, null);
+//                    
+//                    if (ownUser) {
+//                        ownCroppedBitmap = croppedBitmap;
+//                    } else {
+//                        userCroppedBitmap = croppedBitmap;
+//                    }
+//                }
+//            } else {
+//                canvas.drawBitmap(croppedBitmap,
+//                        point.x, point.y - 100, null);
+//            }
+//            
+//            return point;
+//        }
+//    }
+    
+    private class MapOverlay extends ItemizedOverlay<UserItem> {
+        /*
+         * userItems[0] = Own User
+         * userItems[1] = Friend User
+         */
+        private UserItem[] userItems = new UserItem[] {null, null};
+        
+        public MapOverlay() {
+            super(null);
         }
         
-        private Point getAndDrawPoint(User user, GeoPoint geoPoint, Canvas canvas, boolean ownUser) {
-            Point point = new Point();
-            mapView.getProjection().toPixels(geoPoint, point);
-            
-            Bitmap croppedBitmap;
-            
-            if (ownUser) {
-                croppedBitmap = ownCroppedBitmap;
+        public void setOwnUser(Location currentLocation) {
+            Log.d("SocialLocate", "Own user set / updated");
+            userItems[0] = new UserItem(ownUser, Util.getGeoPoint(currentLocation), true);
+            populate();
+        }
+        
+        public void updateFriendUser(User friendUser) {
+            Log.d("SocialLocate", "Friend user set / updated");
+            userItems[1] = new UserItem(friendUser, Util.getGeoPoint(friendUser.getLocation()), false);
+            populate();
+        }
+        
+        @Override
+        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+            super.draw(canvas, mapView, false);
+        }
+        
+        public void refresh() {
+            super.populate();
+        }
+        
+        @Override
+        protected UserItem createItem(int i) {
+            if (size() == 1) {
+                return userItems[0] != null ? userItems[0] : userItems[1];
             } else {
-                croppedBitmap = userCroppedBitmap;
+                // Both present
+                return userItems[i];
+            }
+        }
+
+        @Override
+        public int size() {
+            return (userItems[0] != null ? 1 : 0)
+                    + (userItems[1] != null ? 1 : 0);
+        }
+    }
+    
+    private class UserItem extends OverlayItem {
+        private Bitmap croppedBitmap = null;
+        private boolean isOwnUser;
+        
+        public UserItem(User user, GeoPoint point, boolean isOwnUser) {
+            super(point, user.getName(), "");
+            this.isOwnUser = isOwnUser;
+            Log.d("SocialLocate", user.getName() + " overlay (re)created");
+        }
+        
+        @Override
+        public Drawable getMarker(int stateBitset) {
+            Bitmap image;
+            if (isOwnUser) {
+                image = picRunner.getImage(ownUser.getId(), ownUser.getPic());
+            } else {
+                image = picRunner.getImage(friendUser.getId(), friendUser.getPic());
             }
             
-            if (croppedBitmap == null) {
-                Bitmap image = picRunner.getImage(user.getId(), user.getPic());
+            Bitmap markerBitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
+            
+            if (image != null) {
+                croppedBitmap = Util.cropBitmap(image, 100, 100);
                 
-                if (image != null) {
-                    croppedBitmap = Util.cropBitmap(image, 100, 100);
-                    
-                    canvas.drawBitmap(croppedBitmap,
-                            point.x, point.y - 100, null);
-                    
-                    if (ownUser) {
-                        ownCroppedBitmap = croppedBitmap;
-                    } else {
-                        userCroppedBitmap = croppedBitmap;
-                    }
-                }
-            } else {
-                canvas.drawBitmap(croppedBitmap,
-                        point.x, point.y - 100, null);
+                Canvas canvas = new Canvas(markerBitmap);
+                canvas.drawBitmap(croppedBitmap, 100, 0, null);
             }
             
-            return point;
+            BitmapDrawable drawable = new BitmapDrawable(slActivity.getResources(), croppedBitmap);
+            drawable.setBounds(0, 0, croppedBitmap.getWidth(), croppedBitmap.getHeight());
+            return drawable;
         }
     }
     
@@ -163,14 +242,15 @@ public class FriendView extends RelativeLayout implements
         this.ownUser = ownUser;
         
         if (slActivity.getCurrentLocation() != null) {
-            this.ownUserGeoPoint = Util.getGeoPoint(slActivity.getCurrentLocation());
+            // Create overlay item
+            mapOverlay.setOwnUser(slActivity.getCurrentLocation());
         }
     }
     
     public void updateUser(final User user) {
-        this.user = user;
-        this.userGeoPoint = Util.getGeoPoint(user.getLocation());
-        this.userCroppedBitmap = null;
+        this.friendUser = user;
+        
+        this.mapOverlay.updateFriendUser(user);
         
         final Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
         
@@ -204,9 +284,18 @@ public class FriendView extends RelativeLayout implements
             
             // Set map center
             centerPoint = Util.getGeoPoint(center);
+            
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
+                    }
+                }
+            );
         } else {
             // No location so just center on friend
             centerPoint = Util.getGeoPoint(user.getLocation());
+            mapController.setZoom(12);
         }
         
         Log.d("SocialLocate", "Animating to point due to fetch update");
@@ -221,16 +310,17 @@ public class FriendView extends RelativeLayout implements
     }
     
     public void onLocationUpdate(Location newLocation) {
-        // Update own user geopoint
-        this.ownUserGeoPoint = Util.getGeoPoint(slActivity.getCurrentLocation());
+        if (ownUser != null) {
+            // Update own user geopoint
+            mapOverlay.setOwnUser(newLocation);
+        }
         
-        // Center map
-        if (user != null) {
+        if (friendUser != null) {
             // Have current location so center on midpoint
             final Location center = Util.getCenter(
                 new Location[] {
                     newLocation,
-                    user.getLocation()
+                    friendUser.getLocation()
                 }
             );
             
@@ -239,6 +329,7 @@ public class FriendView extends RelativeLayout implements
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
+                        mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
                         mapController.animateTo(Util.getGeoPoint(center));
                     }
                 }
@@ -248,15 +339,18 @@ public class FriendView extends RelativeLayout implements
     
     public void onSLUpdate(List<User> friends) {
         // Will refresh UI
-        if (user != null) {
-            updateUser(user);
+        if (friendUser != null) {
+            updateUser(friendUser);
         }
     }
 
     public void onProfilePicDownloaded() {
-        if (user != null) {
+        // Refresh data in OverlayItems
+        this.mapOverlay.refresh();
+        
+        if (friendUser != null) {
             // Set cropped image for user
-            final Bitmap userBitmap = picRunner.getImage(user.getId(), user.getPic());
+            final Bitmap userBitmap = picRunner.getImage(friendUser.getId(), friendUser.getPic());
             
             // Update top user picture
             Util.uiHandler.post(

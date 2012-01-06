@@ -190,7 +190,9 @@ public class SLActivity extends MapActivity {
      * Stops repeating fetch requests
      */
     public void stopFetchRequests() {
-        fetchTimer.cancel();
+        if (fetchTimer != null) {
+            fetchTimer.cancel();
+        }
     }
     
     public void locationUpdated(final Location newLocation) {
