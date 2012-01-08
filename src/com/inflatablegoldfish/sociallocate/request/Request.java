@@ -2,24 +2,16 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 
-import com.facebook.android.Facebook;
-import com.inflatablegoldfish.sociallocate.SocialLocate;
-
 public abstract class Request {
     protected RequestListener<?> listener;
     protected int retries = 1;
     
     protected RequestManager manager;
-    protected Facebook facebook;
-    protected SocialLocate socialLocate;
     
-    protected Request(RequestManager manager, RequestListener<?> listener, Facebook facebook,
-            SocialLocate socialLocate) {
+    protected Request(RequestManager manager, RequestListener<?> listener) {
         
         this.manager = manager;
         this.listener = listener;
-        this.facebook = facebook;
-        this.socialLocate = socialLocate;
     }
     
     public abstract RequestResult<?> execute();

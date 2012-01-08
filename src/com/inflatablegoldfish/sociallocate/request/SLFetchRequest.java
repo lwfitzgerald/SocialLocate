@@ -33,9 +33,16 @@ public class SLFetchRequest extends SLRequest {
             // TODO: Implement exponential backoff sleep here?
             retries++;
         } else {
-            // Remove from queue (will be at front)
+            // Remove from queue
             synchronized(requestQueue) {
-                requestQueue.poll();
+                Iterator<Request> itr = requestQueue.iterator();
+                
+                while (itr.hasNext()) {
+                    if (itr.next() == this) {
+                        itr.remove();
+                        break;
+                    }
+                }
             }
             
             listener.onError(ResultCode.ERROR);

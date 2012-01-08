@@ -1,6 +1,5 @@
 package com.inflatablegoldfish.sociallocate;
 
-import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -67,16 +66,7 @@ public class User {
     }
     
     public String getPrettyDistance() {
-        double distance = this.distance.intValue();
-        
-        // Show in kilometers if greater than 100m
-        if (distance >= 100) {
-            DecimalFormat formatter = new DecimalFormat("0.0");
-            
-            return formatter.format(distance / 1000) + "km";
-        } else {
-            return distance + "m";
-        }
+        return Util.makeDistancePretty(distance);
     }
     
     public void setDistanceFrom(Location location) {

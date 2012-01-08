@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <!-- Include initial fail view (but hidden) -->
+    <include layout="@layout/venue_fail"
+        android:id="@+id/venue_fail"
+        android:visibility="gone" />
+    
+    <!-- Include empty view (but hidden) -->
+    <include layout="@layout/empty_view"
+        android:id="@+id/empty_view"
+        android:visibility="gone" />
+    
+    <ImageView
+        android:id="@+id/powered_by_android"
+        android:src="@drawable/powered_by_foursquare"
+        android:layout_width="fill_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:layout_alignParentBottom="true" />
+    
+    <com.inflatablegoldfish.sociallocate.VenueList
+        android:id="@+id/venue_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@id/powered_by_android"
+        android:divider="@null" />
+</RelativeLayout>

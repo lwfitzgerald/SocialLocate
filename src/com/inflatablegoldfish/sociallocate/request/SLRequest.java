@@ -10,11 +10,17 @@ import com.inflatablegoldfish.sociallocate.User;
 public abstract class SLRequest extends Request {
     protected static final int NUM_RETRIES = 3;
     
+    protected Facebook facebook;
+    protected SocialLocate socialLocate;
+    
     protected SLRequest(RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
-        super(manager, listener, facebook, socialLocate);
+        super(manager, listener);
+        
+        this.facebook = facebook;
+        this.socialLocate = socialLocate;
     }
     
     /**

@@ -56,8 +56,7 @@ public class SLAuthRequest extends SLRequest {
             
                             public void onCancel() {}
                         },
-                        facebook,
-                        socialLocate
+                        facebook
                     )
                 );
             }

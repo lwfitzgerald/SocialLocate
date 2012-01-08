@@ -12,7 +12,6 @@ import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
 import com.facebook.android.FacebookError;
 import com.facebook.android.Facebook.DialogListener;
-import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
 
@@ -23,10 +22,14 @@ public class FBAuthRequest extends Request {
     
     private static final int NUM_RETRIES = 3;
     
+    private Facebook facebook;
+    
     public FBAuthRequest(RequestManager manager, RequestListener<?> listener,
-            Facebook facebook, SocialLocate socialLocate) {
+            Facebook facebook) {
         
-        super(manager, listener, facebook, socialLocate);
+        super(manager, listener);
+        
+        this.facebook = facebook;
     }
 
     @Override

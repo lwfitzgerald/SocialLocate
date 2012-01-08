@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -264,6 +265,19 @@ public class Util {
         location.setLongitude(lng);
         
         return location;
+    }
+    
+    public static String makeDistancePretty(Float distance) {
+        distance = (float) distance.intValue();
+        
+        // Show in kilometers if greater than 100m
+        if (distance >= 100) {
+            DecimalFormat formatter = new DecimalFormat("0.0");
+            
+            return formatter.format(distance / 1000) + "km";
+        } else {
+            return distance + "m";
+        }
     }
     
     public static Bitmap cropBitmap(Bitmap source, int desiredX, int desiredY) {

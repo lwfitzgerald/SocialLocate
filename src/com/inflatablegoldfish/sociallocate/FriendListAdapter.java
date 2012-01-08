@@ -5,9 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.foound.widget.AmazingAdapter;
-import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
+import com.inflatablegoldfish.sociallocate.PicRunner.PicRunnerListener;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +16,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunnerListener {
-    private volatile List<User> friends;
-    private Object friendLock;
+public class FriendListAdapter extends AmazingAdapter implements PicRunnerListener {
+    private volatile List<User> friends = null;
+    private Object friendLock = new Object();
     
-    private ProfilePicRunner picRunner;
+    private PicRunner picRunner;
     
     private LayoutInflater mInflater;
     private CharSequence[] sectionTitles;
@@ -36,26 +37,18 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
     
     private static final int NEAR_DISTANCE = 1000;
     
-    public FriendListAdapter(Context context, ProfilePicRunner picRunner) {
-        friends = null;
-        friendLock = new Object();
-        
+    public FriendListAdapter(Context context, PicRunner picRunner) {
         this.picRunner = picRunner;
         picRunner.addListener(this);
         
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        
         sectionTitles = new CharSequence[] {
             context.getText(R.string.you_section_title),
             context.getText(R.string.near_section_title),
             context.getText(R.string.far_section_title),
             context.getText(R.string.friends_section_title),
         };
-    }
-    
-    public FriendListAdapter(Context context, ProfilePicRunner picRunner, List<User> friends) {
-        this(context, picRunner);
-        
-        this.friends = friends;
     }
     
     public boolean isEmpty() {
@@ -209,15 +202,17 @@ public class FriendListAdapter extends AmazingAdapter implements ProfilePicRunne
         // Get friend for this view
         User friend;
         synchronized (friendLock) {
-             friend = friends.get(position);
+            friend = friends.get(position);
         }
         
         // Attempt to get photo from ready images or issue request
-        holder.pic.setImageBitmap(picRunner.getImage(friend.getId(), friend.getPic()));
+        Bitmap image = picRunner.getImage(friend.getPic(), true);
+        if (image != null) {
+            holder.pic.setImageBitmap(image);
+        }
         
         // Set name
         holder.name.setText(friend.getName());
-        
         
         if (position == 0) {
             // Own user so mark as not clickable

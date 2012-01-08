@@ -6,7 +6,8 @@
 	<include layout="@layout/friend_item_body"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
-	    android:layout_marginLeft="6dip"/>
+	    android:layout_marginLeft="6dip"
+	    android:layout_marginRight="6dip" />
 	
     <RelativeLayout
         android:id="@+id/list_separator_bar"

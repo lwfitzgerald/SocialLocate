@@ -6,34 +6,36 @@ import java.util.List;
 
 import android.location.Location;
 
-import com.facebook.android.Facebook;
-import com.inflatablegoldfish.sociallocate.SocialLocate;
-import com.inflatablegoldfish.sociallocate.User;
+import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
+import com.inflatablegoldfish.sociallocate.foursquare.Venue;
 
-public class SLUpdateRequest extends SLRequest {
+public class FSRequest extends Request {
+    private Foursquare foursquare;
     private Location location;
+    private Location ourLocation;
     
-    public SLUpdateRequest(Location location, RequestManager manager,
-            RequestListener<List<User>> listener, Facebook facebook,
-            SocialLocate socialLocate) {
+    private static final int NUM_RETRIES = 3;
+    
+    public FSRequest(Location location, Location ourLocation, Foursquare foursquare,
+            RequestManager manager, RequestListener<List<Venue>> listener) {
         
-        super(manager, listener, facebook, socialLocate);
+        super(manager, listener);
         
+        this.foursquare = foursquare;
         this.location = location;
+        this.ourLocation = location;
     }
 
     @Override
-    public RequestResult<List<User>> execute() {
-        return socialLocate.updateLocation(location);
+    public RequestResult<List<Venue>> execute() {
+        return foursquare.getVenuesNear(location, ourLocation);
     }
 
     @Override
-    public void onAuthFail(Deque<Request> requestQueue) {
-        addSLReAuth(requestQueue);
-    }
+    protected void onAuthFail(Deque<Request> requestQueue) {}
 
     @Override
-    public void onError(Deque<Request> requestQueue) {
+    protected void onError(Deque<Request> requestQueue) {
         if (retries < NUM_RETRIES) {
             // TODO: Implement exponential backoff sleep here?
             retries++;
@@ -55,29 +57,28 @@ public class SLUpdateRequest extends SLRequest {
     }
 
     @Override
-    public void onCancel(Deque<Request> requestQueue) {}
+    protected void onCancel(Deque<Request> requestQueue) {}
 
     @Override
     public void addToQueue(Deque<Request> requestQueue) {
-        // Synchronize on the queue whilst iterating
         synchronized (requestQueue) {
             Iterator<Request> itr = requestQueue.iterator();
             
             /*
-             * Find existing update requests and simply
+             * Find existing requests and simply
              * update the location parameter
              */
             while (itr.hasNext()) {
                 Request request = itr.next();
                 
                 if (request instanceof SLUpdateRequest) {
-                    ((SLUpdateRequest) request).updateLocation(location);
+                    ((FSRequest) request).updateLocation(location);
                     return;
                 }
             }
             
-            // No other SL update requests so add to the queue
-            requestQueue.addLast(this);
+            // No other requests so add to the queue
+            requestQueue.addFirst(this);
         }
     }
     

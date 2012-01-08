@@ -6,4 +6,5 @@
     
     <include layout="@layout/friend_list_view" />
     <include layout="@layout/friend_view" />
+    <include layout="@layout/venue_list_view" />
 </ViewFlipper>

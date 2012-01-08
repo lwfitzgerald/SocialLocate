@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.ViewFlipper;
 
 public class SLActivity extends MapActivity {
@@ -38,8 +39,8 @@ public class SLActivity extends MapActivity {
     
     private ViewFlipper viewFlipper;
     private FriendList friendList;
-    
     private FriendView friendView;
+    private VenueList venueList;
     
     private Timer fetchTimer;
     
@@ -89,15 +90,19 @@ public class SLActivity extends MapActivity {
         viewFlipper.setOutAnimation(this, android.R.anim.fade_out);
         
         // Set up the pic runner
-        ProfilePicRunner picRunner = new ProfilePicRunner();
+        PicRunner picRunner = new PicRunner();
         
-        // Set up the the friend list
+        // Set up the friend list
         friendList = (FriendList) findViewById(R.id.friend_list);
         friendList.setUp(this, picRunner);
         
-        // Set the friend view
+        // Set up the friend view
         friendView = (FriendView) findViewById(R.id.friend_view);
         friendView.setUp(this, picRunner);
+        
+        // Set up the venue list
+        venueList = (VenueList) findViewById(R.id.venue_list);
+        venueList.setUp(this, picRunner);
     }
     
     private void initialAuth() {
@@ -113,8 +118,7 @@ public class SLActivity extends MapActivity {
     
                         public void onCancel() {}
                     },
-                    facebook,
-                    socialLocate
+                    facebook
                 )
             );
         }
@@ -236,7 +240,13 @@ public class SLActivity extends MapActivity {
      * Switch to the venue list view
      */
     public void showVenueList(GeoPoint center) {
+        venueList.switchingTo();
         
+        viewFlipper.showNext();
+    }
+    
+    public View currentlyShowingView() {
+        return viewFlipper.getCurrentView();
     }
     
     /**
@@ -302,6 +312,10 @@ public class SLActivity extends MapActivity {
     @Override
     protected boolean isRouteDisplayed() {
         return false;
+    }
+    
+    public FriendView getFriendView() {
+        return friendView;
     }
     
     public RequestManager getRequestManager() {

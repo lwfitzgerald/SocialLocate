@@ -7,7 +7,7 @@ import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
-import com.inflatablegoldfish.sociallocate.ProfilePicRunner.ProfilePicRunnerListener;
+import com.inflatablegoldfish.sociallocate.PicRunner.PicRunnerListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
@@ -32,16 +32,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class FriendView extends RelativeLayout implements
-        ProfilePicRunnerListener, LocationUpdateListener, SLUpdateListener, OnClickListener {
+        PicRunnerListener, LocationUpdateListener, SLUpdateListener, OnClickListener {
     
     private SLActivity slActivity;
     
     private volatile User ownUser = null;
     private volatile User friendUser = null;
     
-    private volatile GeoPoint center;
+    private volatile Location centerLocation = null;
+    private volatile GeoPoint center = null;
     
-    private ProfilePicRunner picRunner;
+    private PicRunner picRunner;
     
     private ImageView pic = null;
     private TextView name;
@@ -91,7 +92,7 @@ public class FriendView extends RelativeLayout implements
         mapController.setZoom(12);
     }
     
-    public void setUp(SLActivity slActivity, ProfilePicRunner picRunner) {
+    public void setUp(SLActivity slActivity, PicRunner picRunner) {
         this.slActivity = slActivity;
         this.picRunner = picRunner;
         picRunner.addListener(this);
@@ -234,9 +235,9 @@ public class FriendView extends RelativeLayout implements
             if (drawableImage == null) {
                 Bitmap image;
                 if (isOwnUser) {
-                    image = picRunner.getImage(ownUser.getId(), ownUser.getPic());
+                    image = picRunner.getImage(ownUser.getPic(), true);
                 } else {
-                    image = picRunner.getImage(friendUser.getId(), friendUser.getPic());
+                    image = picRunner.getImage(friendUser.getPic(), true);
                 }
                 
                 if (image != null) {
@@ -268,12 +269,13 @@ public class FriendView extends RelativeLayout implements
         // We're forcing centering
         if (forceCenter) {
             this.initiallyCentered = false;
+            this.centerLocation = null;
             this.center = null;
         }
         
         this.mapOverlay.updateFriendUser(user);
         
-        final Bitmap bitmap = picRunner.getImage(user.getId(), user.getPic());
+        final Bitmap bitmap = picRunner.getImage(user.getPic(), true);
         
         Util.uiHandler.post(
             new Runnable() {
@@ -294,14 +296,14 @@ public class FriendView extends RelativeLayout implements
         
         if (slActivity.getCurrentLocation() != null) {
             // Set/update map center
-            this.center = Util.getGeoPoint(
-                Util.getCenter(
-                    new Location[] {
-                        slActivity.getCurrentLocation(),
-                        user.getLocation()
-                    }
-                )
+            this.centerLocation = Util.getCenter(
+                new Location[] {
+                    slActivity.getCurrentLocation(),
+                    user.getLocation()
+                }
             );
+            
+            this.center = Util.getGeoPoint(this.centerLocation);
         }
         
         if (!initiallyCentered) {
@@ -347,14 +349,14 @@ public class FriendView extends RelativeLayout implements
         
         if (friendUser != null) {
             // Have current location so center
-            this.center = Util.getGeoPoint(
-                Util.getCenter(
-                    new Location[] {
-                        newLocation,
-                        friendUser.getLocation()
-                    }
-                )
+            this.centerLocation = Util.getCenter(
+                new Location[] {
+                    newLocation,
+                    friendUser.getLocation()
+                }
             );
+            
+            this.center = Util.getGeoPoint(this.centerLocation);
             
             if (!initiallyCentered) {
                 initiallyCentered = true;
@@ -383,7 +385,7 @@ public class FriendView extends RelativeLayout implements
         
         if (friendUser != null) {
             // Set image for user
-            final Bitmap userBitmap = picRunner.getImage(friendUser.getId(), friendUser.getPic());
+            final Bitmap userBitmap = picRunner.getImage(friendUser.getPic(), true);
             
             // Update top user picture
             Util.uiHandler.post(
@@ -397,6 +399,10 @@ public class FriendView extends RelativeLayout implements
                 }
             );
         }
+    }
+    
+    public Location getCenter() {
+        return centerLocation;
     }
 
     // Button action

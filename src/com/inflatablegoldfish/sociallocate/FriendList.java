@@ -37,7 +37,7 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
         super(context, attrs, defStyle);
     }
     
-    public void setUp(final SLActivity slActivity, ProfilePicRunner picRunner) {
+    public void setUp(final SLActivity slActivity, PicRunner picRunner) {
         this.slActivity = slActivity;
         
         // Set the adapter
