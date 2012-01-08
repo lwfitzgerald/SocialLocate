@@ -55,7 +55,9 @@ public class VenueListAdapter extends AmazingAdapter implements PicRunnerListene
      * Clear stored venues
      */
     public void clear() {
-        venues = null;
+        synchronized (venueLock) {
+            venues = null;
+        }
     }
 
     public Object getItem(int position) {
@@ -92,11 +94,8 @@ public class VenueListAdapter extends AmazingAdapter implements PicRunnerListene
                 new Runnable() {
                     public void run() {
                         synchronized (venueLock) {
-                            // Recalculate distances to friends
+                            // Recalculate distances to venues
                             Venue.calculateDistances(venues, currentLocation);
-                            
-                            // Re-sort friends (exclude own user) by distance
-                            Venue.sortByDistance(venues.subList(1, venues.size()));
                             
                             // Refresh the UI
                             Util.uiHandler.post(new Runnable() {

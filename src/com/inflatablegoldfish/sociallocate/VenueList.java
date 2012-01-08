@@ -11,13 +11,14 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import com.foound.widget.AmazingListView;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
+import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Venue;
 import com.inflatablegoldfish.sociallocate.request.FSRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 
-public class VenueList extends AmazingListView implements OnItemClickListener, LocationUpdateListener {
+public class VenueList extends AmazingListView implements OnItemClickListener, LocationUpdateListener, SLUpdateListener {
     private SLActivity slActivity;
     private VenueListAdapter adapter;
     
@@ -73,6 +74,24 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
     }
 
     public void onLocationUpdate(Location ourLocation) {
+        // If the venue list is currently being shown...
+        if (slActivity.currentlyShowingView() == this) {
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        // Hide error view as might currently be shown
+                        if (errorView != null) {
+                            errorView.setVisibility(View.GONE);
+                        }
+                    }
+                }
+            );
+            
+            doUpdate();
+        }
+    }
+    
+    public void onSLUpdate(List<User> friends) {
         // If the venue list is currently being shown...
         if (slActivity.currentlyShowingView() == this) {
             Util.uiHandler.post(

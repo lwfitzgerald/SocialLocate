@@ -47,8 +47,6 @@ public class SLActivity extends MapActivity {
     private static final int FETCHES_PER_MINUTE = 2;
     
     private static final int LIST_VIEW = 0;
-    private static final int FRIEND_VIEW = 1;
-    private static final int VENUE_LIST = 2;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -165,13 +163,21 @@ public class SLActivity extends MapActivity {
                             new RequestListener<List<User>>() {
                                 @SuppressWarnings("unchecked")
                                 public void onComplete(Object result) {
-                                    List<User> friends = (List<User>) result;
+                                    final List<User> friends = (List<User>) result;
                                     
-                                    // Pass onto friendList and friendView
-                                    friendList.onSLUpdate(friends);
-                                    friendView.onSLUpdate(friends);
+                                    // Start a new thread to handle callbacks
+                                    new Thread(
+                                        new Runnable() {
+                                            public void run() {
+                                                // Pass onto friendList and friendView
+                                                friendList.onSLUpdate(friends);
+                                                friendView.onSLUpdate(friends);
+                                                venueList.onSLUpdate(friends);
+                                            }
+                                        }
+                                    ).start();
                                 }
-
+                                
                                 public void onError(ResultCode resultCode) {
                                     stopFetchRequests();
                                 }

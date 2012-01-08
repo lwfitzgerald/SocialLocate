@@ -1,7 +1,5 @@
 package com.inflatablegoldfish.sociallocate.foursquare;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import com.inflatablegoldfish.sociallocate.Util;
@@ -57,17 +55,5 @@ public class Venue {
                 venue.setDistanceFrom(currentLocation);
             }
         }
-    }
-    
-    public static void sortByDistance(List<Venue> list) {
-        Collections.sort(list, new Comparator<Venue>() {
-            public int compare(Venue lhs, Venue rhs) {
-                if (lhs.getDistance() == rhs.getDistance()) {
-                    return 0;
-                }
-                
-                return lhs.getDistance() < rhs.getDistance() ? -1 : 1;
-            }
-        });
     }
 }
