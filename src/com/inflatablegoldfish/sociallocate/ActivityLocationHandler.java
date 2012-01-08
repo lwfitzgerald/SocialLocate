@@ -47,7 +47,11 @@ public class ActivityLocationHandler {
         Location networkLocation = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         Location gpsLocation = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         
-        return Util.isBetterLocation(gpsLocation, networkLocation) ? networkLocation : gpsLocation;
+        if (gpsLocation != null) {
+            return Util.isBetterLocation(gpsLocation, networkLocation) ? networkLocation : gpsLocation;
+        } else {
+            return networkLocation;
+        }
     }
     
     public void startUpdates() {
