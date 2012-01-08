@@ -71,7 +71,7 @@ public class FSRequest extends Request {
             while (itr.hasNext()) {
                 Request request = itr.next();
                 
-                if (request instanceof SLUpdateRequest) {
+                if (request instanceof FSRequest) {
                     ((FSRequest) request).updateLocation(location);
                     return;
                 }
