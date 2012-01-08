@@ -13,8 +13,8 @@
         android:visibility="gone" />
     
     <!-- Include empty view (but hidden) -->
-    <include layout="@layout/empty_view"
-        android:id="@+id/empty_view"
+    <include layout="@layout/friend_empty_view"
+        android:id="@+id/friend_empty_view"
         android:visibility="gone" />
 
     <com.inflatablegoldfish.sociallocate.FriendList

@@ -45,6 +45,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
         
         // Set up loading/header/empty views
         setLoadingView(slActivity.getLayoutInflater().inflate(R.layout.loading_view, null));
+        setEmptyView(slActivity.findViewById(R.id.venue_empty_view));
         mayHaveMorePages();
         setOnItemClickListener(this);
     }

@@ -10,8 +10,8 @@
         android:visibility="gone" />
     
     <!-- Include empty view (but hidden) -->
-    <include layout="@layout/empty_view"
-        android:id="@+id/empty_view"
+    <include layout="@layout/venue_empty_view"
+        android:id="@+id/venue_empty_view"
         android:visibility="gone" />
     
     <ImageView

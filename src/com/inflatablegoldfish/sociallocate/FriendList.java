@@ -48,7 +48,7 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
         setLoadingView(slActivity.getLayoutInflater().inflate(R.layout.loading_view, null));
         setPinnedHeaderView(slActivity.getLayoutInflater().inflate(R.layout.list_header, this, false));
         mayHaveMorePages();
-        setEmptyView(slActivity.findViewById(R.id.empty_view));
+        setEmptyView(slActivity.findViewById(R.id.friend_empty_view));
         setOnItemClickListener(this);
         
         RequestManager requestManager = slActivity.getRequestManager();
