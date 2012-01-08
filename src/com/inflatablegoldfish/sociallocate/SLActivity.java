@@ -49,7 +49,7 @@ public class SLActivity extends MapActivity {
         FRIEND_LIST,
         FRIEND_VIEW,
         VENUE_LIST,
-        FRIEND_VENUE_VIEW
+        VENUE_VIEW
     };
     
     private volatile ActivityStage currentStage = ActivityStage.FRIEND_LIST;
@@ -324,7 +324,7 @@ public class SLActivity extends MapActivity {
         case VENUE_LIST:
             venueList.onBackPressed();
             break;
-        case FRIEND_VENUE_VIEW:
+        case VENUE_VIEW:
             friendView.onBackPressed();
         }
     }

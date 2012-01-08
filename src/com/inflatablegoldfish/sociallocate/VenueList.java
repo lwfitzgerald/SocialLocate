@@ -167,7 +167,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
         // Set the venue in the friend view
         slActivity.getFriendView().setVenue((Venue) getItemAtPosition(position));
         
-        slActivity.setCurrentStage(ActivityStage.FRIEND_VENUE_VIEW);
+        slActivity.setCurrentStage(ActivityStage.VENUE_VIEW);
         
         slActivity.getViewFlipper().showPrevious();
     }
