@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.ViewFlipper;
 
 public class SLActivity extends MapActivity {
@@ -46,7 +45,14 @@ public class SLActivity extends MapActivity {
     
     private static final int FETCHES_PER_MINUTE = 2;
     
-    private static final int LIST_VIEW = 0;
+    public enum ActivityStage {
+        FRIEND_LIST,
+        FRIEND_VIEW,
+        VENUE_LIST,
+        FRIEND_VENUE_VIEW
+    };
+    
+    private volatile ActivityStage currentStage = ActivityStage.FRIEND_LIST;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -237,6 +243,8 @@ public class SLActivity extends MapActivity {
      * @param user Friend to view
      */
     public void showFriendView(User user) {
+        currentStage = ActivityStage.FRIEND_VIEW;
+        
         friendView.updateUser(user, true);
         
         viewFlipper.showNext();
@@ -246,13 +254,11 @@ public class SLActivity extends MapActivity {
      * Switch to the venue list view
      */
     public void showVenueList(GeoPoint center) {
+        currentStage = ActivityStage.VENUE_LIST;
+        
         venueList.switchingTo();
         
         viewFlipper.showNext();
-    }
-    
-    public View getCurrentlyShowingView() {
-        return viewFlipper.getCurrentView();
     }
     
     /**
@@ -308,10 +314,18 @@ public class SLActivity extends MapActivity {
     
     @Override
     public void onBackPressed() {
-        if (viewFlipper.getDisplayedChild() != LIST_VIEW) {
-            viewFlipper.showPrevious();
-        } else {
-            super.onBackPressed();
+        switch (currentStage) {
+        case FRIEND_LIST:
+            friendList.onBackPressed();
+            break;
+        case FRIEND_VIEW:
+            friendView.onBackPressed();
+            break;
+        case VENUE_LIST:
+            venueList.onBackPressed();
+            break;
+        case FRIEND_VENUE_VIEW:
+            friendView.onBackPressed();
         }
     }
 
@@ -322,6 +336,18 @@ public class SLActivity extends MapActivity {
     
     public FriendView getFriendView() {
         return friendView;
+    }
+    
+    public ActivityStage getCurrentStage() {
+        return currentStage;
+    }
+    
+    public void setCurrentStage(ActivityStage newStage) {
+        currentStage = newStage;
+    }
+    
+    public ViewFlipper getViewFlipper() {
+        return viewFlipper;
     }
     
     public RequestManager getRequestManager() {
@@ -362,5 +388,12 @@ public class SLActivity extends MapActivity {
          * @param friends Friends retrieved
          */
         public void onSLUpdate(List<User> friends);
+    }
+    
+    public static interface BackButtonListener {
+        /**
+         * Called when the back button is pressed
+         */
+        public void onBackPressed();
     }
 }

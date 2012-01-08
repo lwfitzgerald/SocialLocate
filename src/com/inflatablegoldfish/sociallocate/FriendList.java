@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.foound.widget.AmazingListView;
+import com.inflatablegoldfish.sociallocate.SLActivity.BackButtonListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
@@ -19,7 +20,7 @@ import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 public class FriendList extends AmazingListView implements OnItemClickListener,
-        LocationUpdateListener, SLUpdateListener {
+        LocationUpdateListener, SLUpdateListener, BackButtonListener {
     
     private SLActivity slActivity;
     private volatile boolean initialFetchCompleted = false;
@@ -151,5 +152,10 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
         // Set user to view
         slActivity.showFriendView((User) getItemAtPosition(position));
+    }
+
+    public void onBackPressed() {
+        // Close the app
+        slActivity.finish();
     }
 }

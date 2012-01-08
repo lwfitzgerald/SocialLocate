@@ -8,9 +8,12 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 import com.inflatablegoldfish.sociallocate.PicRunner.PicRunnerListener;
+import com.inflatablegoldfish.sociallocate.SLActivity.ActivityStage;
+import com.inflatablegoldfish.sociallocate.SLActivity.BackButtonListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
+import com.inflatablegoldfish.sociallocate.foursquare.Venue;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -32,7 +35,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class FriendView extends RelativeLayout implements
-        PicRunnerListener, LocationUpdateListener, SLUpdateListener, OnClickListener {
+        PicRunnerListener, LocationUpdateListener, SLUpdateListener, OnClickListener, BackButtonListener {
     
     private SLActivity slActivity;
     
@@ -42,6 +45,8 @@ public class FriendView extends RelativeLayout implements
     private volatile Location centerLocation = null;
     private volatile GeoPoint center = null;
     
+    private volatile Venue venue;
+    
     private PicRunner picRunner;
     
     private ImageView pic = null;
@@ -50,8 +55,9 @@ public class FriendView extends RelativeLayout implements
     private TextView distance;
     
     private MapView mapView;
-    private UserOverlay mapOverlay;
     private MapController mapController;
+    private UserOverlay userOverlay;
+    private VenueOverlay venueOverlay;
     
     private volatile boolean initiallyCentered;
     
@@ -97,8 +103,10 @@ public class FriendView extends RelativeLayout implements
         this.picRunner = picRunner;
         picRunner.addListener(this);
         
-        mapOverlay = new UserOverlay();
-        mapView.getOverlays().add(mapOverlay);
+        userOverlay = new UserOverlay();
+        venueOverlay = new VenueOverlay();
+        mapView.getOverlays().add(userOverlay);
+        mapView.getOverlays().add(venueOverlay);
     }
     
     private class UserOverlay extends ItemizedOverlay<UserItem> {
@@ -107,7 +115,6 @@ public class FriendView extends RelativeLayout implements
          * userItems[1] = Friend User
          */
         private UserItem[] userItems = new UserItem[] {null, null};
-//        private volatile GeoPoint center;
         
         public UserOverlay() {
             super(null);
@@ -115,13 +122,11 @@ public class FriendView extends RelativeLayout implements
         
         public void setOwnUser(Location currentLocation) {
             userItems[0] = new UserItem(ownUser, Util.getGeoPoint(currentLocation), true);
-//            center = null;
             refresh();
         }
         
         public void updateFriendUser(User friendUser) {
             userItems[1] = new UserItem(friendUser, Util.getGeoPoint(friendUser.getLocation()), false);
-//            center = null;
             refresh();
         }
         
@@ -148,24 +153,6 @@ public class FriendView extends RelativeLayout implements
             if (center != null) {
                 drawLinesAndSearchRadius(ownUserPoint, friendUserPoint, canvas, paint);
             }
-            
-            /*if (center == null) {
-                // Center not calculated so calculate
-                if (ownUserPoint != null && friendUserPoint != null) {
-                    center = Util.getGeoPoint(
-                        Util.getCenter(
-                            new Location[] {
-                                slActivity.getCurrentLocation(),
-                                friendUser.getLocation()
-                            }
-                        )
-                    );
-                    
-                    drawLinesAndSearchRadius(ownUserPoint, friendUserPoint, canvas, paint);
-                }
-            } else {
-                drawLinesAndSearchRadius(ownUserPoint, friendUserPoint, canvas, paint);
-            }*/
             
             super.draw(canvas, mapView, false);
         }
@@ -235,7 +222,6 @@ public class FriendView extends RelativeLayout implements
         public UserItem(User user, GeoPoint point, boolean isOwnUser) {
             super(point, user.getName(), "");
             this.isOwnUser = isOwnUser;
-            Log.d("SocialLocate", user.getName() + " overlay (re)created");
         }
         
         @Override
@@ -267,7 +253,7 @@ public class FriendView extends RelativeLayout implements
         
         if (slActivity.getCurrentLocation() != null) {
             // Create overlay item
-            mapOverlay.setOwnUser(slActivity.getCurrentLocation());
+            userOverlay.setOwnUser(slActivity.getCurrentLocation());
         }
     }
     
@@ -281,7 +267,7 @@ public class FriendView extends RelativeLayout implements
             this.center = null;
         }
         
-        this.mapOverlay.updateFriendUser(user);
+        this.userOverlay.updateFriendUser(user);
         
         final Bitmap bitmap = picRunner.getImage(user.getPic(), true);
         
@@ -327,7 +313,7 @@ public class FriendView extends RelativeLayout implements
                 Util.uiHandler.post(
                     new Runnable() {
                         public void run() {
-                            mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
+                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
                         }
                     }
                 );
@@ -352,7 +338,7 @@ public class FriendView extends RelativeLayout implements
     public void onLocationUpdate(Location newLocation) {
         if (ownUser != null) {
             // Update own user geopoint
-            mapOverlay.setOwnUser(newLocation);
+            userOverlay.setOwnUser(newLocation);
         }
         
         if (friendUser != null) {
@@ -371,7 +357,7 @@ public class FriendView extends RelativeLayout implements
                 Util.uiHandler.post(
                     new Runnable() {
                         public void run() {
-                            mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
+                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
                             mapController.animateTo(center);
                         }
                     }
@@ -386,10 +372,94 @@ public class FriendView extends RelativeLayout implements
             updateUser(friendUser, false);
         }
     }
+    
+    public Location getCenter() {
+        return centerLocation;
+    }
+    
+    private class VenueOverlay extends ItemizedOverlay<VenueItem> {
+        private volatile VenueItem venueItem = null;
+        
+        public VenueOverlay() {
+            super(null);
+        }
+        
+        public void setVenue(Venue venue) {
+            venueItem = new VenueItem(venue);
+            refresh();
+        }
+        
+        public void clearVenue() {
+            venueItem = null;
+            refresh();
+        }
+        
+        @Override
+        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+            super.draw(canvas, mapView, false);
+        }
+
+        @Override
+        protected VenueItem createItem(int i) {
+            return venueItem;
+        }
+
+        @Override
+        public int size() {
+            return venueItem != null ? 1 : 0;
+        }
+        
+        public void refresh() {
+            populate();
+            
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        mapView.invalidate();
+                    }
+                }
+            );
+        }
+    }
+    
+    private class VenueItem extends OverlayItem {
+        private BitmapDrawable drawableImage = null;
+        
+        public VenueItem(Venue venue) {
+            super(Util.getGeoPoint(venue.getLocation()), venue.getName(), "");
+        }
+        
+        @Override
+        public Drawable getMarker(int stateBitset) {
+            if (drawableImage == null) {
+                Bitmap image = picRunner.getImage(venue.getIcon(), false);
+                
+                if (image != null) {
+                    drawableImage = new BitmapDrawable(slActivity.getResources(), image);
+                    drawableImage.setBounds(0, 0, Math.min(image.getWidth(), 100), Math.min(image.getHeight(), 100));
+                    return drawableImage;
+                } else {
+                    Bitmap emptyBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+                    return new BitmapDrawable(slActivity.getResources(), emptyBitmap);
+                }
+            }
+            
+            return drawableImage;
+        }
+    }
+    
+    public void setVenue(Venue venue) {
+        this.venue = venue;
+        
+        venueOverlay.setVenue(venue);
+    }
 
     public void onProfilePicDownloaded() {
-        // Refresh data in OverlayItems
-        this.mapOverlay.refresh();
+        // Refresh data in user overlays
+        this.userOverlay.refresh();
+        
+        // Refresh venue overlay
+        this.venueOverlay.refresh();
         
         if (friendUser != null) {
             // Set image for user
@@ -408,12 +478,24 @@ public class FriendView extends RelativeLayout implements
             );
         }
     }
-    
-    public Location getCenter() {
-        return centerLocation;
-    }
 
     public void onClick(View v) {
         slActivity.showVenueList(center);
+    }
+
+    public void onBackPressed() {
+        if (slActivity.getCurrentStage() == ActivityStage.FRIEND_VIEW) {
+            slActivity.setCurrentStage(ActivityStage.FRIEND_LIST);
+            
+            slActivity.getViewFlipper().showPrevious();
+        } else {
+            // Venue set so go back to venue list
+            slActivity.setCurrentStage(ActivityStage.VENUE_LIST);
+            
+            venue = null;
+            venueOverlay.clearVenue();
+            
+            slActivity.getViewFlipper().showNext();
+        }
     }
 }

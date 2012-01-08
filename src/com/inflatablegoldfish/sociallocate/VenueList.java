@@ -10,6 +10,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.foound.widget.AmazingListView;
+import com.inflatablegoldfish.sociallocate.SLActivity.ActivityStage;
+import com.inflatablegoldfish.sociallocate.SLActivity.BackButtonListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Venue;
@@ -18,7 +20,9 @@ import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 
-public class VenueList extends AmazingListView implements OnItemClickListener, LocationUpdateListener, SLUpdateListener {
+public class VenueList extends AmazingListView implements OnItemClickListener,
+        LocationUpdateListener, SLUpdateListener, BackButtonListener {
+    
     private SLActivity slActivity;
     private VenueListAdapter adapter;
     
@@ -75,7 +79,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
 
     public void onLocationUpdate(Location ourLocation) {
         // If the venue list is currently being shown...
-        if (slActivity.getCurrentlyShowingView() == this) {
+        if (slActivity.getCurrentStage() == ActivityStage.VENUE_LIST) {
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
@@ -93,7 +97,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
     
     public void onSLUpdate(List<User> friends) {
         // If the venue list is currently being shown...
-        if (slActivity.getCurrentlyShowingView() == this) {
+        if (slActivity.getCurrentStage() == ActivityStage.VENUE_LIST) {
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
@@ -160,6 +164,17 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
     }
     
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        // TODO: Switch back to map view and show marker for chosen venue
+        // Set the venue in the friend view
+        slActivity.getFriendView().setVenue((Venue) getItemAtPosition(position));
+        
+        slActivity.setCurrentStage(ActivityStage.FRIEND_VENUE_VIEW);
+        
+        slActivity.getViewFlipper().showPrevious();
+    }
+
+    public void onBackPressed() {
+        slActivity.setCurrentStage(ActivityStage.FRIEND_VIEW);
+        
+        slActivity.getViewFlipper().showPrevious();
     }
 }
