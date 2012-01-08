@@ -105,7 +105,7 @@ public class FriendListAdapter extends AmazingAdapter implements PicRunnerListen
                         
                         if (oldUser.getId() == updateUser.getId()) {
                             // Update old user using update user
-                            updateUser.updateFromUser(updateUser);
+                            oldUser.updateFromUser(updateUser);
                             
                             // Add to new list
                             newUserList.add(oldUser);
