@@ -38,7 +38,7 @@ public class SLActivity extends MapActivity {
     
     private ViewFlipper viewFlipper;
     private FriendList friendList;
-    private FriendView friendView;
+    private SLMapView friendView;
     private VenueList venueList;
     
     private Timer fetchTimer;
@@ -101,7 +101,7 @@ public class SLActivity extends MapActivity {
         friendList.setUp(this, picRunner);
         
         // Set up the friend view
-        friendView = (FriendView) findViewById(R.id.friend_view);
+        friendView = (SLMapView) findViewById(R.id.friend_view);
         friendView.setUp(this, picRunner);
         
         // Set up the venue list
@@ -334,7 +334,7 @@ public class SLActivity extends MapActivity {
         return false;
     }
     
-    public FriendView getFriendView() {
+    public SLMapView getFriendView() {
         return friendView;
     }
     

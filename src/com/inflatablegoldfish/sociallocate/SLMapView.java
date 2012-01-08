@@ -26,7 +26,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -34,7 +33,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class FriendView extends RelativeLayout implements
+public class SLMapView extends RelativeLayout implements
         PicRunnerListener, LocationUpdateListener, SLUpdateListener, OnClickListener, BackButtonListener {
     
     private SLActivity slActivity;
@@ -61,15 +60,15 @@ public class FriendView extends RelativeLayout implements
     
     private volatile boolean initiallyCentered;
     
-    public FriendView(Context context) {
+    public SLMapView(Context context) {
         super(context);
     }
     
-    public FriendView(Context context, AttributeSet attrs) {
+    public SLMapView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
     
-    public FriendView(Context context, AttributeSet attrs, int defStyle) {
+    public SLMapView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
     
