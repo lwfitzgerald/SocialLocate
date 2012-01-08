@@ -43,7 +43,20 @@ public class ActivityLocationHandler {
         };
     }
     
+    public Location getBestLastKnownLocation() {
+        Location networkLocation = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        Location gpsLocation = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        
+        return Util.isBetterLocation(gpsLocation, networkLocation) ? networkLocation : gpsLocation;
+    }
+    
     public void startUpdates() {
+        Location lastLocation = getBestLastKnownLocation();
+        
+        if (lastLocation != null) {
+            ActivityLocationHandler.this.activity.locationUpdated(lastLocation);
+        }
+        
         manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, listener);
         manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
     }
