@@ -35,7 +35,7 @@ public class FriendListAdapter extends AmazingAdapter implements PicRunnerListen
     private int nearSectionStart = 1;
     private int farSectionStart = 0;
     
-    private static final int NEAR_DISTANCE = 1000;
+    private static final int NEAR_DISTANCE = 2000;
     
     public FriendListAdapter(Context context, PicRunner picRunner) {
         this.picRunner = picRunner;

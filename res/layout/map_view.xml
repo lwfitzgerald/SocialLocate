@@ -12,20 +12,31 @@
         android:layout_width="fill_parent"
         android:layout_height="?android:attr/listPreferredItemHeight"
         android:layout_alignParentTop="true" />
-    
-  	<RelativeLayout
-        android:id="@+id/bottom_bar"
+ 	    
+	<LinearLayout
+	    android:id="@+id/bottom_bar"
         android:layout_width="fill_parent"
         android:layout_height="?android:attr/listPreferredItemHeight"
+        android:orientation="horizontal"
         android:layout_alignParentBottom="true">
-        
-  	    <Button
-  	        android:id="@+id/lets_meet_button"
-  	        android:text="@string/lets_meet_button"
+ 	        
+    	<Button
+	        android:id="@+id/find_venues_button"
+	        android:text="@string/find_venues_button"
+	        android:layout_width="fill_parent"
+	        android:layout_height="?android:attr/listPreferredItemHeight"
+	        android:layout_alignParentBottom="true"
+	        style="@android:style/Widget.DeviceDefault.ActionButton" />
+	    
+        <Button
+  	        android:id="@+id/notify_button"
+  	        android:text="Notify friend"
   	        android:layout_width="fill_parent"
-  	        android:layout_height="?android:attr/listPreferredItemHeight"
+  	        android:layout_height="fill_parent"
+  	        android:layout_weight="1"
   	        style="@android:style/Widget.DeviceDefault.ActionButton" />
-    </RelativeLayout>
+ 	        
+	</LinearLayout>
     
   	<com.google.android.maps.MapView
         android:id="@+id/mapview"

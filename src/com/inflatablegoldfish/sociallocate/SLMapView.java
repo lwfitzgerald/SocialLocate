@@ -53,6 +53,9 @@ public class SLMapView extends RelativeLayout implements
     private TextView lastUpdated;
     private TextView distance;
     
+    private Button findVenuesButton;
+    private Button notifyButton;
+    
     private MapView mapView;
     private MapController mapController;
     private UserOverlay userOverlay;
@@ -81,8 +84,13 @@ public class SLMapView extends RelativeLayout implements
         lastUpdated = (TextView) findViewById(R.id.last_updated);
         distance = (TextView) findViewById(R.id.distance);
         
-        // Set this as button listener
-        ((Button) findViewById(R.id.lets_meet_button)).setOnClickListener(this);
+        // Set up buttons
+        findVenuesButton = (Button) findViewById(R.id.find_venues_button);
+        findVenuesButton.setOnClickListener(this);
+        
+        notifyButton = (Button) findViewById(R.id.notify_button);
+        notifyButton.setOnClickListener(this);
+        notifyButton.setVisibility(View.GONE);
         
         // Set up the map controller
         mapView = (MapView) findViewById(R.id.mapview);
@@ -522,6 +530,11 @@ public class SLMapView extends RelativeLayout implements
         }
     }
     
+    /**
+     * Called to set the venue chosen from the
+     * venue list when switching from the venue list
+     * @param venue Venue chosen
+     */
     public void setVenue(Venue venue) {
         this.venue = venue;
         
@@ -539,6 +552,16 @@ public class SLMapView extends RelativeLayout implements
         
         // Update top UI elements
         setTopForVenue();
+        
+        // Configure button visibility
+        Util.uiHandler.post(
+            new Runnable() {
+                public void run() {
+                    findVenuesButton.setVisibility(View.GONE);
+                    notifyButton.setVisibility(View.VISIBLE);
+                }
+            }
+        );
     }
 
     public void onProfilePicDownloaded() {
@@ -581,8 +604,15 @@ public class SLMapView extends RelativeLayout implements
         }
     }
 
-    public void onClick(View v) {
-        slActivity.showVenueList(center);
+    public void onClick(View view) {
+        if (view == findVenuesButton) {
+            slActivity.showVenueList(center);
+        } else if (view == notifyButton) {
+            
+        } else { // Cancel button
+            // Same as pressing back
+            onBackPressed();
+        }
     }
 
     public void onBackPressed() {
@@ -601,6 +631,16 @@ public class SLMapView extends RelativeLayout implements
             
             // Set the values for the UI elements at the top of the view
             setTopForUser();
+            
+            // Configure button visibility
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        findVenuesButton.setVisibility(View.VISIBLE);
+                        notifyButton.setVisibility(View.GONE);
+                    }
+                }
+            );
         }
     }
 }
