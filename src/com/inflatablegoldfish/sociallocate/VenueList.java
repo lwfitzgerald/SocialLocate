@@ -56,6 +56,12 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
         Util.uiHandler.post(
             new Runnable() {
                 public void run() {
+                    // Clear existing venues
+                    adapter.clear();
+                    
+                    // Show loading spinner
+                    mayHaveMorePages();
+                    
                     // Hide error view as might currently be shown
                     errorView.setVisibility(View.GONE);
                 }

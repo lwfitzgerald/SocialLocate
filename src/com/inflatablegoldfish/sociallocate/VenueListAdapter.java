@@ -50,6 +50,13 @@ public class VenueListAdapter extends AmazingAdapter implements PicRunnerListene
         
         return venues.size();
     }
+    
+    /**
+     * Clear stored venues
+     */
+    public void clear() {
+        venues = null;
+    }
 
     public Object getItem(int position) {
         synchronized (venueLock) {
