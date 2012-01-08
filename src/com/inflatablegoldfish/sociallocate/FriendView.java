@@ -181,7 +181,8 @@ public class FriendView extends RelativeLayout implements
             
             paint.setStyle(Paint.Style.STROKE);
             
-            float searchRadius = mapView.getProjection().metersToEquatorPixels(Foursquare.SEARCH_RADIUS);
+            float searchRadius = (float) (mapView.getProjection().metersToEquatorPixels(Foursquare.SEARCH_RADIUS)
+                    * (1 / Math.cos(Math.toRadians(centerLocation.getLatitude()))));
             
             canvas.drawCircle(centerPoint.x, centerPoint.y, searchRadius, paint);
         }
