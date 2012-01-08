@@ -75,7 +75,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
 
     public void onLocationUpdate(Location ourLocation) {
         // If the venue list is currently being shown...
-        if (slActivity.currentlyShowingView() == this) {
+        if (slActivity.getCurrentlyShowingView() == this) {
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
@@ -93,7 +93,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener, L
     
     public void onSLUpdate(List<User> friends) {
         // If the venue list is currently being shown...
-        if (slActivity.currentlyShowingView() == this) {
+        if (slActivity.getCurrentlyShowingView() == this) {
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {

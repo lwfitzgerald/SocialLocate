@@ -405,9 +405,7 @@ public class FriendView extends RelativeLayout implements
         return centerLocation;
     }
 
-    // Button action
     public void onClick(View v) {
-        Log.d("SocialLocate", "Let meet! pressed");
         slActivity.showVenueList(center);
     }
 }

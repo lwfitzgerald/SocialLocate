@@ -251,7 +251,7 @@ public class SLActivity extends MapActivity {
         viewFlipper.showNext();
     }
     
-    public View currentlyShowingView() {
+    public View getCurrentlyShowingView() {
         return viewFlipper.getCurrentView();
     }
     
