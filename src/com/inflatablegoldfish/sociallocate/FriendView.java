@@ -116,13 +116,13 @@ public class FriendView extends RelativeLayout implements
         public void setOwnUser(Location currentLocation) {
             userItems[0] = new UserItem(ownUser, Util.getGeoPoint(currentLocation), true);
 //            center = null;
-            populate();
+            refresh();
         }
         
         public void updateFriendUser(User friendUser) {
             userItems[1] = new UserItem(friendUser, Util.getGeoPoint(friendUser.getLocation()), false);
 //            center = null;
-            populate();
+            refresh();
         }
         
         @Override
@@ -200,7 +200,15 @@ public class FriendView extends RelativeLayout implements
         }
         
         public void refresh() {
-            super.populate();
+            populate();
+            
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        mapView.invalidate();
+                    }
+                }
+            );
         }
         
         @Override
