@@ -420,7 +420,6 @@ public abstract class SLBaseMapView extends RelativeLayout implements
             // Update own user geopoint
             userOverlay.setOwnUser(newLocation);
         }
-        
     }
 
     public void onProfilePicDownloaded() {
