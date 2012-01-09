@@ -81,10 +81,7 @@ public class SLArrangeMeet extends SLBaseActivity {
      * Register for C2DM pushes
      */
     private void doC2DMRegister() {
-        SharedPreferences prefs = getSharedPreferences(C2DMessaging.PREFERENCE, MODE_PRIVATE);
-        String deviceRegistrationID = prefs.getString("dm_registration", null);
-
-        if (deviceRegistrationID == null) {
+        if (!Util.prefs.contains("registration_sent")) {
             C2DMessaging.register(this, C2DMReceiver.USERNAME);
         }
     }
