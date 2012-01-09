@@ -2,7 +2,6 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
 
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
@@ -13,7 +12,7 @@ import android.content.SharedPreferences;
 
 public class SLAuthRequest extends SLRequest {
     public SLAuthRequest(RequestManager manager,
-            RequestListener<List<User>> listener, Facebook facebook,
+            RequestListener<Void> listener, Facebook facebook,
             SocialLocate socialLocate) {
 
         super(manager, listener, facebook, socialLocate);

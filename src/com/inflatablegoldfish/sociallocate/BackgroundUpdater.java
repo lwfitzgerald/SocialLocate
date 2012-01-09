@@ -1,7 +1,5 @@
 package com.inflatablegoldfish.sociallocate;
 
-import java.util.List;
-
 import com.commonsware.cwac.locpoll.LocationPoller;
 import com.inflatablegoldfish.sociallocate.R;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
@@ -67,7 +65,7 @@ public class BackgroundUpdater extends BroadcastReceiver {
                                     new SLUpdateLocRequest(
                                         location,
                                         requestManager,
-                                        new RequestListener<List<User>>() {
+                                        new RequestListener<Void>() {
                                             public void onComplete(Object result) {
                                                 // Store better location
                                                 SharedPreferences.Editor editor = Util.prefs.edit();

@@ -300,7 +300,7 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
                     friendUser.getId(),
                     venue.getID(),
                     requestManager,
-                    new RequestListener<List<User>>() {
+                    new RequestListener<Void>() {
                         public void onComplete(Object result) {
                             Util.showToast(getContext().getText(R.string.notification_sent), getContext());
                             progressDialog.dismiss();

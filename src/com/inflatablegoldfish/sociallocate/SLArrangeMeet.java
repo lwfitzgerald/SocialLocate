@@ -165,7 +165,7 @@ public class SLArrangeMeet extends SLBaseActivity {
             new SLUpdateLocRequest(
                 currentLocation,
                 requestManager,
-                new RequestListener<List<User>>() {
+                new RequestListener<Void>() {
                     public void onComplete(Object result) {}
                     public void onError(ResultCode resultCode) {}
                     public void onCancel() {}

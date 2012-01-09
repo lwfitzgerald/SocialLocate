@@ -2,18 +2,16 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
 
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
-import com.inflatablegoldfish.sociallocate.User;
 
 public class SLMeetRequest extends SLRequest {
     private int friendID;
     private String venueID;
     
     public SLMeetRequest(int friendID, String venueID, RequestManager manager,
-            RequestListener<List<User>> listener, Facebook facebook,
+            RequestListener<Void> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
         super(manager, listener, facebook, socialLocate);

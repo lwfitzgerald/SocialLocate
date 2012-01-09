@@ -1,7 +1,6 @@
 package com.inflatablegoldfish.sociallocate;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.google.android.c2dm.C2DMBaseReceiver;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
@@ -38,7 +37,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
             new SLUpdateRegRequest(
                 registrationId,
                 requestManager,
-                new RequestListener<List<User>>() {
+                new RequestListener<Void>() {
                     public void onComplete(Object result) {
                         SharedPreferences.Editor editor = Util.prefs.edit();
                         editor.putBoolean("registration_sent", true);
