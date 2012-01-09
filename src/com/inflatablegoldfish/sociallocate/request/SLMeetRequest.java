@@ -7,13 +7,12 @@ import java.util.List;
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
-import com.inflatablegoldfish.sociallocate.Util;
 
 public class SLMeetRequest extends SLRequest {
     private int friendID;
-    private int venueID;
+    private String venueID;
     
-    public SLMeetRequest(int friendID, int venueID, RequestManager manager,
+    public SLMeetRequest(int friendID, String venueID, RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
@@ -24,12 +23,7 @@ public class SLMeetRequest extends SLRequest {
     }
 
     @Override
-    public RequestResult<List<User>> execute() {
-        if (!Util.c2dmPrefs.contains("dm_registration")) {
-            // Not registered with C2DM so fail
-            return new RequestResult<List<User>>(null, ResultCode.ERROR);
-        }
-        
+    public RequestResult<Void> execute() {
         return socialLocate.meet(friendID, venueID);
     }
 

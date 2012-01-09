@@ -20,7 +20,7 @@ public class SLAuthRequest extends SLRequest {
     }
     
     @Override
-    public RequestResult<List<User>> execute() {
+    public RequestResult<Void> execute() {
         // Get the FB access token
         String accessToken = Util.prefs.getString("access_token", null);
         

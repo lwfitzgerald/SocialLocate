@@ -23,7 +23,7 @@ public class SLUpdateLocRequest extends SLRequest {
     }
 
     @Override
-    public RequestResult<List<User>> execute() {
+    public RequestResult<Void> execute() {
         return socialLocate.updateLocation(location);
     }
 

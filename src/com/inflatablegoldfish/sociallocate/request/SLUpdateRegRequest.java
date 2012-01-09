@@ -21,7 +21,7 @@ public class SLUpdateRegRequest extends SLRequest {
     }
 
     @Override
-    public RequestResult<List<User>> execute() {
+    public RequestResult<Void> execute() {
         return socialLocate.updateRegistration(registrationID);
     }
 
