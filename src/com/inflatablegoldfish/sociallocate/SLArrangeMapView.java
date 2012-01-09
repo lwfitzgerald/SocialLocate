@@ -124,9 +124,9 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
         this.userOverlay.updateFriendUser(user);
         
         // Set the values for the UI elements at the top of the view
-        if (((SLArrangeMeet) activity).getCurrentStage() == ActivityStage.FRIEND_VIEW) {
-            setTopForUser();
-        } else if (((SLArrangeMeet) activity).getCurrentStage() == ActivityStage.VENUE_VIEW) {
+        setTopForUser();
+        
+        if (((SLArrangeMeet) activity).getCurrentStage() == ActivityStage.VENUE_VIEW) {
             setTopForVenue();
         }
         
