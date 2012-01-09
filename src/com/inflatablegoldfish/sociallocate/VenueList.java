@@ -10,10 +10,10 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.foound.widget.AmazingListView;
-import com.inflatablegoldfish.sociallocate.SLActivity.ActivityStage;
-import com.inflatablegoldfish.sociallocate.SLActivity.BackButtonListener;
-import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
-import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
+import com.inflatablegoldfish.sociallocate.SLArrangeMeet.ActivityStage;
+import com.inflatablegoldfish.sociallocate.SLArrangeMeet.SLUpdateListener;
+import com.inflatablegoldfish.sociallocate.SLBaseActivity.BackButtonListener;
+import com.inflatablegoldfish.sociallocate.SLBaseActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Venue;
 import com.inflatablegoldfish.sociallocate.request.FSRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
@@ -23,7 +23,7 @@ import com.inflatablegoldfish.sociallocate.request.RequestManager;
 public class VenueList extends AmazingListView implements OnItemClickListener,
         LocationUpdateListener, SLUpdateListener, BackButtonListener {
     
-    private SLActivity slActivity;
+    private SLArrangeMeet slArrangeMeet;
     private VenueListAdapter adapter;
     
     private View errorView;
@@ -40,17 +40,17 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
         super(context, attrs, defStyle);
     }
     
-    public void setUp(final SLActivity slActivity, PicRunner picRunner) {
-        this.slActivity = slActivity;
-        this.errorView = slActivity.findViewById(R.id.venue_fail);
+    public void setUp(final SLArrangeMeet slArrangeMeet, PicRunner picRunner) {
+        this.slArrangeMeet = slArrangeMeet;
+        this.errorView = slArrangeMeet.findViewById(R.id.venue_fail);
         
         // Set the adapter
-        adapter = new VenueListAdapter(slActivity, picRunner);
+        adapter = new VenueListAdapter(slArrangeMeet, picRunner);
         setAdapter(adapter);
         
         // Set up loading/header/empty views
-        setLoadingView(slActivity.getLayoutInflater().inflate(R.layout.loading_view, null));
-        setEmptyView(slActivity.findViewById(R.id.venue_empty_view));
+        setLoadingView(slArrangeMeet.getLayoutInflater().inflate(R.layout.loading_view, null));
+        setEmptyView(slArrangeMeet.findViewById(R.id.venue_empty_view));
         mayHaveMorePages();
         setOnItemClickListener(this);
     }
@@ -79,7 +79,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
 
     public void onLocationUpdate(Location ourLocation) {
         // If the venue list is currently being shown...
-        if (slActivity.getCurrentStage() == ActivityStage.VENUE_LIST) {
+        if (slArrangeMeet.getCurrentStage() == ActivityStage.VENUE_LIST) {
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
@@ -97,7 +97,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
     
     public void onSLUpdate(List<User> friends) {
         // If the venue list is currently being shown...
-        if (slActivity.getCurrentStage() == ActivityStage.VENUE_LIST) {
+        if (slArrangeMeet.getCurrentStage() == ActivityStage.VENUE_LIST) {
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
@@ -114,16 +114,16 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
     }
     
     private void doUpdate() {
-        RequestManager requestManager = slActivity.getRequestManager();
+        RequestManager requestManager = slArrangeMeet.getRequestManager();
         
-        Location center = slActivity.getMapView().getCenter();
+        Location center = slArrangeMeet.getMapView().getCenter();
         
         if (center != null) {
             requestManager.addRequest(
                 new FSRequest(
                     center,
-                    slActivity.getCurrentLocation(),
-                    slActivity.getFoursquare(),
+                    slArrangeMeet.getCurrentLocation(),
+                    slArrangeMeet.getFoursquare(),
                     requestManager,
                     new RequestListener<List<Venue>>() {
                         @SuppressWarnings("unchecked")
@@ -164,23 +164,23 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
     }
     
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        if (view != getLoadingView() && !slActivity.getViewFlipper().isFlipping()) {
+        if (view != getLoadingView() && !slArrangeMeet.getViewFlipper().isFlipping()) {
             Venue venue = (Venue) getItemAtPosition(position);
             
             // Set the venue in the friend view
-            slActivity.getMapView().setVenue(venue);
+            slArrangeMeet.getMapView().setVenue(venue);
             
-            slActivity.setCurrentStage(ActivityStage.VENUE_VIEW);
+            slArrangeMeet.setCurrentStage(ActivityStage.VENUE_VIEW);
             
-            slActivity.setTitle("SocialLocate - " + venue.getName());
+            slArrangeMeet.setTitle("SocialLocate - " + venue.getName());
             
-            slActivity.getViewFlipper().showPrevious();
+            slArrangeMeet.getViewFlipper().showPrevious();
         }
     }
 
     public void onBackPressed() {
-        slActivity.setCurrentStage(ActivityStage.FRIEND_VIEW);
+        slArrangeMeet.setCurrentStage(ActivityStage.FRIEND_VIEW);
         
-        slActivity.getViewFlipper().showPrevious();
+        slArrangeMeet.getViewFlipper().showPrevious();
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.inflatablegoldfish.sociallocate.SLMapView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.inflatablegoldfish.sociallocate.SLArrangeMapView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/friend_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -54,4 +54,4 @@
         android:layout_below="@id/venue_bar"
         android:layout_above="@id/bottom_bar" />
 
-</com.inflatablegoldfish.sociallocate.SLMapView>
+</com.inflatablegoldfish.sociallocate.SLArrangeMapView>

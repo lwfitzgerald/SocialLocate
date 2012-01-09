@@ -7,18 +7,18 @@ import android.location.LocationManager;
 import android.os.Bundle;
 
 public class ActivityLocationHandler {
-    private final SLActivity activity;
+    private final SLBaseActivity activity;
     
     private LocationManager manager;
     private LocationListener listener;
     private Location currentBest = null;
     private long lastUpdate = Long.MIN_VALUE;
 
-    public ActivityLocationHandler(SLActivity activity) {
-        this.activity = activity;
+    public ActivityLocationHandler(SLBaseActivity slBaseActivity) {
+        this.activity = slBaseActivity;
         
         // Acquire a reference to the system Location Manager
-        manager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        manager = (LocationManager) slBaseActivity.getSystemService(Context.LOCATION_SERVICE);
         
         // Define a listener that responds to location updates
         listener = new LocationListener() {

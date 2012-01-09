@@ -16,7 +16,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
 
     @Override
     protected void onMessage(Context context, Intent intent) {
-        Intent launchIntent = new Intent(context, ApproveMeet.class);
+        Intent launchIntent = new Intent(context, SLArrangeMeet.class);
         
         Bundle extras = intent.getExtras();
         if (extras != null) {
