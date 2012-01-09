@@ -7,32 +7,42 @@ import java.util.List;
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
+import com.inflatablegoldfish.sociallocate.Util;
 
-public class SLInitialFetchRequest extends SLRequest {
-
-    public SLInitialFetchRequest(RequestManager manager,
+public class SLMeetRequest extends SLRequest {
+    private int friendID;
+    private int venueID;
+    
+    public SLMeetRequest(int friendID, int venueID, RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
         super(manager, listener, facebook, socialLocate);
+        
+        this.friendID = friendID;
+        this.venueID = venueID;
     }
 
     @Override
     public RequestResult<List<User>> execute() {
-        return socialLocate.initialFetch();
+        if (!Util.c2dmPrefs.contains("dm_registration")) {
+            // Not registered with C2DM so fail
+            return new RequestResult<List<User>>(null, ResultCode.ERROR);
+        }
+        
+        return socialLocate.meet(friendID, venueID);
     }
 
     @Override
-    public void onAuthFail(Deque<Request> requestQueue) {
-        // Add an SL auth request to the queue
+    protected void onAuthFail(Deque<Request> requestQueue) {
         addSLReAuth(requestQueue);
     }
 
     @Override
-    public void onError(Deque<Request> requestQueue) {
+    protected void onError(Deque<Request> requestQueue) {
         if (retries < NUM_RETRIES) {
             try {
-                Thread.sleep((long) (1000 * Math.pow(3,retries)));
+                Thread.sleep((long) (1000 * Math.pow(3, retries)));
             } catch (InterruptedException e) {}
             retries++;
         } else {
@@ -47,35 +57,18 @@ public class SLInitialFetchRequest extends SLRequest {
                     }
                 }
             }
-
+            
             listener.onError(ResultCode.ERROR);
         }
     }
-    
+
     @Override
-    public void onCancel(Deque<Request> requestQueue) {}
-    
+    protected void onCancel(Deque<Request> requestQueue) {}
+
     @Override
     public void addToQueue(Deque<Request> requestQueue) {
-        // Synchronize on the queue whilst iterating
         synchronized (requestQueue) {
-            Iterator<Request> itr = requestQueue.iterator();
-            
-            /*
-             * Only one fetch is necessary so only add
-             * to the queue if one doesn't already exist.
-             */
-            while (itr.hasNext()) {
-                Request request = itr.next();
-                
-                if (request instanceof SLFetchRequest) {
-                    return;
-                }
-            }
-            
-            // No other SL fetch requests so add to the queue
             requestQueue.addLast(this);
         }
     }
-
 }

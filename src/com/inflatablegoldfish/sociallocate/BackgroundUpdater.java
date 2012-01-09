@@ -7,7 +7,7 @@ import com.inflatablegoldfish.sociallocate.R;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
-import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
+import com.inflatablegoldfish.sociallocate.request.SLUpdateLocRequest;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -64,7 +64,7 @@ public class BackgroundUpdater extends BroadcastReceiver {
                                 socialLocate.loadCookies();
                                 
                                 requestManager.addRequest(
-                                    new SLUpdateRequest(
+                                    new SLUpdateLocRequest(
                                         location,
                                         requestManager,
                                         new RequestListener<List<User>>() {

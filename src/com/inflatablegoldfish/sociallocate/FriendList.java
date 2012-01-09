@@ -11,9 +11,9 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.foound.widget.AmazingListView;
-import com.inflatablegoldfish.sociallocate.SLActivity.BackButtonListener;
-import com.inflatablegoldfish.sociallocate.SLActivity.LocationUpdateListener;
-import com.inflatablegoldfish.sociallocate.SLActivity.SLUpdateListener;
+import com.inflatablegoldfish.sociallocate.SLArrangeMeet.SLUpdateListener;
+import com.inflatablegoldfish.sociallocate.SLBaseActivity.BackButtonListener;
+import com.inflatablegoldfish.sociallocate.SLBaseActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLInitialFetchRequest;
@@ -22,7 +22,7 @@ import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 public class FriendList extends AmazingListView implements OnItemClickListener,
         LocationUpdateListener, SLUpdateListener, BackButtonListener {
     
-    private SLActivity slActivity;
+    private SLArrangeMeet slArrangeMeet;
     private volatile boolean initialFetchCompleted = false;
     private FriendListAdapter adapter;
     
@@ -38,21 +38,21 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
         super(context, attrs, defStyle);
     }
     
-    public void setUp(final SLActivity slActivity, PicRunner picRunner) {
-        this.slActivity = slActivity;
+    public void setUp(final SLArrangeMeet slArrangeMeet, PicRunner picRunner) {
+        this.slArrangeMeet = slArrangeMeet;
         
         // Set the adapter
-        adapter = new FriendListAdapter(slActivity, picRunner);
+        adapter = new FriendListAdapter(slArrangeMeet, picRunner);
         setAdapter(adapter);
         
         // Set up loading/header/empty views and listener
-        setLoadingView(slActivity.getLayoutInflater().inflate(R.layout.loading_view, null));
-        setPinnedHeaderView(slActivity.getLayoutInflater().inflate(R.layout.list_header, this, false));
+        setLoadingView(slArrangeMeet.getLayoutInflater().inflate(R.layout.loading_view, null));
+        setPinnedHeaderView(slArrangeMeet.getLayoutInflater().inflate(R.layout.list_header, this, false));
         mayHaveMorePages();
-        setEmptyView(slActivity.findViewById(R.id.friend_empty_view));
+        setEmptyView(slArrangeMeet.findViewById(R.id.friend_empty_view));
         setOnItemClickListener(this);
         
-        RequestManager requestManager = slActivity.getRequestManager();
+        RequestManager requestManager = slArrangeMeet.getRequestManager();
         
         // Add initial fetch request
         requestManager.addRequest(
@@ -67,24 +67,24 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
                             public void run() {
                                 // Mark as complete and start location updates
                                 initialFetchCompleted = true;
-                                slActivity.getActivityLocationHandler().startUpdates();
+                                slArrangeMeet.getActivityLocationHandler().startUpdates();
                                 
                                 // Send on own user to friend view
-                                slActivity.updateOwnUser(users.get(0));
+                                slArrangeMeet.updateOwnUser(users.get(0));
                                 
                                 // Update adapter
                                 adapter.updateUsers(users);
                                 
                                 // If we have a location fix, calculate distances
-                                if (slActivity.getCurrentLocation() != null) {
-                                    adapter.updateDistances(slActivity.getCurrentLocation());
+                                if (slArrangeMeet.getCurrentLocation() != null) {
+                                    adapter.updateDistances(slArrangeMeet.getCurrentLocation());
                                 }
                                 
                                 // Hide loading spinner
                                 noMorePages();
                                 
                                 // Start fetch requests
-                                slActivity.startFetchRequests();
+                                slArrangeMeet.startFetchRequests();
                             }
                         });
                     }
@@ -96,10 +96,10 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
                                 noMorePages();
                                 
                                 // Show fail message
-                                slActivity.findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                slArrangeMeet.findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
                                 
                                 // Stop location updates
-                                slActivity.getActivityLocationHandler().stopUpdates();
+                                slArrangeMeet.getActivityLocationHandler().stopUpdates();
                             }
                         });
                     }
@@ -113,16 +113,16 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
                                 noMorePages();
                                 
                                 // Show fail message
-                                slActivity.findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
+                                slArrangeMeet.findViewById(R.id.initial_fail).setVisibility(View.VISIBLE);
                                 
                                 // Stop location updates
-                                slActivity.getActivityLocationHandler().stopUpdates();
+                                slArrangeMeet.getActivityLocationHandler().stopUpdates();
                             }
                         });
                     }
                 },
-                slActivity.getFacebook(),
-                slActivity.getSocialLocate()
+                slArrangeMeet.getFacebook(),
+                slArrangeMeet.getSocialLocate()
             )
         );
     }
@@ -136,8 +136,8 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
         // Update UI
         adapter.updateUsers(friends);
         
-        if (slActivity.getCurrentLocation() != null) {
-            adapter.updateDistances(slActivity.getCurrentLocation());
+        if (slArrangeMeet.getCurrentLocation() != null) {
+            adapter.updateDistances(slArrangeMeet.getCurrentLocation());
         }
     }
     
@@ -149,13 +149,15 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
         return initialFetchCompleted;
     }
 
-    public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        // Set user to view
-        slActivity.showFriendView((User) getItemAtPosition(position));
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        if (view != getLoadingView() && !slArrangeMeet.getViewFlipper().isFlipping()) {
+            // Set user to view
+            slArrangeMeet.showFriendView((User) getItemAtPosition(position));
+        }
     }
 
     public void onBackPressed() {
         // Close the app
-        slActivity.finish();
+        slArrangeMeet.finish();
     }
 }

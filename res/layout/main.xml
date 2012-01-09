@@ -5,6 +5,6 @@
     android:layout_height="fill_parent" >
     
     <include layout="@layout/friend_list_view" />
-    <include layout="@layout/map_view" />
+    <include layout="@layout/arrange_map_view" />
     <include layout="@layout/venue_list_view" />
 </ViewFlipper>

@@ -6,44 +6,26 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.facebook.android.Facebook;
+import com.google.android.c2dm.C2DMessaging;
 import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapActivity;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
-import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
-import com.inflatablegoldfish.sociallocate.request.RequestManager;
-import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.SLFetchRequest;
-import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
+import com.inflatablegoldfish.sociallocate.request.SLUpdateLocRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.ViewFlipper;
 
-public class SLActivity extends MapActivity {
-    private Facebook facebook = new Facebook("162900730478788");
-    
-    private SocialLocate socialLocate = new SocialLocate();
-    private Foursquare foursquare = new Foursquare();
-    
-    private ActivityLocationHandler activityLocHandler;
-    private RequestManager requestManager;
-    
-    private Location currentLocation = null;
-    
+public class SLArrangeMeet extends SLBaseActivity {
     private ViewFlipper viewFlipper;
     private FriendList friendList;
-    private SLMapView friendView;
     private VenueList venueList;
     
     private Timer fetchTimer;
-    
-    private static final int FETCHES_PER_MINUTE = 2;
     
     public enum ActivityStage {
         FRIEND_LIST,
@@ -54,11 +36,10 @@ public class SLActivity extends MapActivity {
     
     private volatile ActivityStage currentStage = ActivityStage.FRIEND_LIST;
     
+    private static final int FETCHES_PER_MINUTE = 2;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        
         /*
          * Starting UI so we'll ask for GPS updates
          * as well
@@ -67,26 +48,13 @@ public class SLActivity extends MapActivity {
          */
         BackgroundUpdater.cancelAlarm(this);
         
-        // Set up custom IG SSL socket factory
-        Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
         
-        // Set up request manager
-        requestManager = new RequestManager(this);
+        // Register for C2DM pushs
+        doC2DMRegister();
         
-        // Set up GPS location updates
-        activityLocHandler = new ActivityLocationHandler(this);
-        
-        // Create a handler for this thread
-        Util.uiHandler = new Handler();
-        
-        // Get preferences reference
-        Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        
-        // Load cookies
-        socialLocate.loadCookies();
-        
-        // Authenticate
-        initialAuth();
+        setTitle(R.string.friends_title);
         
         // Set up the flipper
         viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
@@ -101,54 +69,23 @@ public class SLActivity extends MapActivity {
         friendList.setUp(this, picRunner);
         
         // Set up the friend view
-        friendView = (SLMapView) findViewById(R.id.friend_view);
-        friendView.setUp(this, picRunner);
+        mapView = (SLArrangeMapView) findViewById(R.id.friend_view);
+        ((SLArrangeMapView) mapView).setUp(this, picRunner);
         
         // Set up the venue list
         venueList = (VenueList) findViewById(R.id.venue_list);
         venueList.setUp(this, picRunner);
     }
     
-    private void initialAuth() {
-        // Only FB auth if we haven't already got a token
-        if (!Util.prefs.contains("access_token")) {
-            requestManager.addRequest(
-                new FBAuthRequest(
-                    requestManager,
-                    new RequestListener<User[]>() {
-                        public void onComplete(Object result) {}
-    
-                        public void onError(ResultCode resultCode) {}
-    
-                        public void onCancel() {}
-                    },
-                    facebook
-                )
-            );
-        }
-        
-        // Only SL auth if we've not got a cookie
-        if (!Util.prefs.contains("cookie_name")) {
-            requestManager.addRequest(
-                new SLAuthRequest(
-                    requestManager,
-                    new RequestListener<List<User>>() {
-                        public void onComplete(Object users) {
-                            Log.d("SocialLocate", "SL auth OK");
-                        }
-                        
-                        public void onError(ResultCode resultCode) {
-                            Log.d("SocialLocate", "SL auth error");
-                        }
-                        
-                        public void onCancel() {
-                            Log.d("SocialLocate", "FB auth cancelled so cancelling SL auth");
-                        }
-                    },
-                    facebook,
-                    socialLocate
-                )
-            );
+    /**
+     * Register for C2DM pushes
+     */
+    private void doC2DMRegister() {
+        SharedPreferences prefs = getSharedPreferences(C2DMessaging.PREFERENCE, MODE_PRIVATE);
+        String deviceRegistrationID = prefs.getString("dm_registration", null);
+
+        if (deviceRegistrationID == null) {
+            C2DMessaging.register(this, C2DMReceiver.USERNAME);
         }
     }
     
@@ -177,7 +114,7 @@ public class SLActivity extends MapActivity {
                                             public void run() {
                                                 // Pass onto friendList and friendView
                                                 friendList.onSLUpdate(friends);
-                                                friendView.onSLUpdate(friends);
+                                                ((SLArrangeMapView) mapView).onSLUpdate(friends);
                                                 venueList.onSLUpdate(friends);
                                             }
                                         }
@@ -212,6 +149,7 @@ public class SLActivity extends MapActivity {
         }
     }
     
+    @Override
     public void locationUpdated(final Location newLocation) {
         // Update current location
         currentLocation = newLocation;
@@ -219,12 +157,12 @@ public class SLActivity extends MapActivity {
         // Pass on to friend list
         friendList.onLocationUpdate(currentLocation);
         
-        // Pass on to friend view
-        friendView.onLocationUpdate(currentLocation);
+        // Pass on to map view
+        mapView.onLocationUpdate(currentLocation);
         
         // Send location update
         requestManager.addRequest(
-            new SLUpdateRequest(
+            new SLUpdateLocRequest(
                 currentLocation,
                 requestManager,
                 new RequestListener<List<User>>() {
@@ -245,71 +183,11 @@ public class SLActivity extends MapActivity {
     public void showFriendView(User user) {
         currentStage = ActivityStage.FRIEND_VIEW;
         
-        friendView.updateUser(user, true);
+        setTitle("SocialLocate - " + user.getName());
+        
+        mapView.updateUser(user, true);
         
         viewFlipper.showNext();
-    }
-    
-    /**
-     * Switch to the venue list view
-     */
-    public void showVenueList(GeoPoint center) {
-        currentStage = ActivityStage.VENUE_LIST;
-        
-        venueList.switchingTo();
-        
-        viewFlipper.showNext();
-    }
-    
-    /**
-     * Updates the own user object
-     * @param ownUser New user object
-     */
-    public void updateOwnUser(User ownUser) {
-        friendView.setOwnUser(ownUser);
-    }
-    
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        facebook.authorizeCallback(requestCode, resultCode, data);
-    }
-    
-    @Override
-    public void onResume() {
-        // Start GPS updates and stop background updates
-        BackgroundUpdater.cancelAlarm(this);
-        
-        if (friendList.initialFetchCompleted()) {
-            // Only start if we're authenticated
-            startFetchRequests();
-            activityLocHandler.startUpdates();
-        }
-        
-        super.onResume();
-    }
-    
-    @Override
-    public void onPause() {
-        // Save cookies
-        socialLocate.saveCookies();
-        
-        // Stop repetitive fetches
-        stopFetchRequests();
-        
-        // Stop GPS updates and resume background updates
-        activityLocHandler.stopUpdates();
-        BackgroundUpdater.setUpAlarm(this);
-        
-        super.onPause();
-    }
-    
-    @Override
-    public void onDestroy() {
-        requestManager.abortAll();
-        
-        super.onDestroy();
     }
     
     @Override
@@ -319,67 +197,115 @@ public class SLActivity extends MapActivity {
             friendList.onBackPressed();
             break;
         case FRIEND_VIEW:
-            friendView.onBackPressed();
+            mapView.onBackPressed();
             break;
         case VENUE_LIST:
             venueList.onBackPressed();
             break;
         case VENUE_VIEW:
-            friendView.onBackPressed();
+            mapView.onBackPressed();
         }
     }
-
-    @Override
-    protected boolean isRouteDisplayed() {
-        return false;
+    
+    /**
+     * Switch to the venue list view
+     * @param center Center to show venues around
+     */
+    public void showVenueList(GeoPoint center) {
+        currentStage = ActivityStage.VENUE_LIST;
+        
+        setTitle(R.string.venues_title);
+        
+        venueList.switchingTo();
+        
+        viewFlipper.showNext();
     }
     
-    public SLMapView getFriendView() {
-        return friendView;
-    }
-    
-    public ActivityStage getCurrentStage() {
-        return currentStage;
-    }
-    
-    public void setCurrentStage(ActivityStage newStage) {
-        currentStage = newStage;
-    }
-    
+    /**
+     * Get the View flipper
+     * @return The view flipper
+     */
     public ViewFlipper getViewFlipper() {
         return viewFlipper;
     }
     
-    public RequestManager getRequestManager() {
-        return requestManager;
+    /**
+     * Get the map view
+     * @return Map view
+     */
+    public SLArrangeMapView getMapView() {
+        return (SLArrangeMapView) mapView;
     }
     
+    /**
+     * Get the current stage of the activity
+     * @return Current stage
+     */
+    public ActivityStage getCurrentStage() {
+        return currentStage;
+    }
+    
+    /**
+     * Set the current stage of the activity
+     * @param newStage Stage to set
+     */
+    public void setCurrentStage(ActivityStage newStage) {
+        currentStage = newStage;
+    }
+    
+    /**
+     * Get the activity location handler
+     * @return Activity location handler
+     */
     public ActivityLocationHandler getActivityLocationHandler() {
         return activityLocHandler;
     }
     
-    public Location getCurrentLocation() {
-        return currentLocation;
-    }
-    
+    /**
+     * Get the Facebook interface object
+     * @return Facebook interface object
+     */
     public Facebook getFacebook() {
         return facebook;
     }
     
+    /**
+     * Get the SocialLocate interface object
+     * @return SocialLocate interface object
+     */
     public SocialLocate getSocialLocate() {
         return socialLocate;
     }
     
+    /**
+     * Get the Foursquare interface object
+     * @return Foursquare interface object
+     */
     public Foursquare getFoursquare() {
         return foursquare;
     }
     
-    public static interface LocationUpdateListener {
-        /**
-         * Called when a location update is received
-         * @param newLocation New location
-         */
-        public void onLocationUpdate(Location newLocation);
+    @Override
+    public void onResume() {
+        // Stop background updates
+        BackgroundUpdater.cancelAlarm(this);
+        
+        super.onResume();
+    }
+    
+    @Override
+    public void onPause() {
+        // Stop repetitive fetches
+        stopFetchRequests();
+        
+        super.onPause();
+    }
+    
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        facebook.authorizeCallback(requestCode, resultCode, data);
     }
     
     public static interface SLUpdateListener {
@@ -388,12 +314,5 @@ public class SLActivity extends MapActivity {
          * @param friends Friends retrieved
          */
         public void onSLUpdate(List<User> friends);
-    }
-    
-    public static interface BackButtonListener {
-        /**
-         * Called when the back button is pressed
-         */
-        public void onBackPressed();
     }
 }

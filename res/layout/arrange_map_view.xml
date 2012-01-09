@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.inflatablegoldfish.sociallocate.SLArrangeMapView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/friend_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/black"
+    android:paddingLeft="6dip"
+    android:paddingRight="6dip">
+    
+    <include layout="@layout/friend_item_body"
+        android:id="@+id/friend_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true" />
+    
+    <include layout="@layout/venue_item_body"
+        android:id="@+id/venue_bar"
+        android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"
+    	android:layout_below="@id/friend_bar"
+    	android:visibility="gone" />
+ 	    
+	<LinearLayout
+	    android:id="@+id/bottom_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true">
+ 	    
+    	<Button
+	        android:id="@+id/find_venues_button"
+	        android:text="@string/find_venues_button"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        style="@android:style/Widget.DeviceDefault.ActionButton" />
+	    
+        <Button
+  	        android:id="@+id/notify_button"
+  	        android:text="@string/notify_friend_button"
+  	        android:layout_width="fill_parent"
+  	        android:layout_height="fill_parent"
+  	        style="@android:style/Widget.DeviceDefault.ActionButton" />
+ 	        
+	</LinearLayout>
+    
+  	<com.google.android.maps.MapView
+        android:id="@+id/mapview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:apiKey="@string/maps_api_key"
+        android:clickable="true"
+        android:layout_below="@id/venue_bar"
+        android:layout_above="@id/bottom_bar" />
+
+</com.inflatablegoldfish.sociallocate.SLArrangeMapView>

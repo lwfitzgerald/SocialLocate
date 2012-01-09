@@ -19,7 +19,7 @@ public class SplashActivity extends Activity {
             @Override
             public void run() {
                 finish();
-                Intent slIntent = new Intent().setClass(SplashActivity.this, SLActivity.class);
+                Intent slIntent = new Intent().setClass(SplashActivity.this, SLArrangeMeet.class);
                 startActivity(slIntent);
             }
         };

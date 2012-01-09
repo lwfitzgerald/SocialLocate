@@ -4,27 +4,25 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 
-import android.location.Location;
-
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
 
-public class SLUpdateRequest extends SLRequest {
-    private Location location;
+public class SLUpdateRegRequest extends SLRequest {
+    private String registrationID;
     
-    public SLUpdateRequest(Location location, RequestManager manager,
+    public SLUpdateRegRequest(String registrationID, RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
         super(manager, listener, facebook, socialLocate);
         
-        this.location = location;
+        this.registrationID = registrationID;
     }
 
     @Override
     public RequestResult<List<User>> execute() {
-        return socialLocate.updateLocation(location);
+        return socialLocate.updateRegistration(registrationID);
     }
 
     @Override
@@ -35,7 +33,9 @@ public class SLUpdateRequest extends SLRequest {
     @Override
     public void onError(Deque<Request> requestQueue) {
         if (retries < NUM_RETRIES) {
-            // TODO: Implement exponential backoff sleep here?
+            try {
+                Thread.sleep((long) (1000 * Math.pow(3, retries)));
+            } catch (InterruptedException e) {}
             retries++;
         } else {
             // Remove from queue
@@ -43,9 +43,15 @@ public class SLUpdateRequest extends SLRequest {
                 Iterator<Request> itr = requestQueue.iterator();
                 
                 while (itr.hasNext()) {
-                    if (itr.next() == this) {
+                    // Remove this and error on meet requests
+                    Request request = itr.next();
+                    
+                    if (request == this) {
                         itr.remove();
-                        break;
+                    } else if (request instanceof SLMeetRequest) {
+                        // Call error handler on dependent meet request
+                        itr.remove();
+                        request.listener.onError(ResultCode.ERROR);
                     }
                 }
             }
@@ -64,24 +70,19 @@ public class SLUpdateRequest extends SLRequest {
             Iterator<Request> itr = requestQueue.iterator();
             
             /*
-             * Find existing update requests and simply
-             * update the location parameter
+             * Only one update is necessary so only add
+             * to the queue if one doesn't already exist.
              */
             while (itr.hasNext()) {
                 Request request = itr.next();
                 
-                if (request instanceof SLUpdateRequest) {
-                    ((SLUpdateRequest) request).updateLocation(location);
+                if (request instanceof SLUpdateRegRequest) {
                     return;
                 }
             }
             
-            // No other SL update requests so add to the queue
+            // No other update requests so add to the queue
             requestQueue.addLast(this);
         }
-    }
-    
-    private void updateLocation(Location location) {
-        this.location = location;
     }
 }
