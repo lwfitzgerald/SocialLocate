@@ -3,6 +3,7 @@ package com.inflatablegoldfish.sociallocate;
 import java.util.List;
 
 import com.facebook.android.Facebook;
+import com.google.android.c2dm.C2DMessaging;
 import com.google.android.maps.MapActivity;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;
@@ -48,6 +49,9 @@ public abstract class SLBaseActivity extends MapActivity {
         
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        
+        // Register for C2DM pushs
+        doC2DMRegister();
         
         // Load cookies
         socialLocate.loadCookies();
@@ -95,6 +99,14 @@ public abstract class SLBaseActivity extends MapActivity {
                     socialLocate
                 )
             );
+        }
+    }
+    
+    private void doC2DMRegister() {
+        String deviceRegistrationID = Util.prefs.getString("deviceRegistrationID", null);
+
+        if (deviceRegistrationID == null) {
+            C2DMessaging.register(this, C2DMReceiver.USERNAME);
         }
     }
     

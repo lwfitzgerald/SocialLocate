@@ -8,10 +8,10 @@ import android.os.Bundle;
 import android.util.Log;
 
 public class C2DMReceiver extends C2DMBaseReceiver {
-    private static final String username = "sociallocateapp@gmail.com";
+    public static final String USERNAME = "sociallocateapp@gmail.com";
     
     public C2DMReceiver() {
-        super(username);
+        super(USERNAME);
     }
 
     @Override
