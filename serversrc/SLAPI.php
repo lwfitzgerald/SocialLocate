@@ -50,6 +50,9 @@ class SLAPI {
         case 'update_location':
             echo $this->handleUpdateLocation();
             return;
+        case 'update_registration':
+            echo $this->handleUpdateRegistration();
+            return;
         }
     }
 
@@ -94,7 +97,7 @@ class SLAPI {
     private function handleUpdateLocation() {
         if (isset($_GET['lat'])
             && isset($_GET['lng'])) {
-        
+
             // Lat and lng provided so update
             $user = new User(
                 $this->facebookInt->getID(),
@@ -102,7 +105,23 @@ class SLAPI {
                 $_GET['lng']
             );
 
-            $user->save();
+            $user->saveLocation();
+        }
+
+        return $this->authReturn(true);
+    }
+
+    private function handleUpdateRegistration() {
+        if (isset($_GET['registration_id'])) {
+            $user = new User (
+                $this->facebookInt->getID(),
+                null,
+                null,
+                null,
+                $_GET['registration_id']
+            );
+
+            $user->saveRegistration();
         }
 
         return $this->authReturn(true);
