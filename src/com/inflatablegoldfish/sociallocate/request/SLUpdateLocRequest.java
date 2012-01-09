@@ -10,10 +10,10 @@ import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
 import com.inflatablegoldfish.sociallocate.User;
 
-public class SLUpdateRequest extends SLRequest {
+public class SLUpdateLocRequest extends SLRequest {
     private Location location;
     
-    public SLUpdateRequest(Location location, RequestManager manager,
+    public SLUpdateLocRequest(Location location, RequestManager manager,
             RequestListener<List<User>> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
@@ -72,8 +72,8 @@ public class SLUpdateRequest extends SLRequest {
             while (itr.hasNext()) {
                 Request request = itr.next();
                 
-                if (request instanceof SLUpdateRequest) {
-                    ((SLUpdateRequest) request).updateLocation(location);
+                if (request instanceof SLUpdateLocRequest) {
+                    ((SLUpdateLocRequest) request).updateLocation(location);
                     return;
                 }
             }

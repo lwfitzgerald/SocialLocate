@@ -10,7 +10,7 @@ import com.google.android.maps.GeoPoint;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.SLFetchRequest;
-import com.inflatablegoldfish.sociallocate.request.SLUpdateRequest;
+import com.inflatablegoldfish.sociallocate.request.SLUpdateLocRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 import android.content.Intent;
@@ -145,7 +145,7 @@ public class SLArrangeMeet extends SLBaseActivity {
         
         // Send location update
         requestManager.addRequest(
-            new SLUpdateRequest(
+            new SLUpdateLocRequest(
                 currentLocation,
                 requestManager,
                 new RequestListener<List<User>>() {
