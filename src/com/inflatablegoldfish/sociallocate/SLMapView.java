@@ -48,10 +48,15 @@ public class SLMapView extends RelativeLayout implements
     
     private PicRunner picRunner;
     
-    private ImageView pic = null;
-    private TextView name;
+    private ImageView friendPic = null;
+    private TextView friendName;
     private TextView lastUpdated;
-    private TextView distance;
+    private TextView friendDistance;
+    
+    private View venueBar;
+    private ImageView venueIcon = null;
+    private TextView venueName;
+    private TextView venueDistance;
     
     private Button findVenuesButton;
     private Button notifyButton;
@@ -79,10 +84,15 @@ public class SLMapView extends RelativeLayout implements
     public void onFinishInflate() {
         super.onFinishInflate();
         
-        pic = (ImageView) findViewById(R.id.profile_pic);
-        name = (TextView) findViewById(R.id.name);
+        friendPic = (ImageView) findViewById(R.id.profile_pic);
+        friendName = (TextView) findViewById(R.id.name);
         lastUpdated = (TextView) findViewById(R.id.last_updated);
-        distance = (TextView) findViewById(R.id.distance);
+        friendDistance = (TextView) findViewById(R.id.distance);
+        
+        venueBar = findViewById(R.id.venue_bar);
+        venueIcon = (ImageView) findViewById(R.id.venue_pic);
+        venueName = (TextView) findViewById(R.id.venue_name);
+        venueDistance = (TextView) findViewById(R.id.venue_distance);
         
         // Set up buttons
         findVenuesButton = (Button) findViewById(R.id.find_venues_button);
@@ -353,20 +363,20 @@ public class SLMapView extends RelativeLayout implements
             new Runnable() {
                 public void run() {
                     if (bitmap != null) {
-                        pic.setImageBitmap(bitmap);
+                        friendPic.setImageBitmap(bitmap);
                     }
                     
-                    name.setText(friendUser.getName());
+                    friendName.setText(friendUser.getName());
                     lastUpdated.setText(friendUser.getPrettyLastUpdated());
                     
                     if (friendUser.getDistance() != null) {
-                        distance.setText(friendUser.getPrettyDistance());
+                        friendDistance.setText(friendUser.getPrettyDistance());
                     }
                     
-                    pic.invalidate();
-                    name.invalidate();
+                    friendPic.invalidate();
+                    friendName.invalidate();
                     lastUpdated.invalidate();
-                    distance.invalidate();
+                    friendDistance.invalidate();
                 }
             }
         );
@@ -383,20 +393,18 @@ public class SLMapView extends RelativeLayout implements
             new Runnable() {
                 public void run() {
                     if (bitmap != null) {
-                        pic.setImageBitmap(bitmap);
+                        venueIcon.setImageBitmap(bitmap);
                     }
                     
-                    name.setText(venue.getName());
-                    lastUpdated.setText("");
+                    venueName.setText(venue.getName());
                     
-                    if (friendUser.getDistance() != null) {
-                        distance.setText(venue.getPrettyDistance());
+                    if (venue.getDistance() != null) {
+                        venueDistance.setText(venue.getPrettyDistance());
                     }
                     
-                    pic.invalidate();
-                    name.invalidate();
-                    lastUpdated.invalidate();
-                    distance.invalidate();
+                    venueIcon.invalidate();
+                    venueName.invalidate();
+                    venueDistance.invalidate();
                 }
             }
         );
@@ -547,8 +555,14 @@ public class SLMapView extends RelativeLayout implements
             }
         );
         
+        // Set title
+        slActivity.setTitle(R.string.venues_title);
+        
         // Set venue in overlay
         venueOverlay.setVenue(venue);
+        
+        // Show venue bar
+        venueBar.setVisibility(View.VISIBLE);
         
         // Update top UI elements
         setTopForVenue();
@@ -580,9 +594,9 @@ public class SLMapView extends RelativeLayout implements
                 new Runnable() {
                     public void run() {
                         if (userBitmap != null) {
-                            pic.setImageBitmap(userBitmap);
+                            friendPic.setImageBitmap(userBitmap);
                         }
-                        pic.invalidate();
+                        friendPic.invalidate();
                     }
                 }
             );
@@ -590,14 +604,14 @@ public class SLMapView extends RelativeLayout implements
             // Set image for venue
             final Bitmap venueBitmap = picRunner.getImage(venue.getIcon(), true);
             
-            // Update top user picture
+            // Update venue picture
             Util.uiHandler.post(
                 new Runnable() {
                     public void run() {
                         if (venueBitmap != null) {
-                            pic.setImageBitmap(venueBitmap);
+                            venueIcon.setImageBitmap(venueBitmap);
                         }
-                        pic.invalidate();
+                        venueIcon.invalidate();
                     }
                 }
             );
@@ -605,13 +619,15 @@ public class SLMapView extends RelativeLayout implements
     }
 
     public void onClick(View view) {
-        if (view == findVenuesButton) {
-            slActivity.showVenueList(center);
-        } else if (view == notifyButton) {
-            
-        } else { // Cancel button
-            // Same as pressing back
-            onBackPressed();
+        if (!slActivity.getViewFlipper().isFlipping()) {
+            if (view == findVenuesButton) {
+                slActivity.showVenueList(center);
+            } else if (view == notifyButton) {
+                
+            } else { // Cancel button
+                // Same as pressing back
+                onBackPressed();
+            }
         }
     }
 
@@ -619,18 +635,22 @@ public class SLMapView extends RelativeLayout implements
         if (slActivity.getCurrentStage() == ActivityStage.FRIEND_VIEW) {
             slActivity.setCurrentStage(ActivityStage.FRIEND_LIST);
             
+            slActivity.setTitle(R.string.friends_title);
+            
             slActivity.getViewFlipper().showPrevious();
         } else {
             // Venue set so go back to venue list
             slActivity.setCurrentStage(ActivityStage.VENUE_LIST);
+            
+            slActivity.setTitle(R.string.venues_title);
             
             slActivity.getViewFlipper().showNext();
             
             venue = null;
             venueOverlay.clearVenue();
             
-            // Set the values for the UI elements at the top of the view
-            setTopForUser();
+            // Hide venue bar
+            venueBar.setVisibility(View.GONE);
             
             // Configure button visibility
             Util.uiHandler.post(

@@ -35,7 +35,9 @@ public class SLUpdateRequest extends SLRequest {
     @Override
     public void onError(Deque<Request> requestQueue) {
         if (retries < NUM_RETRIES) {
-            // TODO: Implement exponential backoff sleep here?
+            try {
+                Thread.sleep((long) (1000 * Math.pow(3,retries)));
+            } catch (InterruptedException e) {}
             retries++;
         } else {
             // Remove from queue

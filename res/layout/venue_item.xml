@@ -4,39 +4,10 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
     
-    <RelativeLayout
+	<include layout="@layout/venue_item_body"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
-	    android:paddingTop="4dip"
-		android:paddingBottom="4dip"
-	    android:paddingLeft="6dip"
-	    android:paddingRight="6dip">
+	    android:layout_marginLeft="6dip"
+	    android:layout_marginRight="6dip" />
 	
-        <ImageView
-        android:id="@+id/profile_pic"
-        android:layout_width="100px"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="6dip"
-        android:layout_centerVertical="true" />
-	    <ImageView
-	        android:id="@+id/venue_pic"
-	        android:layout_width="100px"
-	        android:layout_height="100px"
-	        android:layout_marginRight="6dip"
-	        android:layout_centerVertical="true"
-	        android:scaleType="fitCenter" />
-	    <TextView
-	        android:id="@+id/venue_name"
-	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_toRightOf="@id/venue_pic"
-	        android:layout_alignTop="@id/venue_pic" />
-	    <TextView
-	       	android:id="@+id/venue_distance"
-	       	android:layout_width="wrap_content"
-	       	android:layout_height="wrap_content"
-	       	android:layout_alignParentRight="true"
-	       	android:layout_marginRight="6dip"
-	        android:layout_centerVertical="true" />
-	</RelativeLayout>
 </LinearLayout>

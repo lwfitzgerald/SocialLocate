@@ -14,6 +14,9 @@
 	<string name="no_venues" >No venues found</string><string name="initial_fail">Initial fetch failed\nPlease restart</string>
 	<string name="venue_fail">Venue fetch failed</string><string name="friends_section_title">Friends</string>
 	<string name="find_venues_button">Find venues</string>
+	<string name="notify_friend_button">Notify friend</string>
+	<string name="friends_title">SocialLocate - Friends</string>
+	<string name="venues_title">SocialLocate - Venues</string>
 	
 	
 </resources>

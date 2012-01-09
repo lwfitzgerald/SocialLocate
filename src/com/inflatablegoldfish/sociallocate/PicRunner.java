@@ -83,9 +83,11 @@ public class PicRunner {
             
             Bitmap image = Util.getBitmap(this.url);
             
-            // Crop if necessary
-            if (this.crop) {
-                image = Util.cropBitmap(image, 100, 100);
+            if (image != null) {
+                // Crop if necessary
+                if (this.crop) {
+                    image = Util.cropBitmap(image, 100, 100);
+                }
             }
             
             return image;

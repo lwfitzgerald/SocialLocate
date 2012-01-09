@@ -38,7 +38,7 @@ public class SLActivity extends MapActivity {
     
     private ViewFlipper viewFlipper;
     private FriendList friendList;
-    private SLMapView friendView;
+    private SLMapView mapView;
     private VenueList venueList;
     
     private Timer fetchTimer;
@@ -66,6 +66,8 @@ public class SLActivity extends MapActivity {
          * First, cancel the background updating
          */
         BackgroundUpdater.cancelAlarm(this);
+        
+        setTitle(R.string.friends_title);
         
         // Set up custom IG SSL socket factory
         Util.initIGSSLSocketFactory(getResources().openRawResource(R.raw.igkeystore));
@@ -101,8 +103,8 @@ public class SLActivity extends MapActivity {
         friendList.setUp(this, picRunner);
         
         // Set up the friend view
-        friendView = (SLMapView) findViewById(R.id.friend_view);
-        friendView.setUp(this, picRunner);
+        mapView = (SLMapView) findViewById(R.id.friend_view);
+        mapView.setUp(this, picRunner);
         
         // Set up the venue list
         venueList = (VenueList) findViewById(R.id.venue_list);
@@ -177,7 +179,7 @@ public class SLActivity extends MapActivity {
                                             public void run() {
                                                 // Pass onto friendList and friendView
                                                 friendList.onSLUpdate(friends);
-                                                friendView.onSLUpdate(friends);
+                                                mapView.onSLUpdate(friends);
                                                 venueList.onSLUpdate(friends);
                                             }
                                         }
@@ -220,7 +222,7 @@ public class SLActivity extends MapActivity {
         friendList.onLocationUpdate(currentLocation);
         
         // Pass on to friend view
-        friendView.onLocationUpdate(currentLocation);
+        mapView.onLocationUpdate(currentLocation);
         
         // Send location update
         requestManager.addRequest(
@@ -245,7 +247,9 @@ public class SLActivity extends MapActivity {
     public void showFriendView(User user) {
         currentStage = ActivityStage.FRIEND_VIEW;
         
-        friendView.updateUser(user, true);
+        setTitle("SocialLocate - " + user.getName());
+        
+        mapView.updateUser(user, true);
         
         viewFlipper.showNext();
     }
@@ -255,6 +259,8 @@ public class SLActivity extends MapActivity {
      */
     public void showVenueList(GeoPoint center) {
         currentStage = ActivityStage.VENUE_LIST;
+        
+        setTitle(R.string.venues_title);
         
         venueList.switchingTo();
         
@@ -266,7 +272,7 @@ public class SLActivity extends MapActivity {
      * @param ownUser New user object
      */
     public void updateOwnUser(User ownUser) {
-        friendView.setOwnUser(ownUser);
+        mapView.setOwnUser(ownUser);
     }
     
     @Override
@@ -319,13 +325,13 @@ public class SLActivity extends MapActivity {
             friendList.onBackPressed();
             break;
         case FRIEND_VIEW:
-            friendView.onBackPressed();
+            mapView.onBackPressed();
             break;
         case VENUE_LIST:
             venueList.onBackPressed();
             break;
         case VENUE_VIEW:
-            friendView.onBackPressed();
+            mapView.onBackPressed();
         }
     }
 
@@ -334,8 +340,8 @@ public class SLActivity extends MapActivity {
         return false;
     }
     
-    public SLMapView getFriendView() {
-        return friendView;
+    public SLMapView getMapView() {
+        return mapView;
     }
     
     public ActivityStage getCurrentStage() {

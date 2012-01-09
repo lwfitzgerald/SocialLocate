@@ -115,8 +115,9 @@ public class FBAuthRequest extends Request {
     @Override
     public void onError(Deque<Request> requestQueue) {
         if (retries < NUM_RETRIES) {
-            // Request will be reattempted by manager
-            // TODO: Implement exponential backoff sleep here?
+            try {
+                Thread.sleep((long) (1000 * Math.pow(3,retries)));
+            } catch (InterruptedException e) {}
             retries++;
         } else {
             /*

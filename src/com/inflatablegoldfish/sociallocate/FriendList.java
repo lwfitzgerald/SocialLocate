@@ -149,9 +149,11 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
         return initialFetchCompleted;
     }
 
-    public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        // Set user to view
-        slActivity.showFriendView((User) getItemAtPosition(position));
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        if (view != getLoadingView() && !slActivity.getViewFlipper().isFlipping()) {
+            // Set user to view
+            slActivity.showFriendView((User) getItemAtPosition(position));
+        }
     }
 
     public void onBackPressed() {

@@ -116,7 +116,7 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
     private void doUpdate() {
         RequestManager requestManager = slActivity.getRequestManager();
         
-        Location center = slActivity.getFriendView().getCenter();
+        Location center = slActivity.getMapView().getCenter();
         
         if (center != null) {
             requestManager.addRequest(
@@ -163,13 +163,19 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
         }
     }
     
-    public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-        // Set the venue in the friend view
-        slActivity.getFriendView().setVenue((Venue) getItemAtPosition(position));
-        
-        slActivity.setCurrentStage(ActivityStage.VENUE_VIEW);
-        
-        slActivity.getViewFlipper().showPrevious();
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        if (view != getLoadingView() && !slActivity.getViewFlipper().isFlipping()) {
+            Venue venue = (Venue) getItemAtPosition(position);
+            
+            // Set the venue in the friend view
+            slActivity.getMapView().setVenue(venue);
+            
+            slActivity.setCurrentStage(ActivityStage.VENUE_VIEW);
+            
+            slActivity.setTitle("SocialLocate - " + venue.getName());
+            
+            slActivity.getViewFlipper().showPrevious();
+        }
     }
 
     public void onBackPressed() {
