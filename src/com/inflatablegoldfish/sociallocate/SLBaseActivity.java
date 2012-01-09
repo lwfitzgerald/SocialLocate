@@ -102,6 +102,9 @@ public abstract class SLBaseActivity extends MapActivity {
         }
     }
     
+    /**
+     * Register for C2DM pushes
+     */
     private void doC2DMRegister() {
         String deviceRegistrationID = Util.prefs.getString("deviceRegistrationID", null);
 
