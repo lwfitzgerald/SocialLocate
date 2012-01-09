@@ -162,6 +162,50 @@ public class SocialLocate {
         }
     }
     
+    public RequestResult<List<User>> updateRegistration(String registrationID) {
+        String url = URL_PREFIX + "action=update_registration"
+                + "&registration_id=" + registrationID;
+        
+        try {
+            String response = Util.getURL(url, true);
+            
+            JSONObject jsonObject = new JSONObject(response);
+            
+            if (jsonObject.getInt("auth_status") == 0) {
+                Log.d("SocialLocate", "Auth fail in update registration");
+                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
+            } else {
+                Log.d("SocialLocate", "Update registration OK");
+                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
+            }
+        } catch (Exception e) {
+            Log.d("SocialLocate", "Error in update registration");
+            return new RequestResult<List<User>>(null, ResultCode.ERROR);
+        }
+    }
+    
+    public RequestResult<List<User>> meet(int friendID, int venueID) {
+        String url = URL_PREFIX + "action=meet"
+                + "&friend_id=" + friendID + "&venue_id=" + venueID;
+        
+        try {
+            String response = Util.getURL(url, true);
+            
+            JSONObject jsonObject = new JSONObject(response);
+            
+            if (jsonObject.getInt("auth_status") == 0) {
+                Log.d("SocialLocate", "Auth fail in meet request");
+                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
+            } else {
+                Log.d("SocialLocate", "Meet request OK");
+                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
+            }
+        } catch (Exception e) {
+            Log.d("SocialLocate", "Error in meet request");
+            return new RequestResult<List<User>>(null, ResultCode.ERROR);
+        }
+    }
+    
     public void saveCookies() {
         CookieManager mgr = (CookieManager) CookieHandler.getDefault();
         

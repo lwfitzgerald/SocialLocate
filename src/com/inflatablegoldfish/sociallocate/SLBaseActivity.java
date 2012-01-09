@@ -49,9 +49,7 @@ public abstract class SLBaseActivity extends MapActivity {
         
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        
-        // Register for C2DM pushs
-        doC2DMRegister();
+        Util.c2dmPrefs = getSharedPreferences(C2DMessaging.PREFERENCE, MODE_PRIVATE);
         
         // Load cookies
         socialLocate.loadCookies();
@@ -59,7 +57,7 @@ public abstract class SLBaseActivity extends MapActivity {
         initialAuth();
     }
     
-    private void initialAuth() {
+    protected void initialAuth() {
         // Only FB auth if we haven't already got a token
         if (!Util.prefs.contains("access_token")) {
             requestManager.addRequest(
@@ -99,17 +97,6 @@ public abstract class SLBaseActivity extends MapActivity {
                     socialLocate
                 )
             );
-        }
-    }
-    
-    /**
-     * Register for C2DM pushes
-     */
-    private void doC2DMRegister() {
-        String deviceRegistrationID = Util.prefs.getString("deviceRegistrationID", null);
-
-        if (deviceRegistrationID == null) {
-            C2DMessaging.register(this, C2DMReceiver.USERNAME);
         }
     }
     

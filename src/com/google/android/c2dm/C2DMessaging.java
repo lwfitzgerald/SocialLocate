@@ -38,7 +38,7 @@ public class C2DMessaging {
 
 
     // package
-    static final String PREFERENCE = "com.google.android.c2dm";
+    public static final String PREFERENCE = "com.google.android.c2dm";
     
     private static final long DEFAULT_BACKOFF = 30000;
 
