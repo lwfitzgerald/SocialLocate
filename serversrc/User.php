@@ -4,6 +4,7 @@ class User {
     private $lat;
     private $lng;
     private $lastUpdated;
+    private $registrationID;
     private $name;
     private $pic;
 
@@ -12,23 +13,14 @@ class User {
      *
      * Performs no changes to db until save()
      */
-    public function __construct($id, $lat = null, $lng = null, $lastUpdated = null, $name = null, $pic = null) {
+    public function __construct($id, $lat = null, $lng = null, $lastUpdated = null, $registrationID = null, $name = null, $pic = null) {
         $this->id = $id;
         $this->lat = $lat;
         $this->lng = $lng;
         $this->lastUpdated = $lastUpdated;
+        $this->registrationID = $registrationID;
         $this->name = $name;
         $this->pic = $pic;
-    }
-
-    /**
-     * Updates the location of this user
-     */
-    public function updateLocation($lat, $lng) {
-        $this->lat = $lat;
-        $this->lng = $lng;
-        $this->lastUpdated = time();
-        $this->save();
     }
 
     /**
@@ -37,10 +29,10 @@ class User {
      * @return True if load succeeded
      */
     public function load() {
-        $stmt = db::prepareStatement('SELECT `id`, `lat`, `lng`, UNIX_TIMESTAMP(`last_updated`) AS `last_updated` FROM `user` WHERE `id` = ?');
+        $stmt = db::prepareStatement('SELECT `id`, `lat`, `lng`, UNIX_TIMESTAMP(`last_updated`) AS `last_updated`, `registration_id` FROM `user` WHERE `id` = ?');
         $stmt->bind_param('i', $this->id);
         $stmt->execute();
-        $stmt->bind_result($id, $lat, $lng, $lastUpdated);
+        $stmt->bind_result($id, $lat, $lng, $lastUpdated, $registrationID);
         $stmt->fetch();
 
         if ($stmt->num_rows > 0) {
@@ -48,6 +40,7 @@ class User {
             $this->lat = $lat;
             $this->lng = $lng;
             $this->lastUpdated = $lastUpdated;
+            $this->registrationID = $registrationID;
             $stmt->close();
             return true;
         } else {
@@ -55,11 +48,11 @@ class User {
             return false;
         }
     }
-    
+  
     /**
-     * Save any changes to this user to the DB
+     * Saves just lat and lng to the DB
      */
-    public function save() {
+    public function saveLocation() {
         $stmt = db::prepareStatement('INSERT INTO `user` (`id`, `lat`, `lng`) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE `lat`=?, `lng`=?');
         $stmt->bind_param(
             'idddd',
@@ -68,6 +61,41 @@ class User {
             $this->lng,
             $this->lat,
             $this->lng
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    /**
+     * Saves just registration id to the DB
+     */
+    public function saveRegistration() {
+        $stmt = db::prepareStatement('INSERT INTO `user` (`id`, `registration_id`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `registration_id`=?');
+        $stmt->bind_param(
+            'iss',
+            $this->id,
+            $this->registrationID,
+            $this->registrationID
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
+        
+
+    /**
+     * Save any changes to this user to the DB
+     */
+    public function saveAll() {
+        $stmt = db::prepareStatement('INSERT INTO `user` (`id`, `lat`, `lng`, `registration_id`) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE `lat`=?, `lng`=?, `registration_id`=?');
+        $stmt->bind_param(
+            'idddd',
+            $this->id,
+            $this->lat,
+            $this->lng,
+            $this->registrationID,
+            $this->lat,
+            $this->lng,
+            $this->registrationID
         );
         $stmt->execute();
         $stmt->close();
