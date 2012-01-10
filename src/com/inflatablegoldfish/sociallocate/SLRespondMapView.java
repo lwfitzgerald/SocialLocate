@@ -5,19 +5,19 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 
-public class SLDecideMapView extends SLBaseMapView {
+public class SLRespondMapView extends SLBaseMapView {
     private Button acceptButton;
     private Button rejectButton;
     
-    public SLDecideMapView(Context context) {
+    public SLRespondMapView(Context context) {
         super(context);
     }
     
-    public SLDecideMapView(Context context, AttributeSet attrs) {
+    public SLRespondMapView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
     
-    public SLDecideMapView(Context context, AttributeSet attrs, int defStyle) {
+    public SLRespondMapView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
     
