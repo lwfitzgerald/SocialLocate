@@ -196,6 +196,9 @@ public class SocialLocate {
             if (jsonObject.getInt("auth_status") == 0) {
                 Log.d("SocialLocate", "Auth fail in meet request");
                 return new RequestResult<Void>(null, ResultCode.AUTHFAIL);
+            } else if (jsonObject.getInt("meet_request_status") == 0) {
+                Log.d("SocialLocate", "Error in meet request");
+                return new RequestResult<Void>(null, ResultCode.ERROR);
             } else {
                 Log.d("SocialLocate", "Meet request OK");
                 return new RequestResult<Void>(null, ResultCode.SUCCESS);

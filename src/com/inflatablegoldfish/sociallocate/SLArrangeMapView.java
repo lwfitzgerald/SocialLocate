@@ -290,6 +290,9 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
         }
     }
     
+    /**
+     * Send meet request and show progress dialog
+     */
     private void doMeet() {
         if (Util.prefs.contains("registration_sent")) {
             progressDialog = ProgressDialog.show(getContext(), "", getContext().getText(R.string.sending_notification));
