@@ -26,12 +26,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ViewFlipper;
 
-public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener {
-    private volatile Location centerLocation = null;
-    private volatile GeoPoint center = null;
-    
+public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener {    
     private Button findVenuesButton;
     private Button notifyButton;
+    
+    private volatile Location centerLocation = null;
+    private volatile GeoPoint center = null;
     
     private ProgressDialog progressDialog = null;
     
@@ -209,35 +209,6 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
         return friendUser;
     }
     
-    @Override
-    public void onLocationUpdate(Location newLocation) {
-        super.onLocationUpdate(newLocation);
-        
-        if (friendUser != null) {
-            // Have current location so center
-            this.centerLocation = Util.getCenter(
-                new Location[] {
-                    newLocation,
-                    friendUser.getLocation()
-                }
-            );
-            
-            this.center = Util.getGeoPoint(this.centerLocation);
-            
-            if (!initiallyCentered) {
-                initiallyCentered = true;
-                Util.uiHandler.post(
-                    new Runnable() {
-                        public void run() {
-                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
-                            mapController.animateTo(center);
-                        }
-                    }
-                );
-            }
-        }
-    }
-    
     public void onSLUpdate(List<User> friends) {
         // Will refresh UI
         if (friendUser != null) {
@@ -273,7 +244,7 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
             );
         } else if (((SLArrangeMeet) activity).getCurrentStage() == ActivityStage.VENUE_VIEW) {
             // Set image for venue
-            final Bitmap venueBitmap = picRunner.getImage(venue.getIcon(), true);
+            final Bitmap venueBitmap = picRunner.getImage(venue.getIcon(), false);
             
             // Update venue picture
             Util.uiHandler.post(

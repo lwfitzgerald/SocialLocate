@@ -15,7 +15,7 @@ import com.inflatablegoldfish.sociallocate.SLArrangeMeet.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLBaseActivity.BackButtonListener;
 import com.inflatablegoldfish.sociallocate.SLBaseActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Venue;
-import com.inflatablegoldfish.sociallocate.request.FSRequest;
+import com.inflatablegoldfish.sociallocate.request.FSVenuesRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
@@ -105,15 +105,20 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
         
         if (center != null) {
             requestManager.addRequest(
-                new FSRequest(
+                new FSVenuesRequest(
                     center,
-                    slArrangeMeet.getCurrentLocation(),
                     slArrangeMeet.getFoursquare(),
                     requestManager,
                     new RequestListener<List<Venue>>() {
                         @SuppressWarnings("unchecked")
                         public void onComplete(Object result) {
-                            adapter.updateVenues((List<Venue>) result);
+                            List<Venue> venues = (List<Venue>) result;
+                            
+                            if (slArrangeMeet.getCurrentLocation() != null) {
+                                Venue.calculateDistances(venues, slArrangeMeet.getCurrentLocation());
+                            }
+                            
+                            adapter.updateVenues(venues);
                             
                             Util.uiHandler.post(
                                 new Runnable() {

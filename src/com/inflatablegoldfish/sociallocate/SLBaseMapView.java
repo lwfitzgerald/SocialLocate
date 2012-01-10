@@ -83,7 +83,7 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         venueDistance = (TextView) findViewById(R.id.venue_distance);
         
         // Set up the map controller
-        mapView = (MapView) findViewById(R.id.mapview);
+        mapView = (MapView) findViewById(R.id.google_map_view);
         
         /*
          * Disable software rendering as android has no
@@ -236,6 +236,8 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     
     /**
      * Update the friend user
+     * 
+     * Called from UI thread
      * @param user New friend user
      * @param forceCenter If true, force the map to re-center
      */
@@ -274,7 +276,7 @@ public abstract class SLBaseMapView extends RelativeLayout implements
      * Called from UI thread
      */
     protected void setTopForVenue() {
-        final Bitmap bitmap = picRunner.getImage(venue.getIcon(), true);
+        final Bitmap bitmap = picRunner.getImage(venue.getIcon(), false);
         
         if (bitmap != null) {
             venueIcon.setImageBitmap(bitmap);
@@ -388,10 +390,7 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         this.venue = venue;
         
         // Animate to location
-        mapController.animateTo(Util.getGeoPoint(SLBaseMapView.this.venue.getLocation()));
-        
-        // Set title
-        activity.setTitle(R.string.venues_title);
+        mapController.animateTo(Util.getGeoPoint(venue.getLocation()));
         
         // Set venue in overlay
         venueOverlay.setVenue(venue);

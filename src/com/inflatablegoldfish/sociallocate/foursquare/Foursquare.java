@@ -24,7 +24,7 @@ public class Foursquare {
     public static final int SEARCH_RADIUS = 1000;
     private static final int RESULT_LIMIT = 10;
     
-    public RequestResult<List<Venue>> getVenuesNear(Location location, Location ourLocation) {
+    public RequestResult<List<Venue>> getVenuesNear(Location location) {
         String url = "https://api.foursquare.com/v2/venues/explore?"
                 + "ll=" + location.getLatitude() + ',' + location.getLongitude()
                 + "&radius=" + SEARCH_RADIUS
@@ -58,9 +58,6 @@ public class Foursquare {
                             + "256.png" : emptyCategory
                 );
                 
-                // Calculate and store distance
-                venue.setDistanceFrom(ourLocation);
-                
                 venueList.add(venue);
             }
             
@@ -69,6 +66,40 @@ public class Foursquare {
         } catch (Exception e) {
             Log.d("SocialLocate", "Error in fetching venues");
             return new RequestResult<List<Venue>>(null, ResultCode.ERROR);
+        }
+    }
+    
+    public RequestResult<Venue> getVenue(String venueID) {
+        String url = "https://api.foursquare.com/v2/venues/" + venueID
+                + "?client_id=" + clientID
+                + "&client_secret=" + clientSecret
+                + "&v=" + lastModified;
+        
+        try {
+            String response = Util.getURL(url, false);
+            
+            JSONObject jsonObject = new JSONObject(response);
+            
+            JSONObject venueObj = jsonObject.getJSONObject("response")
+                    .getJSONObject("venue");
+            JSONObject venueLoc = venueObj.getJSONObject("location");
+            JSONArray venueCats = venueObj.getJSONArray("categories");
+            
+            Venue venue = new Venue(
+                venueObj.getString("id"),
+                venueObj.getString("name"),
+                venueLoc.getDouble("lat"),
+                venueLoc.getDouble("lng"),
+                (venueCats.length() > 0) ? venueCats.getJSONObject(0)
+                        .getJSONObject("icon").getString("prefix")
+                        + "256.png" : emptyCategory
+            );
+            
+            Log.d("SocialLocate", "Fetching venue OK");
+            return new RequestResult<Venue>(venue, ResultCode.SUCCESS);
+        } catch (Exception e) {
+            Log.d("SocialLocate", "Error in fetching venue");
+            return new RequestResult<Venue>(null, ResultCode.ERROR);
         }
     }
 }

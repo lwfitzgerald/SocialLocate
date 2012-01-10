@@ -63,15 +63,12 @@ public class SLArrangeMeet extends SLBaseActivity {
         // Set up the flipper
         viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
         
-        // Set up the pic runner
-        PicRunner picRunner = new PicRunner();
-        
         // Set up the friend list
         friendList = (FriendList) findViewById(R.id.friend_list);
         friendList.setUp(this, picRunner);
         
-        // Set up the friend view
-        mapView = (SLArrangeMapView) findViewById(R.id.friend_view);
+        // Set up the map view
+        mapView = (SLArrangeMapView) findViewById(R.id.map_view);
         ((SLArrangeMapView) mapView).setUp(this, picRunner);
         
         // Set up the venue list

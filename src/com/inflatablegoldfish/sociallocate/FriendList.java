@@ -67,7 +67,6 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
                             public void run() {
                                 // Mark as complete and start location updates
                                 initialFetchCompleted = true;
-                                slArrangeMeet.getActivityLocationHandler().startUpdates();
                                 
                                 // Send on own user to friend view
                                 slArrangeMeet.updateOwnUser(users.get(0));

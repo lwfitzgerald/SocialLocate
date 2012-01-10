@@ -11,6 +11,7 @@ import com.inflatablegoldfish.sociallocate.request.SLUpdateRegRequest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -56,18 +57,26 @@ public class C2DMReceiver extends C2DMBaseReceiver {
     protected void onMessage(Context context, Intent intent) {
         Log.d("SocialLocate", "C2DM message received");
         Log.d("SocialLocate", intent.getExtras().getString("payload"));
-        Intent launchIntent = new Intent(context, SLArrangeMeet.class);
         
-//        Bundle extras = intent.getExtras();
-//        if (extras != null) {
-//            String payload = (String) extras.get("payload");
-//            String[] split = payload.split(";");
-//            
-//            launchIntent.putExtra("friend_id", Integer.valueOf(split[0]));
-//            launchIntent.putExtra("venue_id", Integer.valueOf(split[1]));
-//            
-//            startActivity(launchIntent);
-//        }
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            String payload = (String) extras.get("payload");
+            String[] split = payload.split(";");
+            String action = split[0];
+            int friendID = Integer.valueOf(split[1]);
+            String venueID = split[2];
+            
+            if (action.equals("meet")) {
+                Intent launchIntent = new Intent(context, SLRespond.class);
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                launchIntent.putExtra("friend_id", friendID);
+                launchIntent.putExtra("venue_id", venueID);
+            
+                startActivity(launchIntent);
+            } else { // action.equals("respond")
+                
+            }
+        }
     }
 
     @Override
