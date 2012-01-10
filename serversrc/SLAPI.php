@@ -1,11 +1,14 @@
 <?
 require_once('DB.php');
 require_once('User.php');
+require_once('C2DM.php');
 require_once('FacebookIntegration.php');
 
 class SLAPI {
     private $facebookInt;
     private $fbAuthed;
+
+    private $C2DM;
 
     public function __construct($config) {
         // Initialise DB connection
@@ -20,6 +23,10 @@ class SLAPI {
 
         // Work out if authentication is OK
         $this->fbAuthed = $this->facebookInt->authIsOk();
+
+        if ($this->fbAuthed) {
+            $this->C2DM = new C2DM($config['c2dm_user'], $config['c2dm_pass']);
+        }
     }
 
     public function handleAction() {
@@ -52,6 +59,9 @@ class SLAPI {
             return;
         case 'update_registration':
             echo $this->handleUpdateRegistration();
+            return;
+        case 'meet':
+            echo $this->handleMeet();
             return;
         }
     }
@@ -125,6 +135,29 @@ class SLAPI {
         }
 
         return $this->authReturn(true);
+    }
+
+    private function handleMeet() {
+        if (isset($_GET['friend_id'])
+            && isset($_GET['venue_id'])) {
+            
+            $user = new User($_GET['friend_id']);
+            $user->load();
+
+            $result = $user->sendPush(
+                array(
+                    'payload' => $_GET['friend_id'].';'.$_GET['venue_id']
+                ),
+                $this->C2DM
+            );
+
+            return json_encode(array(
+                'auth_status' => 1,
+                'meet_request_status' => ($result ? 1 : 0)
+            ));
+        }
+
+        return authReturn(true);
     }
 
     private function authReturn($authed) {

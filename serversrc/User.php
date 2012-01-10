@@ -24,6 +24,27 @@ class User {
     }
 
     /**
+     * Send a push notification to this user
+     * @param $data Data to send in push
+     * @param $C2DM C2DM reference
+     * @return True if successful
+     */
+    public function sendPush($data, $C2DM) {
+        $result = $C2DM->send($this->registrationID, $data);
+
+        if ($result === false) {
+            return false;
+        }
+
+        if ($result === 'InvalidRegistration') {
+            $this->clearRegistrationID();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Load lat and lng for this user
      * from the DB
      * @return True if load succeeded
@@ -35,20 +56,16 @@ class User {
         $stmt->bind_result($id, $lat, $lng, $lastUpdated, $registrationID);
         $stmt->fetch();
 
-        if ($stmt->num_rows > 0) {
-            $this->id = $id;
-            $this->lat = $lat;
-            $this->lng = $lng;
-            $this->lastUpdated = $lastUpdated;
-            $this->registrationID = $registrationID;
-            $stmt->close();
-            return true;
-        } else {
-            $stmt->close();
-            return false;
-        }
+        $this->id = $id;
+        $this->lat = $lat;
+        $this->lng = $lng;
+        $this->lastUpdated = $lastUpdated;
+        $this->registrationID = $registrationID;
+        
+        $stmt->close();
+        return true;
     }
-  
+
     /**
      * Saves just lat and lng to the DB
      */
@@ -80,7 +97,6 @@ class User {
         $stmt->execute();
         $stmt->close();
     }
-        
 
     /**
      * Save any changes to this user to the DB
@@ -97,6 +113,18 @@ class User {
             $this->lng,
             $this->registrationID
         );
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    /**
+     * Remove the registration ID for the given user ID
+     */
+    private function clearRegistrationID() {
+        $this->registrationID = null;
+
+        $stmt = db::prepareStatement('UPDATE `user` SET `registration_id`=NULL WHERE `id`=?');
+        $stmt->bind_param('i', $this->id);
         $stmt->execute();
         $stmt->close();
     }
