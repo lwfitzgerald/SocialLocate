@@ -63,6 +63,9 @@ class SLAPI {
         case 'meet':
             echo $this->handleMeet();
             return;
+        case 'respond':
+            echo $this->handleRespond();
+            return;
         }
     }
 
@@ -161,7 +164,7 @@ class SLAPI {
 
             $result = $user->sendPush(
                 array(
-                    'payload' => $_GET['friend_id'].';'.$_GET['venue_id']
+                    'payload' => 'meet;'.$this->facebookInt->getID().';'.$_GET['venue_id']
                 ),
                 $this->C2DM
             );
@@ -169,6 +172,44 @@ class SLAPI {
             return json_encode(array(
                 'auth_status' => 1,
                 'meet_request_status' => ($result ? 1 : 0)
+            ));
+        }
+
+        return authReturn(true);
+    }
+
+    private function handleRespond() {
+        if (isset($_GET['friend_id'])
+            && isset($_GET['response'])) {
+
+            $user = new User($_GET['friend_id']);
+            $user->load();
+
+            $friends = $this->facebookInt->getFriendsUsingSL(true);
+
+            if ($friends === null) {
+                // Session expired
+                return $this->authReturn(false);
+            }
+
+            // Only message someone who is our friend
+            if (!isset($friends[$_GET['friend_id']])) {
+                return json_encode(array(
+                    'auth_status' => 1,
+                    'meet_response_status' => 0
+                ));
+            }
+
+            $result = $user->sendPush(
+                array(
+                    'payload' => 'respond;'.($_GET['response'] ? 1 : 0)
+                ),
+                $this->C2DM
+            );
+
+            return json_encode(array(
+                'auth_status' => 1,
+                'meet_response_status' => ($result ? 1 : 0)
             ));
         }
 
