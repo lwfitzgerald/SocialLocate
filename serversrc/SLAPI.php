@@ -144,6 +144,21 @@ class SLAPI {
             $user = new User($_GET['friend_id']);
             $user->load();
 
+            $friends = $this->facebookInt->getFriendsUsingSL(true);
+
+            if ($friends === null) {
+                // Session expired
+                return $this->authReturn(false);
+            }
+
+            // Only message someone who is our friend
+            if (!isset($friends[$_GET['friend_id']])) {
+                return json_encode(array(
+                    'auth_status' => 1,
+                    'meet_request_status' => 0
+                ));
+            }
+
             $result = $user->sendPush(
                 array(
                     'payload' => $_GET['friend_id'].';'.$_GET['venue_id']
