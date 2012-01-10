@@ -20,7 +20,7 @@
 	<string name="not_registered">Not registered yet, please retry shortly</string>
 	<string name="sending_notification">Sending notification...</string>
 	<string name="notification_sent">Notification sent!</string>
-	<string name="notification_failed">Notification failed, please try again</string>
+	<string name="notification_failed">Notification failed, please try again later</string>
 	
 	
 	

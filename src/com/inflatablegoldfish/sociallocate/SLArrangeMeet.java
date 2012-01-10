@@ -15,7 +15,6 @@ import com.inflatablegoldfish.sociallocate.request.SLUpdateLocRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.ViewFlipper;
