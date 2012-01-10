@@ -244,59 +244,51 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     /**
      * Set the values for the top view elements
      * to those for the Friend view
+     * 
+     * Called from UI thread
      */
     protected void setTopForUser() {
         final Bitmap bitmap = picRunner.getImage(friendUser.getPic(), true);
         
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    if (bitmap != null) {
-                        friendPic.setImageBitmap(bitmap);
-                    }
-                    
-                    friendName.setText(friendUser.getName());
-                    lastUpdated.setText(friendUser.getPrettyLastUpdated());
-                    
-                    if (friendUser.getDistance() != null) {
-                        friendDistance.setText(friendUser.getPrettyDistance());
-                    }
-                    
-                    friendPic.invalidate();
-                    friendName.invalidate();
-                    lastUpdated.invalidate();
-                    friendDistance.invalidate();
-                }
-            }
-        );
+        if (bitmap != null) {
+            friendPic.setImageBitmap(bitmap);
+        }
+        
+        friendName.setText(friendUser.getName());
+        lastUpdated.setText(friendUser.getPrettyLastUpdated());
+        
+        if (friendUser.getDistance() != null) {
+            friendDistance.setText(friendUser.getPrettyDistance());
+        }
+        
+        friendPic.invalidate();
+        friendName.invalidate();
+        lastUpdated.invalidate();
+        friendDistance.invalidate();
     }
 
     /**
      * Set the values for the top view elements
      * to those for the Venue view
+     * 
+     * Called from UI thread
      */
     protected void setTopForVenue() {
         final Bitmap bitmap = picRunner.getImage(venue.getIcon(), true);
         
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    if (bitmap != null) {
-                        venueIcon.setImageBitmap(bitmap);
-                    }
-                    
-                    venueName.setText(venue.getName());
-                    
-                    if (venue.getDistance() != null) {
-                        venueDistance.setText(venue.getPrettyDistance());
-                    }
-                    
-                    venueIcon.invalidate();
-                    venueName.invalidate();
-                    venueDistance.invalidate();
-                }
-            }
-        );
+        if (bitmap != null) {
+            venueIcon.setImageBitmap(bitmap);
+        }
+        
+        venueName.setText(venue.getName());
+        
+        if (venue.getDistance() != null) {
+            venueDistance.setText(venue.getPrettyDistance());
+        }
+        
+        venueIcon.invalidate();
+        venueName.invalidate();
+        venueDistance.invalidate();
     }
     
     protected class VenueOverlay extends ItemizedOverlay<VenueItem> {
@@ -388,19 +380,15 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     /**
      * Called to set the venue chosen from the
      * venue list when switching from the venue list
+     * 
+     * Called from UI thread
      * @param venue Venue chosen
      */
     public void setVenue(Venue venue) {
         this.venue = venue;
         
         // Animate to location
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    mapController.animateTo(Util.getGeoPoint(SLBaseMapView.this.venue.getLocation()));
-                }
-            }
-        );
+        mapController.animateTo(Util.getGeoPoint(SLBaseMapView.this.venue.getLocation()));
         
         // Set title
         activity.setTitle(R.string.venues_title);

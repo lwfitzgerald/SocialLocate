@@ -59,21 +59,6 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
      * Called when switching to display this view
      */
     public void switchingTo() {
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    // Clear existing venues
-                    adapter.clear();
-                    
-                    // Show loading spinner
-                    mayHaveMorePages();
-                    
-                    // Hide error view as might currently be shown
-                    errorView.setVisibility(View.GONE);
-                }
-            }
-        );
-        
         doUpdate();
     }
 
@@ -174,13 +159,27 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
             
             slArrangeMeet.setTitle("SocialLocate - " + venue.getName());
             
-            slArrangeMeet.getViewFlipper().showPrevious();
+            slArrangeMeet.getViewFlipper().setDisplayedChild(SLArrangeMeet.VENUE_VIEW);
         }
     }
 
     public void onBackPressed() {
-        slArrangeMeet.setCurrentStage(ActivityStage.FRIEND_VIEW);
-        
-        slArrangeMeet.getViewFlipper().showPrevious();
+        if (!slArrangeMeet.getViewFlipper().isFlipping()) {
+            slArrangeMeet.setCurrentStage(ActivityStage.FRIEND_VIEW);
+            
+            // Clear venues
+            adapter.clear();
+            
+            // Show loading spinner
+            mayHaveMorePages();
+            
+            // Hide error view as might currently be shown
+            errorView.setVisibility(View.GONE);
+            
+            slArrangeMeet.setTitle("SocialLocate - "
+                    + slArrangeMeet.getMapView().getFriend().getName());
+            
+            slArrangeMeet.getViewFlipper().setDisplayedChild(SLArrangeMeet.FRIEND_VIEW);
+        }
     }
 }

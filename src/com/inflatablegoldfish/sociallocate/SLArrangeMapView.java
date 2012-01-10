@@ -24,6 +24,7 @@ import android.location.Location;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ViewFlipper;
 
 public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener {
     private volatile Location centerLocation = null;
@@ -137,70 +138,75 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
             setTopForVenue();
         }
         
-        if (activity.getCurrentLocation() != null) {
-            // Set/update map center
-            this.centerLocation = Util.getCenter(
-                new Location[] {
-                    activity.getCurrentLocation(),
-                    user.getLocation()
-                }
-            );
-            
-            this.center = Util.getGeoPoint(this.centerLocation);
-        }
-        
-        if (!initiallyCentered) {
-            final GeoPoint centerPoint;
-            
-            if (center != null) {
-                // Have actual center from above, use that
-                centerPoint = center;
-                
-                // We'll be centering following this
-                this.initiallyCentered = true;
-                
-                Util.uiHandler.post(
-                    new Runnable() {
-                        public void run() {
-                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
+        // Calculate center and center
+        new Thread(
+            new Runnable() {
+                @Override
+                public void run() {
+                    if (activity.getCurrentLocation() != null) {
+                        // Set/update map center
+                        centerLocation = Util.getCenter(
+                            new Location[] {
+                                activity.getCurrentLocation(),
+                                user.getLocation()
+                            }
+                        );
+                        
+                        center = Util.getGeoPoint(centerLocation);
+                    }
+                    
+                    if (!initiallyCentered) {
+                        final GeoPoint centerPoint;
+                        
+                        if (center != null) {
+                            // Have actual center from above, use that
+                            centerPoint = center;
+                            
+                            // We'll be centering following this
+                            initiallyCentered = true;
+                            
+                            Util.uiHandler.post(
+                                new Runnable() {
+                                    public void run() {
+                                        mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
+                                    }
+                                }
+                            );
+                        } else {
+                            // No location so just center on friend
+                            // Doesn't count as an initial centering
+                            centerPoint = Util.getGeoPoint(user.getLocation());
+                            mapController.setZoom(12);
                         }
-                    }
-                );
-            } else {
-                // No location so just center on friend
-                // Doesn't count as an initial centering
-                centerPoint = Util.getGeoPoint(user.getLocation());
-                mapController.setZoom(12);
-            }
-            
-            // Only center if we haven't already
-            Util.uiHandler.post(
-                new Runnable() {
-                    public void run() {
-                        mapController.animateTo(centerPoint);
+                        
+                        // Only center if we haven't already
+                        Util.uiHandler.post(
+                            new Runnable() {
+                                public void run() {
+                                    mapController.animateTo(centerPoint);
+                                }
+                            }
+                        );
                     }
                 }
-            );
-        }
+            }
+        ).start();
     }
     
     @Override
     public void setVenue(Venue venue) {
         super.setVenue(venue);
         
-        // Configure button visibility
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    findVenuesButton.setVisibility(View.GONE);
-                    notifyButton.setVisibility(View.VISIBLE);
-                }
-            }
-        );
+        findVenuesButton.setVisibility(View.GONE);
+        notifyButton.setVisibility(View.VISIBLE);
     }
     
     public Location getCenter() {
         return centerLocation;
+    }
+    
+    public User getFriend() {
+        return friendUser;
     }
     
     @Override
@@ -235,7 +241,14 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
     public void onSLUpdate(List<User> friends) {
         // Will refresh UI
         if (friendUser != null) {
-            updateUser(friendUser, false);
+            Util.uiHandler.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUser(friendUser, false);
+                    }
+                }
+            );
         }
     }
 
@@ -307,6 +320,25 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
                         public void onComplete(Object result) {
                             Util.showToast(getContext().getText(R.string.notification_sent), getContext());
                             progressDialog.dismiss();
+                            
+                            // Switch back to friend list
+                            Util.uiHandler.post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        // Clear the venue state
+                                        clearVenueState();
+                                        
+                                        // Change to friend list
+                                        ((SLArrangeMeet) activity).setCurrentStage(ActivityStage.FRIEND_LIST);
+                                        activity.setTitle(R.string.friends_title);
+                                        
+                                        ViewFlipper flipper = ((SLArrangeMeet) activity).getViewFlipper();
+                                        
+                                        flipper.setDisplayedChild(SLArrangeMeet.FRIEND_LIST);
+                                    }
+                                }
+                            );
                         }
 
                         public void onError(ResultCode resultCode) {
@@ -325,39 +357,49 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
         }
     }
     
+    /**
+     * Clear the venue state
+     */
+    private void clearVenueState() {
+        venue = null;
+        venueOverlay.clearVenue();
+        
+        // Hide venue bar
+        venueBar.setVisibility(View.GONE);
+        
+        // Configure button visibility
+        Util.uiHandler.post(
+            new Runnable() {
+                public void run() {
+                    findVenuesButton.setVisibility(View.VISIBLE);
+                    notifyButton.setVisibility(View.GONE);
+                }
+            }
+        );
+    }
+    
     @Override
     public void onBackPressed() {
         SLArrangeMeet slArrangeMeet = (SLArrangeMeet) activity;
         
-        if (slArrangeMeet.getCurrentStage() == ActivityStage.FRIEND_VIEW) {
-            slArrangeMeet.setCurrentStage(ActivityStage.FRIEND_LIST);
-            
-            slArrangeMeet.setTitle(R.string.friends_title);
-            
-            slArrangeMeet.getViewFlipper().showPrevious();
-        } else {
-            // Venue set so go back to venue list
-            slArrangeMeet.setCurrentStage(ActivityStage.VENUE_LIST);
-            
-            slArrangeMeet.setTitle(R.string.venues_title);
-            
-            slArrangeMeet.getViewFlipper().showNext();
-            
-            venue = null;
-            venueOverlay.clearVenue();
-            
-            // Hide venue bar
-            venueBar.setVisibility(View.GONE);
-            
-            // Configure button visibility
-            Util.uiHandler.post(
-                new Runnable() {
-                    public void run() {
-                        findVenuesButton.setVisibility(View.VISIBLE);
-                        notifyButton.setVisibility(View.GONE);
-                    }
-                }
-            );
+        if (!slArrangeMeet.getViewFlipper().isFlipping()) {
+            if (slArrangeMeet.getCurrentStage() == ActivityStage.FRIEND_VIEW) {
+                slArrangeMeet.setCurrentStage(ActivityStage.FRIEND_LIST);
+                
+                slArrangeMeet.setTitle(R.string.friends_title);
+                
+                slArrangeMeet.getViewFlipper().setDisplayedChild(SLArrangeMeet.FRIEND_LIST);
+            } else {
+                // Venue set so go back to venue list
+                slArrangeMeet.setCurrentStage(ActivityStage.VENUE_LIST);
+                
+                slArrangeMeet.setTitle(R.string.venues_title);
+                
+                // Clear the venue state
+                clearVenueState();
+                
+                slArrangeMeet.getViewFlipper().setDisplayedChild(SLArrangeMeet.VENUE_LIST);
+            }
         }
     }
 }
