@@ -1,5 +1,11 @@
 package com.inflatablegoldfish.sociallocate;
 
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
+import com.inflatablegoldfish.sociallocate.request.RequestListener;
+import com.inflatablegoldfish.sociallocate.request.RequestManager;
+import com.inflatablegoldfish.sociallocate.request.SLRespondRequest;
+
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.AttributeSet;
@@ -9,6 +15,8 @@ import android.widget.Button;
 public class SLRespondMapView extends SLBaseMapView {
     private Button acceptButton;
     private Button rejectButton;
+    
+    private ProgressDialog progressDialog;
     
     public SLRespondMapView(Context context) {
         super(context);
@@ -89,18 +97,50 @@ public class SLRespondMapView extends SLBaseMapView {
     
     @Override
     public void onClick(View view) {
-        // TODO handle button presses
         if (view == acceptButton) {
-            
+            respond(true);
         } else { // rejectButton
-            
+            respond(false);
         }
+    }
+    
+    private void respond(boolean response) {
+        progressDialog = ProgressDialog.show(activity, "", activity.getText(R.string.responding));
+        
+        RequestManager requestManager = activity.getRequestManager();
+        
+        requestManager.addRequest(
+            new SLRespondRequest(
+                friendUser.getId(),
+                response,
+                requestManager,
+                new RequestListener<Void>() {
+                    @Override
+                    public void onComplete(Object result) {
+                        progressDialog.dismiss();
+                        activity.finish();
+                    }
+
+                    @Override
+                    public void onError(ResultCode resultCode) {
+                        Util.showToast(activity.getText(R.string.respond_error), activity);
+                        progressDialog.cancel();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        Util.showToast(activity.getText(R.string.respond_error), activity);
+                        progressDialog.cancel();
+                    }
+                },
+                activity.getFacebook(),
+                activity.getSocialLocate()
+            )
+        );
     }
 
     @Override
     public void onBackPressed() {
-        // TODO reply with reject?
-        
-        activity.finish();
+        respond(false);
     }
 }

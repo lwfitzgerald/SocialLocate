@@ -8,6 +8,9 @@ import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateRegRequest;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,9 +20,27 @@ import android.util.Log;
 
 public class C2DMReceiver extends C2DMBaseReceiver {
     public static final String USERNAME = "sociallocateapp@gmail.com";
+    private static final int MEET_NOTIFICATION_ID = R.string.meet_notification_title;
+    private static final int RESPOND_NOTIFICATION_ID = R.string.respond_title;
+    
+    private NotificationManager notificationManager; 
+    private Notification.Builder notificationBuilder;
     
     public C2DMReceiver() {
         super(USERNAME);
+    }
+    
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        
+        // Set up notification manager
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        
+        // Set up notification builder
+        notificationBuilder = new Notification.Builder(this);
+        notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
+        notificationBuilder.setAutoCancel(true);
     }
 
     @Override
@@ -62,21 +83,49 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         if (extras != null) {
             String payload = (String) extras.get("payload");
             String[] split = payload.split(";");
+            
             String action = split[0];
-            int friendID = Integer.valueOf(split[1]);
-            String venueID = split[2];
             
             if (action.equals("meet")) {
+                int friendID = Integer.valueOf(split[1]);
+                String venueID = split[2];
+                
                 Intent launchIntent = new Intent(context, SLRespond.class);
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 launchIntent.putExtra("friend_id", friendID);
                 launchIntent.putExtra("venue_id", venueID);
-            
-                startActivity(launchIntent);
-            } else { // action.equals("respond")
                 
+                PendingIntent pendingIntent = PendingIntent.getActivity(
+                        this, 0, launchIntent, 0);
+                
+                Notification notification = buildNotification(
+                    getText(R.string.meet_notification_title),
+                    getText(R.string.meet_notification_text),
+                    pendingIntent
+                );
+                
+                notificationManager.notify(MEET_NOTIFICATION_ID, notification);
+            } else { // action.equals("respond")
+                boolean response = split[1].equals("1");
+                
+                Notification notification = buildNotification(
+                    getText(R.string.respond_title),
+                    getText(response ? R.string.accept_notification_text : R.string.reject_notification_text),
+                    null
+                );
+                
+                notificationManager.notify(RESPOND_NOTIFICATION_ID, notification);
             }
         }
+    }
+    
+    private Notification buildNotification(CharSequence title, CharSequence text, PendingIntent contentIntent) {
+        notificationBuilder.setTicker(title);
+        notificationBuilder.setContentTitle(title);
+        notificationBuilder.setContentText(text);
+        notificationBuilder.setContentIntent(contentIntent);
+        
+        return notificationBuilder.getNotification();
     }
 
     @Override

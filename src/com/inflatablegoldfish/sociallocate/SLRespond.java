@@ -11,6 +11,7 @@ import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 
 public class SLRespond extends SLBaseActivity {
     private User friend;
@@ -41,9 +42,18 @@ public class SLRespond extends SLBaseActivity {
                     public void onComplete(final Object userList) {
                         final List<User> users = (List<User>) userList;
                         
+                        int newFriendID;
+                        
+                        if (friendID == users.get(0).getId()) {
+                            newFriendID = users.get(1).getId();
+                        } else {
+                            newFriendID = friendID;
+                        }
+                        
                         // Find friend in users
                         for (User user : users) {
-                            if (user.getId() == friendID) {
+                            // For debugging...
+                            if (user.getId() == newFriendID) {
                                 friend = user;
                                 break;
                             }
@@ -149,5 +159,22 @@ public class SLRespond extends SLBaseActivity {
                 }
             )
         );
+    }
+    
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_MENU && event.isTracking()
+                && !event.isCanceled()) {
+            
+            finish();
+            
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+    
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }

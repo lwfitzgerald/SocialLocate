@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.facebook.android.Facebook;
 import com.google.android.c2dm.C2DMessaging;
 import com.google.android.maps.GeoPoint;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
@@ -255,22 +254,6 @@ public class SLArrangeMeet extends SLBaseActivity {
      */
     public ActivityLocationHandler getActivityLocationHandler() {
         return activityLocHandler;
-    }
-    
-    /**
-     * Get the Facebook interface object
-     * @return Facebook interface object
-     */
-    public Facebook getFacebook() {
-        return facebook;
-    }
-    
-    /**
-     * Get the SocialLocate interface object
-     * @return SocialLocate interface object
-     */
-    public SocialLocate getSocialLocate() {
-        return socialLocate;
     }
     
     /**

@@ -209,6 +209,31 @@ public class SocialLocate {
         }
     }
     
+    public RequestResult<Void> respond(int friendID, boolean response) {
+        String url = URL_PREFIX + "action=respond"
+                + "&friend_id=" + friendID + "&response=" + (response ? 1 : 0);
+        
+        try {
+            String urlResponse = Util.getURL(url, true);
+            
+            JSONObject jsonObject = new JSONObject(urlResponse);
+            
+            if (jsonObject.getInt("auth_status") == 0) {
+                Log.d("SocialLocate", "Auth fail in respond request");
+                return new RequestResult<Void>(null, ResultCode.AUTHFAIL);
+            } else if (jsonObject.getInt("meet_response_status") == 0) {
+                Log.d("SocialLocate", "Error in respond request");
+                return new RequestResult<Void>(null, ResultCode.ERROR);
+            } else {
+                Log.d("SocialLocate", "Respond request OK");
+                return new RequestResult<Void>(null, ResultCode.SUCCESS);
+            }
+        } catch (Exception e) {
+            Log.d("SocialLocate", "Error in respond request");
+            return new RequestResult<Void>(null, ResultCode.ERROR);
+        }
+    }
+    
     public void saveCookies() {
         CookieManager mgr = (CookieManager) CookieHandler.getDefault();
         

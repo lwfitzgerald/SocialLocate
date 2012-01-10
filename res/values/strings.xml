@@ -19,10 +19,17 @@
 	<string name="venues_title">SocialLocate - Venues</string>
 	<string name="not_registered">Not registered yet, please retry shortly</string>
 	<string name="sending_notification">Sending notification...</string>
-	<string name="notification_sent">Notification sent!</string>
+	<string name="notification_sent">Notification sent</string>
 	<string name="notification_failed">Notification failed, please try again later</string>
 	<string name="loading_details">Loading details...</string>
 	<string name="load_details_failed">Loading details failed</string>
+	<string name="meet_notification_title">SocialLocate Invite</string>
+	<string name="meet_notification_text">A friend has invited you to meet</string><string name="respond_title">SocialLocate Response</string><string name="accept_notification_text">Your friend accepted your request to meet</string>
+	<string name="reject_notification_text">Your friend rejected your request to meet</string>
+	<string name="responding">Responding...</string>
+	<string name="respond_error">Error responding, please try again</string>
+	
+	
 	
 	
 	

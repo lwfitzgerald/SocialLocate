@@ -35,7 +35,6 @@ public class Util {
     
     public static Handler uiHandler;
     public static SharedPreferences prefs;
-    public static SharedPreferences c2dmPrefs;
     
     private static final int TWO_MINUTES = 1000 * 60 * 2;
     

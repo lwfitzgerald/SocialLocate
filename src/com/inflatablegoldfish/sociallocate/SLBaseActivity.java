@@ -51,7 +51,6 @@ public abstract class SLBaseActivity extends MapActivity {
         
         // Get preferences reference
         Util.prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Util.c2dmPrefs = getSharedPreferences(C2DMessaging.PREFERENCE, MODE_PRIVATE);
         
         // Load cookies
         socialLocate.loadCookies();
@@ -132,6 +131,22 @@ public abstract class SLBaseActivity extends MapActivity {
      */
     public RequestManager getRequestManager() {
         return requestManager;
+    }
+    
+    /**
+     * Get the Facebook interface object
+     * @return Facebook interface object
+     */
+    public Facebook getFacebook() {
+        return facebook;
+    }
+    
+    /**
+     * Get the SocialLocate interface object
+     * @return SocialLocate interface object
+     */
+    public SocialLocate getSocialLocate() {
+        return socialLocate;
     }
     
     /**
