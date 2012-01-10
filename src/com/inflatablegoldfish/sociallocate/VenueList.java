@@ -15,7 +15,7 @@ import com.inflatablegoldfish.sociallocate.SLArrangeMeet.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.SLBaseActivity.BackButtonListener;
 import com.inflatablegoldfish.sociallocate.SLBaseActivity.LocationUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Venue;
-import com.inflatablegoldfish.sociallocate.request.FSRequest;
+import com.inflatablegoldfish.sociallocate.request.FSVenuesRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
@@ -59,21 +59,6 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
      * Called when switching to display this view
      */
     public void switchingTo() {
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    // Clear existing venues
-                    adapter.clear();
-                    
-                    // Show loading spinner
-                    mayHaveMorePages();
-                    
-                    // Hide error view as might currently be shown
-                    errorView.setVisibility(View.GONE);
-                }
-            }
-        );
-        
         doUpdate();
     }
 
@@ -120,15 +105,20 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
         
         if (center != null) {
             requestManager.addRequest(
-                new FSRequest(
+                new FSVenuesRequest(
                     center,
-                    slArrangeMeet.getCurrentLocation(),
                     slArrangeMeet.getFoursquare(),
                     requestManager,
                     new RequestListener<List<Venue>>() {
                         @SuppressWarnings("unchecked")
                         public void onComplete(Object result) {
-                            adapter.updateVenues((List<Venue>) result);
+                            List<Venue> venues = (List<Venue>) result;
+                            
+                            if (slArrangeMeet.getCurrentLocation() != null) {
+                                Venue.calculateDistances(venues, slArrangeMeet.getCurrentLocation());
+                            }
+                            
+                            adapter.updateVenues(venues);
                             
                             Util.uiHandler.post(
                                 new Runnable() {
@@ -174,13 +164,27 @@ public class VenueList extends AmazingListView implements OnItemClickListener,
             
             slArrangeMeet.setTitle("SocialLocate - " + venue.getName());
             
-            slArrangeMeet.getViewFlipper().showPrevious();
+            slArrangeMeet.getViewFlipper().setDisplayedChild(SLArrangeMeet.VENUE_VIEW);
         }
     }
 
     public void onBackPressed() {
-        slArrangeMeet.setCurrentStage(ActivityStage.FRIEND_VIEW);
-        
-        slArrangeMeet.getViewFlipper().showPrevious();
+        if (!slArrangeMeet.getViewFlipper().isFlipping()) {
+            slArrangeMeet.setCurrentStage(ActivityStage.FRIEND_VIEW);
+            
+            // Clear venues
+            adapter.clear();
+            
+            // Show loading spinner
+            mayHaveMorePages();
+            
+            // Hide error view as might currently be shown
+            errorView.setVisibility(View.GONE);
+            
+            slArrangeMeet.setTitle("SocialLocate - "
+                    + slArrangeMeet.getMapView().getFriend().getName());
+            
+            slArrangeMeet.getViewFlipper().setDisplayedChild(SLArrangeMeet.FRIEND_VIEW);
+        }
     }
 }

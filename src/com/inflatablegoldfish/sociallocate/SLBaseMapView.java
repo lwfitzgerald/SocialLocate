@@ -83,7 +83,7 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         venueDistance = (TextView) findViewById(R.id.venue_distance);
         
         // Set up the map controller
-        mapView = (MapView) findViewById(R.id.mapview);
+        mapView = (MapView) findViewById(R.id.google_map_view);
         
         /*
          * Disable software rendering as android has no
@@ -236,6 +236,8 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     
     /**
      * Update the friend user
+     * 
+     * Called from UI thread
      * @param user New friend user
      * @param forceCenter If true, force the map to re-center
      */
@@ -244,59 +246,51 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     /**
      * Set the values for the top view elements
      * to those for the Friend view
+     * 
+     * Called from UI thread
      */
     protected void setTopForUser() {
         final Bitmap bitmap = picRunner.getImage(friendUser.getPic(), true);
         
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    if (bitmap != null) {
-                        friendPic.setImageBitmap(bitmap);
-                    }
-                    
-                    friendName.setText(friendUser.getName());
-                    lastUpdated.setText(friendUser.getPrettyLastUpdated());
-                    
-                    if (friendUser.getDistance() != null) {
-                        friendDistance.setText(friendUser.getPrettyDistance());
-                    }
-                    
-                    friendPic.invalidate();
-                    friendName.invalidate();
-                    lastUpdated.invalidate();
-                    friendDistance.invalidate();
-                }
-            }
-        );
+        if (bitmap != null) {
+            friendPic.setImageBitmap(bitmap);
+        }
+        
+        friendName.setText(friendUser.getName());
+        lastUpdated.setText(friendUser.getPrettyLastUpdated());
+        
+        if (friendUser.getDistance() != null) {
+            friendDistance.setText(friendUser.getPrettyDistance());
+        }
+        
+        friendPic.invalidate();
+        friendName.invalidate();
+        lastUpdated.invalidate();
+        friendDistance.invalidate();
     }
 
     /**
      * Set the values for the top view elements
      * to those for the Venue view
+     * 
+     * Called from UI thread
      */
     protected void setTopForVenue() {
-        final Bitmap bitmap = picRunner.getImage(venue.getIcon(), true);
+        final Bitmap bitmap = picRunner.getImage(venue.getIcon(), false);
         
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    if (bitmap != null) {
-                        venueIcon.setImageBitmap(bitmap);
-                    }
-                    
-                    venueName.setText(venue.getName());
-                    
-                    if (venue.getDistance() != null) {
-                        venueDistance.setText(venue.getPrettyDistance());
-                    }
-                    
-                    venueIcon.invalidate();
-                    venueName.invalidate();
-                    venueDistance.invalidate();
-                }
-            }
-        );
+        if (bitmap != null) {
+            venueIcon.setImageBitmap(bitmap);
+        }
+        
+        venueName.setText(venue.getName());
+        
+        if (venue.getDistance() != null) {
+            venueDistance.setText(venue.getPrettyDistance());
+        }
+        
+        venueIcon.invalidate();
+        venueName.invalidate();
+        venueDistance.invalidate();
     }
     
     protected class VenueOverlay extends ItemizedOverlay<VenueItem> {
@@ -388,22 +382,15 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     /**
      * Called to set the venue chosen from the
      * venue list when switching from the venue list
+     * 
+     * Called from UI thread
      * @param venue Venue chosen
      */
     public void setVenue(Venue venue) {
         this.venue = venue;
         
         // Animate to location
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    mapController.animateTo(Util.getGeoPoint(SLBaseMapView.this.venue.getLocation()));
-                }
-            }
-        );
-        
-        // Set title
-        activity.setTitle(R.string.venues_title);
+        mapController.animateTo(Util.getGeoPoint(venue.getLocation()));
         
         // Set venue in overlay
         venueOverlay.setVenue(venue);

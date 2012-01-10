@@ -26,14 +26,19 @@ public class SLArrangeMeet extends SLBaseActivity {
     
     private Timer fetchTimer;
     
+    private volatile ActivityStage currentStage = ActivityStage.FRIEND_LIST;
+    
     public enum ActivityStage {
         FRIEND_LIST,
         FRIEND_VIEW,
         VENUE_LIST,
         VENUE_VIEW
     };
-    
-    private volatile ActivityStage currentStage = ActivityStage.FRIEND_LIST;
+
+    public static final int FRIEND_LIST = 0;
+    public static final int FRIEND_VIEW = 1;
+    public static final int VENUE_LIST = 2;
+    public static final int VENUE_VIEW = 1;
     
     private static final int FETCHES_PER_MINUTE = 2;
     
@@ -57,18 +62,13 @@ public class SLArrangeMeet extends SLBaseActivity {
         
         // Set up the flipper
         viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
-        viewFlipper.setInAnimation(this, android.R.anim.fade_in);
-        viewFlipper.setOutAnimation(this, android.R.anim.fade_out);
-        
-        // Set up the pic runner
-        PicRunner picRunner = new PicRunner();
         
         // Set up the friend list
         friendList = (FriendList) findViewById(R.id.friend_list);
         friendList.setUp(this, picRunner);
         
-        // Set up the friend view
-        mapView = (SLArrangeMapView) findViewById(R.id.friend_view);
+        // Set up the map view
+        mapView = (SLArrangeMapView) findViewById(R.id.map_view);
         ((SLArrangeMapView) mapView).setUp(this, picRunner);
         
         // Set up the venue list
@@ -183,7 +183,7 @@ public class SLArrangeMeet extends SLBaseActivity {
         
         mapView.updateUser(user, true);
         
-        viewFlipper.showNext();
+        viewFlipper.setDisplayedChild(FRIEND_VIEW);
     }
     
     @Override
@@ -214,7 +214,7 @@ public class SLArrangeMeet extends SLBaseActivity {
         
         venueList.switchingTo();
         
-        viewFlipper.showNext();
+        viewFlipper.setDisplayedChild(VENUE_LIST);
     }
     
     /**

@@ -30,7 +30,7 @@
             android:configChanges="orientation|screenSize">
         </activity>
         
-        <service android:name="com.commonsware.cwac.locpoll.LocationPollerService" />
+        <activity android:name=".SLRespond"></activity><service android:name="com.commonsware.cwac.locpoll.LocationPollerService" />
         <receiver android:name="com.commonsware.cwac.locpoll.LocationPoller" >
         </receiver> 
         <receiver android:name=".BackgroundUpdater">
@@ -45,6 +45,7 @@
                 
             </intent-filter>
         </receiver><uses-library android:name="com.google.android.maps" android:required="true"/>
+        
         
         
         

@@ -24,6 +24,7 @@ public abstract class SLBaseActivity extends MapActivity {
     
     protected ActivityLocationHandler activityLocHandler;
     protected RequestManager requestManager;
+    protected PicRunner picRunner;
     
     protected Location currentLocation = null;
     
@@ -38,6 +39,9 @@ public abstract class SLBaseActivity extends MapActivity {
         
         // Set up request manager
         requestManager = new RequestManager(this);
+        
+        // Set up the pic runner
+        picRunner = new PicRunner();
         
         // Set up GPS location updates
         activityLocHandler = new ActivityLocationHandler(this);

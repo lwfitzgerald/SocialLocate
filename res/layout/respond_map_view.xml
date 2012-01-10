@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.inflatablegoldfish.sociallocate.SLDecideMapView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/friend_view"
+<com.inflatablegoldfish.sociallocate.SLRespondMapView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/map_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@color/black"
@@ -46,7 +46,7 @@
 	</LinearLayout>
     
   	<com.google.android.maps.MapView
-        android:id="@+id/mapview"
+        android:id="@+id/google_map_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:apiKey="@string/maps_api_key"
@@ -54,4 +54,4 @@
         android:layout_below="@id/venue_bar"
         android:layout_above="@id/bottom_bar" />
 
-</com.inflatablegoldfish.sociallocate.SLDecideMapView>
+</com.inflatablegoldfish.sociallocate.SLRespondMapView>
