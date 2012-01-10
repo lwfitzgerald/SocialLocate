@@ -17,6 +17,10 @@
 	<string name="notify_friend_button">Notify friend</string>
 	<string name="accept_button">Accept</string><string name="reject_button">reject</string><string name="friends_title">SocialLocate - Friends</string>
 	<string name="venues_title">SocialLocate - Venues</string>
+	<string name="not_registered">Not registered yet, please retry shortly</string>
+	<string name="sending_notification">Sending notification...</string>
+	<string name="notification_sent">Notification sent!</string>
+	<string name="notification_failed">Notification failed, please try again later</string>
 	
 	
 	

@@ -25,6 +25,10 @@ public class Venue {
         this.distance = location.distanceTo(this.location);
     }
     
+    public String getID() {
+        return id;
+    }
+    
     public String getName() {
         return name;
     }

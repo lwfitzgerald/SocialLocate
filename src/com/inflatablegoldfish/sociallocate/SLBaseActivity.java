@@ -1,7 +1,5 @@
 package com.inflatablegoldfish.sociallocate;
 
-import java.util.List;
-
 import com.facebook.android.Facebook;
 import com.google.android.c2dm.C2DMessaging;
 import com.google.android.maps.MapActivity;
@@ -80,7 +78,7 @@ public abstract class SLBaseActivity extends MapActivity {
             requestManager.addRequest(
                 new SLAuthRequest(
                     requestManager,
-                    new RequestListener<List<User>>() {
+                    new RequestListener<Void>() {
                         public void onComplete(Object users) {
                             Log.d("SocialLocate", "SL auth OK");
                         }

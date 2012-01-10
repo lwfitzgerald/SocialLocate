@@ -2,17 +2,15 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
 
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
-import com.inflatablegoldfish.sociallocate.User;
 
 public class SLUpdateRegRequest extends SLRequest {
     private String registrationID;
     
     public SLUpdateRegRequest(String registrationID, RequestManager manager,
-            RequestListener<List<User>> listener, Facebook facebook,
+            RequestListener<Void> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
         super(manager, listener, facebook, socialLocate);
@@ -21,7 +19,7 @@ public class SLUpdateRegRequest extends SLRequest {
     }
 
     @Override
-    public RequestResult<List<User>> execute() {
+    public RequestResult<Void> execute() {
         return socialLocate.updateRegistration(registrationID);
     }
 

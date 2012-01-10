@@ -8,7 +8,12 @@ import com.inflatablegoldfish.sociallocate.SLArrangeMeet.ActivityStage;
 import com.inflatablegoldfish.sociallocate.SLArrangeMeet.SLUpdateListener;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.foursquare.Venue;
+import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
+import com.inflatablegoldfish.sociallocate.request.RequestListener;
+import com.inflatablegoldfish.sociallocate.request.RequestManager;
+import com.inflatablegoldfish.sociallocate.request.SLMeetRequest;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -26,6 +31,8 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
     
     private Button findVenuesButton;
     private Button notifyButton;
+    
+    private ProgressDialog progressDialog = null;
     
     public SLArrangeMapView(Context context) {
         super(context);
@@ -275,11 +282,46 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
             if (view == findVenuesButton) {
                 ((SLArrangeMeet) activity).showVenueList(center);
             } else if (view == notifyButton) {
-                
+                doMeet();
             } else { // Cancel button
                 // Same as pressing back
                 onBackPressed();
             }
+        }
+    }
+    
+    /**
+     * Send meet request and show progress dialog
+     */
+    private void doMeet() {
+        if (Util.prefs.contains("registration_sent")) {
+            progressDialog = ProgressDialog.show(getContext(), "", getContext().getText(R.string.sending_notification));
+            
+            RequestManager requestManager = activity.getRequestManager();
+            requestManager.addRequest(
+                new SLMeetRequest(
+                    friendUser.getId(),
+                    venue.getID(),
+                    requestManager,
+                    new RequestListener<Void>() {
+                        public void onComplete(Object result) {
+                            Util.showToast(getContext().getText(R.string.notification_sent), getContext());
+                            progressDialog.dismiss();
+                        }
+
+                        public void onError(ResultCode resultCode) {
+                            Util.showToast(getContext().getText(R.string.notification_failed), getContext());
+                            progressDialog.dismiss();
+                        }
+
+                        public void onCancel() {}
+                    },
+                    ((SLArrangeMeet) activity).getFacebook(),
+                    ((SLArrangeMeet) activity).getSocialLocate()
+                )
+            );
+        } else {
+            Util.showToast(getResources().getText(R.string.not_registered), getContext());
         }
     }
     

@@ -2,19 +2,16 @@ package com.inflatablegoldfish.sociallocate.request;
 
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
 
 import com.facebook.android.Facebook;
 import com.inflatablegoldfish.sociallocate.SocialLocate;
-import com.inflatablegoldfish.sociallocate.User;
-import com.inflatablegoldfish.sociallocate.Util;
 
 public class SLMeetRequest extends SLRequest {
     private int friendID;
-    private int venueID;
+    private String venueID;
     
-    public SLMeetRequest(int friendID, int venueID, RequestManager manager,
-            RequestListener<List<User>> listener, Facebook facebook,
+    public SLMeetRequest(int friendID, String venueID, RequestManager manager,
+            RequestListener<Void> listener, Facebook facebook,
             SocialLocate socialLocate) {
         
         super(manager, listener, facebook, socialLocate);
@@ -24,12 +21,7 @@ public class SLMeetRequest extends SLRequest {
     }
 
     @Override
-    public RequestResult<List<User>> execute() {
-        if (!Util.c2dmPrefs.contains("dm_registration")) {
-            // Not registered with C2DM so fail
-            return new RequestResult<List<User>>(null, ResultCode.ERROR);
-        }
-        
+    public RequestResult<Void> execute() {
         return socialLocate.meet(friendID, venueID);
     }
 

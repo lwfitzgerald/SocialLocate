@@ -15,7 +15,6 @@ import com.inflatablegoldfish.sociallocate.request.SLUpdateLocRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.ViewFlipper;
@@ -81,10 +80,7 @@ public class SLArrangeMeet extends SLBaseActivity {
      * Register for C2DM pushes
      */
     private void doC2DMRegister() {
-        SharedPreferences prefs = getSharedPreferences(C2DMessaging.PREFERENCE, MODE_PRIVATE);
-        String deviceRegistrationID = prefs.getString("dm_registration", null);
-
-        if (deviceRegistrationID == null) {
+        if (!Util.prefs.contains("registration_sent")) {
             C2DMessaging.register(this, C2DMReceiver.USERNAME);
         }
     }
@@ -165,7 +161,7 @@ public class SLArrangeMeet extends SLBaseActivity {
             new SLUpdateLocRequest(
                 currentLocation,
                 requestManager,
-                new RequestListener<List<User>>() {
+                new RequestListener<Void>() {
                     public void onComplete(Object result) {}
                     public void onError(ResultCode resultCode) {}
                     public void onCancel() {}

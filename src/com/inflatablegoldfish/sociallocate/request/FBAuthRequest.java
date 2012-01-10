@@ -12,11 +12,10 @@ import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
 import com.facebook.android.FacebookError;
 import com.facebook.android.Facebook.DialogListener;
-import com.inflatablegoldfish.sociallocate.User;
 import com.inflatablegoldfish.sociallocate.Util;
 
 public class FBAuthRequest extends Request {
-    private RequestResult<User[]> result;
+    private RequestResult<Void> result;
     private Boolean resultReady;
     private Object resultLock = new Object();
     
@@ -33,7 +32,7 @@ public class FBAuthRequest extends Request {
     }
 
     @Override
-    public RequestResult<User[]> execute() {
+    public RequestResult<Void> execute() {
         resultReady = false;
         
         String access_token = Util.prefs.getString("access_token", null);
@@ -58,7 +57,7 @@ public class FBAuthRequest extends Request {
                         editor.putLong("access_expires", facebook.getAccessExpires());
                         editor.commit();
 
-                        result = new RequestResult<User[]>(null, ResultCode.SUCCESS);
+                        result = new RequestResult<Void>(null, ResultCode.SUCCESS);
                         
                         synchronized (resultLock) {
                             resultReady = true;
@@ -67,7 +66,7 @@ public class FBAuthRequest extends Request {
                     }
 
                     public void onFacebookError(final FacebookError e) {
-                        result = new RequestResult<User[]>(null, ResultCode.ERROR);
+                        result = new RequestResult<Void>(null, ResultCode.ERROR);
                         
                         synchronized (resultLock) {
                             resultReady = true;
@@ -76,7 +75,7 @@ public class FBAuthRequest extends Request {
                     }
         
                     public void onError(final DialogError e) {
-                        result = new RequestResult<User[]>(null, ResultCode.ERROR);
+                        result = new RequestResult<Void>(null, ResultCode.ERROR);
                         
                         synchronized (resultLock) {
                             resultReady = true;
@@ -85,7 +84,7 @@ public class FBAuthRequest extends Request {
                     }
         
                     public void onCancel() {
-                        result = new RequestResult<User[]>(null, ResultCode.CANCELLED);
+                        result = new RequestResult<Void>(null, ResultCode.CANCELLED);
                         
                         synchronized (resultLock) {
                             resultReady = true;
@@ -106,7 +105,7 @@ public class FBAuthRequest extends Request {
             return result;
         }
         
-        return new RequestResult<User[]>(null, ResultCode.SUCCESS);
+        return new RequestResult<Void>(null, ResultCode.SUCCESS);
     }
 
     @Override

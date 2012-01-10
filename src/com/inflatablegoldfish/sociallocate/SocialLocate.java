@@ -30,7 +30,7 @@ public class SocialLocate {
         CookieHandler.setDefault(manager);
     }
     
-    public RequestResult<List<User>> auth(String accessToken) {
+    public RequestResult<Void> auth(String accessToken) {
         String url = URL_PREFIX + "action=auth"
                 + "&access_token=" + accessToken;
 
@@ -41,14 +41,14 @@ public class SocialLocate {
             
             if (jsonObject.getInt("auth_status") == 0) {
                 Log.d("SocialLocate", "Auth fail in authing");
-                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<Void>(null, ResultCode.AUTHFAIL);
             } else {
                 Log.d("SocialLocate", "Authing OK");
-                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
+                return new RequestResult<Void>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
             Log.d("SocialLocate", "Error in authing");
-            return new RequestResult<List<User>>(null, ResultCode.ERROR);
+            return new RequestResult<Void>(null, ResultCode.ERROR);
         }
     }
     
@@ -140,7 +140,7 @@ public class SocialLocate {
         }
     }
     
-    public RequestResult<List<User>> updateLocation(Location location) {
+    public RequestResult<Void> updateLocation(Location location) {
         String url = URL_PREFIX + "action=update_location" + "&lat="
                 + location.getLatitude() + "&lng=" + location.getLongitude();
 
@@ -151,18 +151,18 @@ public class SocialLocate {
             
             if (jsonObject.getInt("auth_status") == 0) {
                 Log.d("SocialLocate", "Auth fail in update location");
-                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<Void>(null, ResultCode.AUTHFAIL);
             } else {
                 Log.d("SocialLocate", "Update location OK");
-                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
+                return new RequestResult<Void>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
             Log.d("SocialLocate", "Error in update location");
-            return new RequestResult<List<User>>(null, ResultCode.ERROR);
+            return new RequestResult<Void>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult<List<User>> updateRegistration(String registrationID) {
+    public RequestResult<Void> updateRegistration(String registrationID) {
         String url = URL_PREFIX + "action=update_registration"
                 + "&registration_id=" + registrationID;
         
@@ -173,18 +173,18 @@ public class SocialLocate {
             
             if (jsonObject.getInt("auth_status") == 0) {
                 Log.d("SocialLocate", "Auth fail in update registration");
-                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<Void>(null, ResultCode.AUTHFAIL);
             } else {
                 Log.d("SocialLocate", "Update registration OK");
-                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
+                return new RequestResult<Void>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
             Log.d("SocialLocate", "Error in update registration");
-            return new RequestResult<List<User>>(null, ResultCode.ERROR);
+            return new RequestResult<Void>(null, ResultCode.ERROR);
         }
     }
     
-    public RequestResult<List<User>> meet(int friendID, int venueID) {
+    public RequestResult<Void> meet(int friendID, String venueID) {
         String url = URL_PREFIX + "action=meet"
                 + "&friend_id=" + friendID + "&venue_id=" + venueID;
         
@@ -195,14 +195,17 @@ public class SocialLocate {
             
             if (jsonObject.getInt("auth_status") == 0) {
                 Log.d("SocialLocate", "Auth fail in meet request");
-                return new RequestResult<List<User>>(null, ResultCode.AUTHFAIL);
+                return new RequestResult<Void>(null, ResultCode.AUTHFAIL);
+            } else if (jsonObject.getInt("meet_request_status") == 0) {
+                Log.d("SocialLocate", "Error in meet request");
+                return new RequestResult<Void>(null, ResultCode.ERROR);
             } else {
                 Log.d("SocialLocate", "Meet request OK");
-                return new RequestResult<List<User>>(null, ResultCode.SUCCESS);
+                return new RequestResult<Void>(null, ResultCode.SUCCESS);
             }
         } catch (Exception e) {
             Log.d("SocialLocate", "Error in meet request");
-            return new RequestResult<List<User>>(null, ResultCode.ERROR);
+            return new RequestResult<Void>(null, ResultCode.ERROR);
         }
     }
     

@@ -65,7 +65,7 @@ public class Util {
     public static void showToast(final CharSequence charSequence, final Context context) {
         Runnable runnable = new Runnable() {
             public void run() {
-                Toast.makeText(context, charSequence, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, charSequence, Toast.LENGTH_LONG).show();
             }
         };
         
