@@ -75,6 +75,10 @@ public class SLArrangeMeet extends SLBaseActivity {
         venueList.setUp(this, picRunner);
     }
     
+    /**
+     * Check for a google account and show
+     * an error and quit if there is not one
+     */
     private void checkForGoogleAccount() {
         Account[] accounts = AccountManager.get(this).getAccountsByType("com.google");
         if (accounts.length == 0) {
