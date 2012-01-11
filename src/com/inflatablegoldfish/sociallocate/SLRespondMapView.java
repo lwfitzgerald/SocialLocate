@@ -50,10 +50,10 @@ public class SLRespondMapView extends SLBaseMapView {
         this.initiallyCentered = false;
         
         // Update the friend overlay
-        this.userOverlay.updateFriendUser(user);
+        this.mapOverlay.updateFriendUser(user);
 
         // Fit zoom around users
-        mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
+        mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
         
         new Thread(
             new Runnable() {
@@ -109,6 +109,7 @@ public class SLRespondMapView extends SLBaseMapView {
                             new Runnable() {
                                 public void run() {
                                     mapController.animateTo(center);
+                                    mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
                                 }
                             }
                         );

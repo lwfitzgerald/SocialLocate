@@ -52,8 +52,7 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     
     protected MapView mapView;
     protected MapController mapController;
-    protected UserOverlay userOverlay;
-    protected VenueOverlay venueOverlay;
+    protected MapOverlay mapOverlay;
     
     protected volatile boolean initiallyCentered;
     
@@ -104,13 +103,11 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         this.picRunner = picRunner;
         picRunner.addListener(this);
         
-        userOverlay = new UserOverlay();
-        venueOverlay = new VenueOverlay();
-        mapView.getOverlays().add(userOverlay);
-        mapView.getOverlays().add(venueOverlay);
+        mapOverlay = new MapOverlay();
+        mapView.getOverlays().add(mapOverlay);
     }
     
-    protected class UserOverlay extends ItemizedOverlay<UserItem> {
+    protected class MapOverlay extends ItemizedOverlay<OverlayItem> {
         /*
          * userItems[0] = Own User
          * userItems[1] = Friend User
@@ -118,7 +115,9 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         protected UserItem[] userItems = new UserItem[] {null, null};
         protected Paint paint = null;
         
-        public UserOverlay() {
+        protected volatile VenueItem venueItem = null;
+        
+        public MapOverlay() {
             super(null);
             
             if (paint == null) {
@@ -130,6 +129,16 @@ public abstract class SLBaseMapView extends RelativeLayout implements
                 paint.setStrokeCap(Paint.Cap.ROUND);
                 paint.setStrokeWidth(4);
             }
+        }
+        
+        public void setVenue(Venue venue) {
+            venueItem = new VenueItem(venue);
+            refresh();
+        }
+        
+        public void clearVenue() {
+            venueItem = null;
+            refresh();
         }
         
         public void setOwnUser(Location currentLocation) {
@@ -144,6 +153,10 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         
         @Override
         public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+            if (venueItem != null) {
+                drawItemPoint(venueItem, canvas);
+            }
+            
             if (userItems[0] != null) {
                 drawItemPoint(userItems[0], canvas);
             }
@@ -155,7 +168,7 @@ public abstract class SLBaseMapView extends RelativeLayout implements
             super.draw(canvas, mapView, false);
         }
         
-        private void drawItemPoint(UserItem item, Canvas canvas) {
+        private void drawItemPoint(OverlayItem item, Canvas canvas) {
             Point point = new Point();
             mapView.getProjection().toPixels(item.getPoint(), point);
             
@@ -175,19 +188,48 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         }
         
         @Override
-        protected UserItem createItem(int i) {
-            if (size() == 1) {
-                return userItems[0] != null ? userItems[0] : userItems[1];
-            } else {
-                // Both present
-                return userItems[i];
+        protected OverlayItem createItem(int i) {
+            switch (size()) {
+            case 1:
+                if (userItems[0] != null) {
+                    return userItems[0];
+                } else if (userItems[1] != null) {
+                    return userItems[1];
+                } else { // venueItem != null
+                    return venueItem;
+                }
+            case 2:
+                if (i == 0) {
+                    if (userItems[0] != null) {
+                        return userItems[0];
+                    } else if (userItems[1] != null) {
+                        return userItems[1];
+                    } else {
+                        return venueItem;
+                    }
+                } else if (i == 1) {
+                    if (userItems[1] != null) {
+                        return userItems[1];
+                    } else {
+                        return venueItem;
+                    }
+                }
+            case 3:
+                if (i <= 1) {
+                    return userItems[i];
+                } else {
+                    return venueItem;
+                }
             }
+            
+            return null;
         }
 
         @Override
         public int size() {
             return (userItems[0] != null ? 1 : 0)
-                    + (userItems[1] != null ? 1 : 0);
+                    + (userItems[1] != null ? 1 : 0)
+                    + (venueItem != null ? 1 : 0);
         }
     }
     
@@ -233,7 +275,7 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         
         if (activity.getCurrentLocation() != null) {
             // Create overlay item
-            userOverlay.setOwnUser(activity.getCurrentLocation());
+            mapOverlay.setOwnUser(activity.getCurrentLocation());
         }
     }
     
@@ -296,66 +338,6 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         venueDistance.invalidate();
     }
     
-    protected class VenueOverlay extends ItemizedOverlay<VenueItem> {
-        protected volatile VenueItem venueItem = null;
-        
-        public VenueOverlay() {
-            super(null);
-        }
-        
-        public void setVenue(Venue venue) {
-            venueItem = new VenueItem(venue);
-            refresh();
-        }
-        
-        public void clearVenue() {
-            venueItem = null;
-            refresh();
-        }
-        
-        @Override
-        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
-            Paint paint = new Paint();
-            paint.setDither(true);
-            paint.setColor(Color.BLACK);
-            paint.setStyle(Paint.Style.FILL_AND_STROKE);
-            paint.setStrokeJoin(Paint.Join.ROUND);
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            paint.setStrokeWidth(4);
-            
-            if (venueItem != null) {
-                Point point = new Point();
-                mapView.getProjection().toPixels(venueItem.getPoint(), point);
-                
-                canvas.drawCircle(point.x, point.y, 3, paint);
-            }
-            
-            super.draw(canvas, mapView, false);
-        }
-
-        @Override
-        protected VenueItem createItem(int i) {
-            return venueItem;
-        }
-
-        @Override
-        public int size() {
-            return venueItem != null ? 1 : 0;
-        }
-        
-        public void refresh() {
-            populate();
-            
-            Util.uiHandler.post(
-                new Runnable() {
-                    public void run() {
-                        mapView.invalidate();
-                    }
-                }
-            );
-        }
-    }
-    
     protected class VenueItem extends OverlayItem {
         protected BitmapDrawable drawableImage = null;
         
@@ -393,10 +375,11 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         this.venue = venue;
         
         // Set venue in overlay
-        venueOverlay.setVenue(venue);
+        mapOverlay.setVenue(venue);
         
         // Animate to it
         mapController.animateTo(Util.getGeoPoint(SLBaseMapView.this.venue.getLocation()));
+        mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
         
         // Show venue bar
         venueBar.setVisibility(View.VISIBLE);
@@ -408,16 +391,13 @@ public abstract class SLBaseMapView extends RelativeLayout implements
     public void onLocationUpdate(Location newLocation) {
         if (ownUser != null) {
             // Update own user geopoint
-            userOverlay.setOwnUser(newLocation);
+            mapOverlay.setOwnUser(newLocation);
         }
     }
 
     public void onProfilePicDownloaded() {
         // Refresh data in user overlays
-        this.userOverlay.refresh();
-        
-        // Refresh venue overlay
-        this.venueOverlay.refresh();
+        this.mapOverlay.refresh();
     }
     
     public abstract void onClick(View view);

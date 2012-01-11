@@ -64,13 +64,11 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
         this.picRunner = picRunner;
         picRunner.addListener(this);
         
-        userOverlay = new UserOverlay();
-        venueOverlay = new VenueOverlay();
-        mapView.getOverlays().add(userOverlay);
-        mapView.getOverlays().add(venueOverlay);
+        mapOverlay = new UserOverlay();
+        mapView.getOverlays().add(mapOverlay);
     }
     
-    private class UserOverlay extends SLBaseMapView.UserOverlay {
+    private class UserOverlay extends SLBaseMapView.MapOverlay {
         @Override
         public void draw(Canvas canvas, MapView mapView, boolean shadow) {
             Point ownUserPoint = null;
@@ -128,7 +126,7 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
         }
         
         // Update the friend overlay
-        this.userOverlay.updateFriendUser(user);
+        this.mapOverlay.updateFriendUser(user);
         
         // Set the values for the UI elements at the top of the view
         setTopForUser();
@@ -178,7 +176,7 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
                                     
                                     // Only called for initial centering
                                     if (initiallyCentered) {
-                                        mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
+                                        mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
                                     }
                                 }
                             }
@@ -225,7 +223,7 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
                     new Runnable() {
                         public void run() {
                             mapController.animateTo(center);
-                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
+                            mapController.zoomToSpan(mapOverlay.getLatSpanE6(), mapOverlay.getLonSpanE6());
                         }
                     }
                 );
@@ -357,7 +355,7 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
      */
     private void clearVenueState() {
         venue = null;
-        venueOverlay.clearVenue();
+        mapOverlay.clearVenue();
         
         // Hide venue bar
         venueBar.setVisibility(View.GONE);
