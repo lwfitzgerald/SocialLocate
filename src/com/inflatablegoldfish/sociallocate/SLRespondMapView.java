@@ -1,5 +1,6 @@
 package com.inflatablegoldfish.sociallocate;
 
+import com.google.android.maps.GeoPoint;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
@@ -8,6 +9,7 @@ import com.inflatablegoldfish.sociallocate.request.SLRespondRequest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
@@ -49,12 +51,71 @@ public class SLRespondMapView extends SLBaseMapView {
         
         // Update the friend overlay
         this.userOverlay.updateFriendUser(user);
-        
+
         // Fit zoom around users
         mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
         
+        new Thread(
+            new Runnable() {
+                public void run() {
+                    if (activity.getCurrentLocation() != null) {
+                        initiallyCentered = true;
+                        
+                        final GeoPoint center = Util.getGeoPoint(
+                            Util.getCenter(
+                                new Location[] {
+                                    activity.getCurrentLocation(),
+                                    friendUser.getLocation()
+                                }
+                            )
+                        );
+                        
+                        Util.uiHandler.post(
+                            new Runnable() {
+                                public void run() {
+                                    mapController.animateTo(center);
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+        ).start();
+        
         // Set the values for the UI elements at the top of the view
         setTopForUser();
+    }
+    
+    @Override
+    public void onLocationUpdate(final Location newLocation) {
+        super.onLocationUpdate(newLocation);
+        
+        if (friendUser != null && !initiallyCentered) {
+            new Thread(
+                new Runnable() {
+                    public void run() {
+                        initiallyCentered = true;
+                        
+                        final GeoPoint center = Util.getGeoPoint(
+                            Util.getCenter(
+                                new Location[] {
+                                    newLocation,
+                                    friendUser.getLocation()
+                                }
+                            )
+                        );
+                        
+                        Util.uiHandler.post(
+                            new Runnable() {
+                                public void run() {
+                                    mapController.animateTo(center);
+                                }
+                            }
+                        );
+                    }
+                }
+            ).start();
+        }
     }
     
     @Override

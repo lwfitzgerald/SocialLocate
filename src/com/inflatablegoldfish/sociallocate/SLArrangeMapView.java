@@ -163,14 +163,6 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
                             
                             // We'll be centering following this
                             initiallyCentered = true;
-                            
-                            Util.uiHandler.post(
-                                new Runnable() {
-                                    public void run() {
-                                        mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
-                                    }
-                                }
-                            );
                         } else {
                             // No location so just center on friend
                             // Doesn't count as an initial centering
@@ -183,6 +175,11 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
                             new Runnable() {
                                 public void run() {
                                     mapController.animateTo(centerPoint);
+                                    
+                                    // Only called for initial centering
+                                    if (initiallyCentered) {
+                                        mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
+                                    }
                                 }
                             }
                         );
@@ -227,8 +224,8 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
                 Util.uiHandler.post(
                     new Runnable() {
                         public void run() {
-                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
                             mapController.animateTo(center);
+                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
                         }
                     }
                 );

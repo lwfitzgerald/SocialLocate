@@ -175,6 +175,6 @@ public class SLRespond extends SLBaseActivity {
     
     @Override
     public void onBackPressed() {
-        finish();
+        mapView.onBackPressed();
     }
 }
