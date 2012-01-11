@@ -7,7 +7,7 @@
         android:minSdkVersion="8"
         android:targetSdkVersion="14" />
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" /><uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -15,6 +15,7 @@
 
     <permission android:name="com.inflatablegoldfish.sociallocate.permission.C2D_MESSAGE" android:protectionLevel="signature" />
    	<uses-permission android:name="com.inflatablegoldfish.sociallocate.permission.C2D_MESSAGE" />
+   	
     
     <application
         android:icon="@drawable/ic_launcher"

@@ -27,22 +27,19 @@ public class SLAuthRequest extends SLRequest {
     }
 
     @Override
-    public void onAuthFail(Deque<Request> requestQueue) {
-        // Facebook token must be invalid so clear it!
-        SharedPreferences.Editor editor = Util.prefs.edit();
-        editor.remove("access_token");
-        editor.remove("access_expires");
-        editor.commit();
-        
-        // Clear stored cookies
-        socialLocate.clearCookies();
-        
-        // Might not be set if called from receiver
-        if (facebook != null) {
-            facebook.setAccessToken(null);
-        }
-        
+    public void onAuthFail(Deque<Request> requestQueue) {        
         if (manager.getContext() != null) {
+            // Facebook token invalid so clear it!
+            SharedPreferences.Editor editor = Util.prefs.edit();
+            editor.remove("access_token");
+            editor.remove("access_expires");
+            editor.commit();
+            
+            // Clear stored cookies
+            socialLocate.clearCookies();
+            
+            facebook.setAccessToken(null);
+            
             // Create new FB auth request and put at front of queue
             synchronized(requestQueue) {
                 requestQueue.addFirst(

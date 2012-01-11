@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.android.c2dm.C2DMessaging;
 import com.google.android.maps.GeoPoint;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
@@ -53,9 +52,6 @@ public class SLArrangeMeet extends SLBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        // Register for C2DM pushs
-        doC2DMRegister();
-        
         setTitle(R.string.friends_title);
         
         // Set up the flipper
@@ -72,15 +68,6 @@ public class SLArrangeMeet extends SLBaseActivity {
         // Set up the venue list
         venueList = (VenueList) findViewById(R.id.venue_list);
         venueList.setUp(this, picRunner);
-    }
-    
-    /**
-     * Register for C2DM pushes
-     */
-    private void doC2DMRegister() {
-        if (!Util.prefs.contains("registration_sent")) {
-            C2DMessaging.register(this, C2DMReceiver.USERNAME);
-        }
     }
     
     /**

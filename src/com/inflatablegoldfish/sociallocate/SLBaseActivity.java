@@ -1,15 +1,18 @@
 package com.inflatablegoldfish.sociallocate;
 
 import com.facebook.android.Facebook;
+import com.google.android.c2dm.C2DMessaging;
 import com.google.android.maps.MapActivity;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.RequestListener;
 import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
+import com.inflatablegoldfish.sociallocate.request.SLUpdateRegRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,14 +61,49 @@ public abstract class SLBaseActivity extends MapActivity {
         initialAuth();
     }
     
-    protected void initialAuth() {
+    /**
+     * Register for C2DM pushes
+     */
+    private void doC2DMRegister() {
+        if (!Util.prefs.contains("registration_sent")) {
+            C2DMessaging.register(this, C2DMReceiver.USERNAME);
+        } else if(Util.prefs.contains("registration_to_submit")) {
+            String registrationID = Util.prefs.getString("registration_to_submit", null);
+            
+            if (registrationID != null) {
+                requestManager.addRequest(
+                    new SLUpdateRegRequest(
+                        registrationID,
+                        requestManager,
+                        new RequestListener<Void>() {
+                            public void onComplete(Object result) {
+                                SharedPreferences.Editor editor = Util.prefs.edit();
+                                editor.putBoolean("registration_sent", true);
+                                editor.remove("registration_to_submit");
+                                editor.commit();
+                            }
+                            public void onError(ResultCode resultCode) {}
+                            public void onCancel() {}
+                        },
+                        null,
+                        socialLocate
+                    )
+                );
+            }
+        }
+    }
+    
+    private void initialAuth() {
         // Only FB auth if we haven't already got a token
         if (!Util.prefs.contains("access_token")) {
             requestManager.addRequest(
                 new FBAuthRequest(
                     requestManager,
                     new RequestListener<User[]>() {
-                        public void onComplete(Object result) {}
+                        public void onComplete(Object result) {
+                            // Do C2DM registration
+                            doC2DMRegister();
+                        }
     
                         public void onError(ResultCode resultCode) {}
     
@@ -74,6 +112,8 @@ public abstract class SLBaseActivity extends MapActivity {
                     facebook
                 )
             );
+        } else {
+            doC2DMRegister();
         }
         
         // Only SL auth if we've not got a cookie

@@ -61,14 +61,19 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         final SocialLocate socialLocate = new SocialLocate();
         socialLocate.loadCookies();
         
+        // Store registration
+        final SharedPreferences.Editor editor = Util.prefs.edit();
+        editor.putString("registration_to_submit", registrationId);
+        editor.commit();
+        
         requestManager.addRequest(
             new SLUpdateRegRequest(
                 registrationId,
                 requestManager,
                 new RequestListener<Void>() {
                     public void onComplete(Object result) {
-                        SharedPreferences.Editor editor = Util.prefs.edit();
                         editor.putBoolean("registration_sent", true);
+                        editor.remove("registration_to_submit");
                         editor.commit();
                     }
                     public void onError(ResultCode resultCode) {}
