@@ -1,7 +1,6 @@
 package com.inflatablegoldfish.sociallocate;
 
 import com.facebook.android.Facebook;
-import com.google.android.c2dm.C2DMessaging;
 import com.google.android.maps.MapActivity;
 import com.inflatablegoldfish.sociallocate.foursquare.Foursquare;
 import com.inflatablegoldfish.sociallocate.request.FBAuthRequest;

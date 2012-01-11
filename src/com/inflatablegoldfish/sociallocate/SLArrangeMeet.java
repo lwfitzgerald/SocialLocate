@@ -155,6 +155,9 @@ public class SLArrangeMeet extends SLBaseActivity {
         // Pass on to map view
         mapView.onLocationUpdate(currentLocation);
         
+        // Pass on to the venue list
+        venueList.onLocationUpdate(currentLocation);
+        
         // Send location update
         requestManager.addRequest(
             new SLUpdateLocRequest(

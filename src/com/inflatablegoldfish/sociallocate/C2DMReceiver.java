@@ -24,7 +24,8 @@ public class C2DMReceiver extends C2DMBaseReceiver {
     private static final int RESPOND_NOTIFICATION_ID = R.string.respond_title;
     
     private NotificationManager notificationManager; 
-    private Notification.Builder notificationBuilder;
+    private boolean notificationBuilderAvailable = true;
+    private WrapNotificationBuilder notificationBuilder;
     
     public C2DMReceiver() {
         super(USERNAME);
@@ -38,9 +39,13 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         
         // Set up notification builder
-        notificationBuilder = new Notification.Builder(this);
-        notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
-        notificationBuilder.setAutoCancel(true);
+        try {
+            notificationBuilder = new WrapNotificationBuilder(this);
+            notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
+            notificationBuilder.setAutoCancel(true);
+        } catch (Exception e) {
+            notificationBuilderAvailable = false;
+        }
     }
 
     @Override
@@ -120,12 +125,22 @@ public class C2DMReceiver extends C2DMBaseReceiver {
     }
     
     private Notification buildNotification(CharSequence title, CharSequence text, PendingIntent contentIntent) {
-        notificationBuilder.setTicker(title);
-        notificationBuilder.setContentTitle(title);
-        notificationBuilder.setContentText(text);
-        notificationBuilder.setContentIntent(contentIntent);
+        // Use new API if available
+        if (notificationBuilderAvailable) {
+            notificationBuilder.setTicker(title);
+            notificationBuilder.setContentTitle(title);
+            notificationBuilder.setContentText(text);
+            notificationBuilder.setContentIntent(contentIntent);
+            
+            return (Notification) notificationBuilder.getNotification();
+        }
         
-        return notificationBuilder.getNotification();
+        // New API not available so use old one
+        Notification notification = new Notification(R.drawable.ic_launcher,
+                title, System.currentTimeMillis());
+        notification.setLatestEventInfo(this, title, text, contentIntent);
+        
+        return notification;
     }
 
     @Override

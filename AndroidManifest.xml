@@ -3,7 +3,9 @@
     android:versionCode="1"
     android:versionName="1.0" xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-sdk android:minSdkVersion="14" />
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="14" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -30,7 +32,8 @@
             android:configChanges="orientation|screenSize">
         </activity>
         
-        <activity android:name=".SLRespond"></activity><service android:name="com.commonsware.cwac.locpoll.LocationPollerService" />
+        <activity android:name=".SLRespond"></activity>
+        <service android:name="com.commonsware.cwac.locpoll.LocationPollerService" />
         <receiver android:name="com.commonsware.cwac.locpoll.LocationPoller" >
         </receiver> 
         <receiver android:name=".BackgroundUpdater">
@@ -38,18 +41,16 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="com.inflatablegoldfish.sociallocate.LOCATION_UPDATED"/>
             </intent-filter>
-        </receiver><service android:name=".C2DMReceiver"></service><receiver android:name="com.google.android.c2dm.C2DMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">
+        </receiver>
+        <service android:name=".C2DMReceiver"></service>
+        <receiver android:name="com.google.android.c2dm.C2DMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.REGISTRATION" /><action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
                 <category android:name="com.inflatablegoldfish.sociallocate"/>
                 
             </intent-filter>
         </receiver><uses-library android:name="com.google.android.maps" android:required="true"/>
-        
-        
-        
-        
-        
     </application>
 
 </manifest>

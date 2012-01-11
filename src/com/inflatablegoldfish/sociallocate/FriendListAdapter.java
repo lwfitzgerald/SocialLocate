@@ -121,14 +121,6 @@ public class FriendListAdapter extends AmazingAdapter implements PicRunnerListen
                 friends = newUserList;
             }
         }
-        
-        Util.uiHandler.post(
-            new Runnable() {
-                public void run() {
-                    notifyDataSetChanged();
-                }
-            }
-        );
     }
     
     public void updateDistances(final Location currentLocation) {
@@ -217,6 +209,7 @@ public class FriendListAdapter extends AmazingAdapter implements PicRunnerListen
         if (position == 0) {
             // Own user so mark as not clickable
             convertView.setClickable(false);
+            holder.lastUpdated.setText("");
         } else {
             // Set last updated if not own user
             holder.lastUpdated.setText(friend.getPrettyLastUpdated());
@@ -225,6 +218,8 @@ public class FriendListAdapter extends AmazingAdapter implements PicRunnerListen
         // Calculate and set distance
         if (friend.getDistance() != null) {
             holder.distance.setText(friend.getPrettyDistance());
+        } else {
+            holder.distance.setText("");
         }
         
         // Show / Hide section separator part

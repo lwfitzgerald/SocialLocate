@@ -77,6 +77,8 @@ public class FriendList extends AmazingListView implements OnItemClickListener,
                                 // If we have a location fix, calculate distances
                                 if (slArrangeMeet.getCurrentLocation() != null) {
                                     adapter.updateDistances(slArrangeMeet.getCurrentLocation());
+                                } else {
+                                    adapter.notifyDataSetChanged();
                                 }
                                 
                                 // Hide loading spinner

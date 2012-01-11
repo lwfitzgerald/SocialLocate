@@ -7,4 +7,5 @@
 	android:paddingTop="8dip"
 	android:paddingBottom="8dip"
 	style="?android:attr/listSeparatorTextViewStyle"
+	android:textColor="@android:color/darker_gray"
 	android:background="@color/black" />

@@ -209,6 +209,34 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
         return friendUser;
     }
     
+    public void onLocationUpdate(Location newLocation) {
+        super.onLocationUpdate(newLocation);
+        
+        if (friendUser != null) {
+            // Have current location so center
+            this.centerLocation = Util.getCenter(
+                new Location[] {
+                    newLocation,
+                    friendUser.getLocation()
+                }
+            );
+            
+            this.center = Util.getGeoPoint(this.centerLocation);
+            
+            if (!initiallyCentered) {
+                initiallyCentered = true;
+                Util.uiHandler.post(
+                    new Runnable() {
+                        public void run() {
+                            mapController.zoomToSpan(userOverlay.getLatSpanE6(), userOverlay.getLonSpanE6());
+                            mapController.animateTo(center);
+                        }
+                    }
+                );
+            }
+        }
+    }
+    
     public void onSLUpdate(List<User> friends) {
         // Will refresh UI
         if (friendUser != null) {

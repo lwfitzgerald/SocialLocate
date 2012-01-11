@@ -47,49 +47,55 @@ public class FBAuthRequest extends Request {
         }
         
         if (!facebook.isSessionValid()) {
-            facebook.authorize(
-                (Activity) manager.getContext(),
-                new String[] {"offline_access"},
-                new DialogListener() {
-                    public void onComplete(final Bundle values) {                        
-                        SharedPreferences.Editor editor = Util.prefs.edit();
-                        editor.putString("access_token", facebook.getAccessToken());
-                        editor.putLong("access_expires", facebook.getAccessExpires());
-                        editor.commit();
+            Util.uiHandler.post(
+                new Runnable() {
+                    public void run() {
+                        facebook.authorize(
+                            (Activity) manager.getContext(),
+                            new String[] {"offline_access"},
+                            new DialogListener() {
+                                public void onComplete(final Bundle values) {                        
+                                    SharedPreferences.Editor editor = Util.prefs.edit();
+                                    editor.putString("access_token", facebook.getAccessToken());
+                                    editor.putLong("access_expires", facebook.getAccessExpires());
+                                    editor.commit();
 
-                        result = new RequestResult<Void>(null, ResultCode.SUCCESS);
-                        
-                        synchronized (resultLock) {
-                            resultReady = true;
-                            resultLock.notify();
-                        }
-                    }
+                                    result = new RequestResult<Void>(null, ResultCode.SUCCESS);
+                                    
+                                    synchronized (resultLock) {
+                                        resultReady = true;
+                                        resultLock.notify();
+                                    }
+                                }
 
-                    public void onFacebookError(final FacebookError e) {
-                        result = new RequestResult<Void>(null, ResultCode.ERROR);
-                        
-                        synchronized (resultLock) {
-                            resultReady = true;
-                            resultLock.notify();
-                        }
-                    }
-        
-                    public void onError(final DialogError e) {
-                        result = new RequestResult<Void>(null, ResultCode.ERROR);
-                        
-                        synchronized (resultLock) {
-                            resultReady = true;
-                            resultLock.notify();
-                        }
-                    }
-        
-                    public void onCancel() {
-                        result = new RequestResult<Void>(null, ResultCode.CANCELLED);
-                        
-                        synchronized (resultLock) {
-                            resultReady = true;
-                            resultLock.notify();
-                        }
+                                public void onFacebookError(final FacebookError e) {
+                                    result = new RequestResult<Void>(null, ResultCode.ERROR);
+                                    
+                                    synchronized (resultLock) {
+                                        resultReady = true;
+                                        resultLock.notify();
+                                    }
+                                }
+                    
+                                public void onError(final DialogError e) {
+                                    result = new RequestResult<Void>(null, ResultCode.ERROR);
+                                    
+                                    synchronized (resultLock) {
+                                        resultReady = true;
+                                        resultLock.notify();
+                                    }
+                                }
+                    
+                                public void onCancel() {
+                                    result = new RequestResult<Void>(null, ResultCode.CANCELLED);
+                                    
+                                    synchronized (resultLock) {
+                                        resultReady = true;
+                                        resultLock.notify();
+                                    }
+                                }
+                            }
+                        );
                     }
                 }
             );
