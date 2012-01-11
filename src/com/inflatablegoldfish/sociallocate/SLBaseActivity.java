@@ -100,10 +100,7 @@ public abstract class SLBaseActivity extends MapActivity {
                 new FBAuthRequest(
                     requestManager,
                     new RequestListener<User[]>() {
-                        public void onComplete(Object result) {
-                            // Do C2DM registration
-                            doC2DMRegister();
-                        }
+                        public void onComplete(Object result) {}
     
                         public void onError(ResultCode resultCode) {}
     
@@ -112,8 +109,6 @@ public abstract class SLBaseActivity extends MapActivity {
                     facebook
                 )
             );
-        } else {
-            doC2DMRegister();
         }
         
         // Only SL auth if we've not got a cookie
@@ -122,7 +117,10 @@ public abstract class SLBaseActivity extends MapActivity {
                 new SLAuthRequest(
                     requestManager,
                     new RequestListener<Void>() {
-                        public void onComplete(Object users) {}
+                        public void onComplete(Object users) {
+                            // Do C2DM registration
+                            doC2DMRegister();
+                        }
                         
                         public void onError(ResultCode resultCode) {}
                         
@@ -134,6 +132,8 @@ public abstract class SLBaseActivity extends MapActivity {
                     socialLocate
                 )
             );
+        } else {
+            doC2DMRegister();
         }
     }
     

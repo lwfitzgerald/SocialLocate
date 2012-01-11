@@ -23,7 +23,13 @@ public class SLAuthRequest extends SLRequest {
         // Get the FB access token
         String accessToken = Util.prefs.getString("access_token", null);
         
-        return socialLocate.auth(accessToken);
+        RequestResult<Void> result = socialLocate.auth(accessToken);
+        
+        if (result.code == ResultCode.SUCCESS) {
+            socialLocate.saveCookies();
+        }
+        
+        return result;
     }
 
     @Override
