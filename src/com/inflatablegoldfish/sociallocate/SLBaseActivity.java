@@ -25,7 +25,7 @@ public abstract class SLBaseActivity extends MapActivity {
     protected RequestManager requestManager;
     protected PicRunner picRunner;
     
-    protected Location currentLocation = null;
+    protected volatile Location currentLocation = null;
     
     protected SLBaseMapView mapView;
 
