@@ -146,6 +146,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
                 title, System.currentTimeMillis());
         notification.setLatestEventInfo(this, title, text, contentIntent);
         notification.defaults = Notification.DEFAULT_ALL;
+        notification.flags = Notification.FLAG_AUTO_CANCEL;
         
         return notification;
     }
