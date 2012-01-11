@@ -46,7 +46,8 @@ public class SLRespond extends SLBaseActivity {
                         final List<User> users = (List<User>) userList;
                         
                         int newFriendID;
-                        
+
+                        // For debugging...
                         if (friendID == users.get(0).getId()) {
                             newFriendID = users.get(1).getId();
                         } else {
@@ -55,7 +56,6 @@ public class SLRespond extends SLBaseActivity {
                         
                         // Find friend in users
                         for (User user : users) {
-                            // For debugging...
                             if (user.getId() == newFriendID) {
                                 friend = user;
                                 break;
