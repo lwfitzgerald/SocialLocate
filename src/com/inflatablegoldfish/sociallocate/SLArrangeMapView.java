@@ -97,14 +97,14 @@ public class SLArrangeMapView extends SLBaseMapView implements SLUpdateListener 
             Point centerPoint = new Point();
             mapView.getProjection().toPixels(center, centerPoint);
             
-            Path path = new Path();
+            /*Path path = new Path();
 
             path.moveTo(ownUserPoint.x, ownUserPoint.y);
             path.lineTo(centerPoint.x, centerPoint.y);
             path.moveTo(centerPoint.x, centerPoint.y);
             path.lineTo(friendUserPoint.x, friendUserPoint.y);
 
-            canvas.drawPath(path, paint);
+            canvas.drawPath(path, paint);*/
             
             paint.setStyle(Paint.Style.STROKE);
             
