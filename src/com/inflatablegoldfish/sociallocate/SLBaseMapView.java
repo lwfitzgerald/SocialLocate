@@ -395,6 +395,9 @@ public abstract class SLBaseMapView extends RelativeLayout implements
         // Set venue in overlay
         venueOverlay.setVenue(venue);
         
+        // Animate to it
+        mapController.animateTo(Util.getGeoPoint(SLBaseMapView.this.venue.getLocation()));
+        
         // Show venue bar
         venueBar.setVisibility(View.VISIBLE);
         
