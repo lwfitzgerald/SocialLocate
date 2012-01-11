@@ -33,7 +33,7 @@
 	        android:layout_width="fill_parent"
 	        android:layout_height="fill_parent"
   	        android:layout_weight="1"
-	        style="@style/button_style" />
+	        style="@android:style/Widget.DeviceDefault.ActionButton" />
 	    
         <Button
   	        android:id="@+id/reject_button"
@@ -41,7 +41,7 @@
   	        android:layout_width="fill_parent"
   	        android:layout_height="fill_parent"
   	        android:layout_weight="1"
-  	        style="@style/button_style" />
+  	        style="@android:style/Widget.DeviceDefault.ActionButton" />
  	        
 	</LinearLayout>
     

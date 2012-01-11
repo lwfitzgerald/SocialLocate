@@ -32,14 +32,14 @@
 	        android:text="@string/find_venues_button"
 	        android:layout_width="fill_parent"
 	        android:layout_height="fill_parent"
-	        style="@style/button_style" />
+	        style="@android:style/Widget.DeviceDefault.ActionButton" />
 	    
         <Button
   	        android:id="@+id/notify_button"
   	        android:text="@string/notify_friend_button"
   	        android:layout_width="fill_parent"
   	        android:layout_height="fill_parent"
-  	        style="@style/button_style" />
+  	        style="@android:style/Widget.DeviceDefault.ActionButton" />
  	        
 	</LinearLayout>
     
