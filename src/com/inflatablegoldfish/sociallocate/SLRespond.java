@@ -17,6 +17,9 @@ public class SLRespond extends SLBaseActivity {
     private User friend;
     private ProgressDialog progressDialog;
     
+    private volatile boolean usersLoaded = false;
+    private volatile boolean venueLoaded = false;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +73,12 @@ public class SLRespond extends SLBaseActivity {
                                     updateOwnUser(users.get(0));
                                     
                                     mapView.updateUser(friend, true);
+                                    
+                                    usersLoaded = true;
+                                    
+                                    if (venueLoaded) {
+                                        progressDialog.dismiss();
+                                    }
                                 }
                             }
                         );
@@ -125,7 +134,11 @@ public class SLRespond extends SLBaseActivity {
                                 public void run() {
                                     mapView.setVenue(venue);
                                     
-                                    progressDialog.dismiss();
+                                    venueLoaded = true;
+                                    
+                                    if (usersLoaded) {
+                                        progressDialog.dismiss();
+                                    }
                                 }
                             }
                         );
