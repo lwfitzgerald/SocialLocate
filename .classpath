@@ -7,5 +7,7 @@
 	<classpathentry kind="lib" path="lib/CWAC-LocationPoller.jar"/>
 	<classpathentry kind="lib" path="lib/ocpsoft-pretty-time-1.0.7.jar"/>
 	<classpathentry kind="lib" path="lib/com_facebook_android.jar"/>
+	<classpathentry kind="lib" path="lib/amazinglistview.jar"/>
+	<classpathentry kind="lib" path="lib/c2dm.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
