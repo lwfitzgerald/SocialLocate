@@ -119,10 +119,13 @@ public class C2DMReceiver extends C2DMBaseReceiver {
             } else { // action.equals("respond")
                 boolean response = split[1].equals("1");
                 
+                PendingIntent pendingIntent = PendingIntent.getActivity(
+                        this, 0, new Intent(), 0);
+                
                 Notification notification = buildNotification(
                     getText(R.string.respond_title),
                     getText(response ? R.string.accept_notification_text : R.string.reject_notification_text),
-                    null
+                    pendingIntent
                 );
                 
                 notificationManager.notify(RESPOND_NOTIFICATION_ID, notification);
