@@ -9,6 +9,7 @@ import com.inflatablegoldfish.sociallocate.request.RequestManager;
 import com.inflatablegoldfish.sociallocate.request.SLAuthRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -81,13 +82,9 @@ public abstract class SLBaseActivity extends MapActivity {
                 new SLAuthRequest(
                     requestManager,
                     new RequestListener<Void>() {
-                        public void onComplete(Object users) {
-                            Log.d("SocialLocate", "SL auth OK");
-                        }
+                        public void onComplete(Object users) {}
                         
-                        public void onError(ResultCode resultCode) {
-                            Log.d("SocialLocate", "SL auth error");
-                        }
+                        public void onError(ResultCode resultCode) {}
                         
                         public void onCancel() {
                             Log.d("SocialLocate", "FB auth cancelled so cancelling SL auth");
@@ -181,6 +178,13 @@ public abstract class SLBaseActivity extends MapActivity {
         requestManager.abortAll();
         
         super.onDestroy();
+    }
+    
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        facebook.authorizeCallback(requestCode, resultCode, data);
     }
     
     @Override

@@ -18,7 +18,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Point;
 import android.location.Location;
 import android.util.AttributeSet;

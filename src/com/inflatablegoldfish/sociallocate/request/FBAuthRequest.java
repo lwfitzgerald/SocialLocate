@@ -54,7 +54,9 @@ public class FBAuthRequest extends Request {
                             (Activity) manager.getContext(),
                             new String[] {"offline_access"},
                             new DialogListener() {
-                                public void onComplete(final Bundle values) {                        
+                                public void onComplete(final Bundle values) {
+                                    Log.d("SocialLocate", "FB auth OK");
+                                    
                                     SharedPreferences.Editor editor = Util.prefs.edit();
                                     editor.putString("access_token", facebook.getAccessToken());
                                     editor.putLong("access_expires", facebook.getAccessExpires());
@@ -69,6 +71,8 @@ public class FBAuthRequest extends Request {
                                 }
 
                                 public void onFacebookError(final FacebookError e) {
+                                    Log.d("SocialLocate", "Error during FB auth");
+                                    
                                     result = new RequestResult<Void>(null, ResultCode.ERROR);
                                     
                                     synchronized (resultLock) {
@@ -78,6 +82,8 @@ public class FBAuthRequest extends Request {
                                 }
                     
                                 public void onError(final DialogError e) {
+                                    Log.d("SocialLocate", "Error during FB auth");
+                                    
                                     result = new RequestResult<Void>(null, ResultCode.ERROR);
                                     
                                     synchronized (resultLock) {
@@ -87,6 +93,8 @@ public class FBAuthRequest extends Request {
                                 }
                     
                                 public void onCancel() {
+                                    Log.d("SocialLocate", "FB auth cancelled");
+                                    
                                     result = new RequestResult<Void>(null, ResultCode.CANCELLED);
                                     
                                     synchronized (resultLock) {
@@ -111,6 +119,7 @@ public class FBAuthRequest extends Request {
             return result;
         }
         
+        Log.d("SocialLocate", "FB auth loaded from file");
         return new RequestResult<Void>(null, ResultCode.SUCCESS);
     }
 

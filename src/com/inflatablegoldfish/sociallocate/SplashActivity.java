@@ -27,4 +27,9 @@ public class SplashActivity extends Activity {
         Timer timer = new Timer();
         timer.schedule(task, splashDelay);
     }
+    
+    @Override
+    public void onBackPressed() {
+        // No operation
+    }
 }

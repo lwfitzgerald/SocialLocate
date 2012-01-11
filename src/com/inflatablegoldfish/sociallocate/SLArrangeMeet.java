@@ -13,7 +13,6 @@ import com.inflatablegoldfish.sociallocate.request.SLFetchRequest;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateLocRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
-import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.ViewFlipper;
@@ -281,13 +280,6 @@ public class SLArrangeMeet extends SLBaseActivity {
         stopFetchRequests();
         
         super.onPause();
-    }
-    
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        facebook.authorizeCallback(requestCode, resultCode, data);
     }
     
     public static interface SLUpdateListener {

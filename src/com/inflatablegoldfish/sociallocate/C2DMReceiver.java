@@ -43,6 +43,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
             notificationBuilder = new WrapNotificationBuilder(this);
             notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
             notificationBuilder.setAutoCancel(true);
+            notificationBuilder.setDefaults(Notification.DEFAULT_ALL);
         } catch (Exception e) {
             notificationBuilderAvailable = false;
         }
@@ -139,6 +140,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         Notification notification = new Notification(R.drawable.ic_launcher,
                 title, System.currentTimeMillis());
         notification.setLatestEventInfo(this, title, text, contentIntent);
+        notification.defaults = Notification.DEFAULT_ALL;
         
         return notification;
     }

@@ -35,6 +35,15 @@ public class WrapNotificationBuilder {
         }
     }
     
+    public Object setDefaults(int defaults) {
+        try {
+            Method method = nbClass.getMethod("setDefaults", new Class[] {Integer.TYPE});
+            return method.invoke(notificationBuilder, new Integer(defaults));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
     public Object setTicker(CharSequence tickerText) {
         try {
             Method method = nbClass.getMethod("setTicker", new Class[] {CharSequence.class});

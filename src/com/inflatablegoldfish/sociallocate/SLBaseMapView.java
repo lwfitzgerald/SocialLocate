@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -92,7 +91,6 @@ public abstract class SLBaseMapView extends RelativeLayout implements
          * fallback when paths get too large to fit into
          * textures
          */
-        Log.d("SocialLocate", String.valueOf(Build.VERSION.SDK_INT));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
