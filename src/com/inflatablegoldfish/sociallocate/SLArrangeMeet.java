@@ -12,6 +12,8 @@ import com.inflatablegoldfish.sociallocate.request.SLFetchRequest;
 import com.inflatablegoldfish.sociallocate.request.SLUpdateLocRequest;
 import com.inflatablegoldfish.sociallocate.request.Request.ResultCode;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.ViewFlipper;
@@ -54,6 +56,9 @@ public class SLArrangeMeet extends SLBaseActivity {
         
         setTitle(R.string.friends_title);
         
+        // Check there is a Google account present
+        checkForGoogleAccount();
+        
         // Set up the flipper
         viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
         
@@ -68,6 +73,14 @@ public class SLArrangeMeet extends SLBaseActivity {
         // Set up the venue list
         venueList = (VenueList) findViewById(R.id.venue_list);
         venueList.setUp(this, picRunner);
+    }
+    
+    private void checkForGoogleAccount() {
+        Account[] accounts = AccountManager.get(this).getAccountsByType("com.google");
+        if (accounts.length == 0) {
+            Util.showToast(getText(R.string.no_google_accounts), this);
+            finish();
+        }
     }
     
     /**

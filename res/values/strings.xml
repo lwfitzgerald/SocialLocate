@@ -28,6 +28,7 @@
 	<string name="reject_notification_text">Your friend rejected your request to meet</string>
 	<string name="responding">Responding...</string>
 	<string name="respond_error">Error responding, please try again</string>
+	<string name="no_google_accounts">No Google account found, please configure one</string>
 	
 	
 	
