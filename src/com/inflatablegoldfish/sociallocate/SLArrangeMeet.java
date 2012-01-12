@@ -146,6 +146,7 @@ public class SLArrangeMeet extends SLBaseActivity {
     public void stopFetchRequests() {
         if (fetchTimer != null) {
             fetchTimer.cancel();
+            fetchTimer = null;
         }
     }
     
