@@ -23,7 +23,7 @@ public class SLArrangeMeet extends SLBaseActivity {
     private FriendList friendList;
     private VenueList venueList;
     
-    private Timer fetchTimer = null;
+    private volatile Timer fetchTimer = null;
     
     private volatile ActivityStage currentStage = ActivityStage.FRIEND_LIST;
     
