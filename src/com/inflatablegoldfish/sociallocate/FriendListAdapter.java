@@ -326,7 +326,7 @@ public class FriendListAdapter extends AmazingAdapter implements PicRunnerListen
             return FRIENDS_SECTION_NO;
         }
         
-        if (position >= farSectionStart) {
+        if (position >= farSectionStart && farSectionStart != 0) {
             return FAR_SECTION_NO;
         } else {
             return NEAR_SECTION_NO;
