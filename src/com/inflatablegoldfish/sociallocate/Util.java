@@ -38,6 +38,9 @@ public class Util {
     
     private static final int TWO_MINUTES = 1000 * 60 * 2;
     
+    private static final int CONNECT_TIMEOUT = 5; // Seconds
+    private static final int READ_TIMEOUT = 10; // Seconds
+    
     public static void initIGSSLSocketFactory(InputStream keystoreInputStream) {
         KeyStore keyStore;
         try {
@@ -81,6 +84,9 @@ public class Util {
         
         conn.setRequestProperty("User-Agent", System.getProperties().
                     getProperty("http.agent") + " SocialLocate");
+        
+        conn.setConnectTimeout(CONNECT_TIMEOUT * 1000);
+        conn.setReadTimeout(READ_TIMEOUT * 1000);
         
         return read(conn.getInputStream());
     }
