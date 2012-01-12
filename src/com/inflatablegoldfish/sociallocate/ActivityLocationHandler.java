@@ -62,7 +62,10 @@ public class ActivityLocationHandler {
         }
         
         manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, listener);
-        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+        
+        if (manager.getProvider(LocationManager.GPS_PROVIDER) != null) {
+            manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+        }
     }
     
     public void stopUpdates() {
