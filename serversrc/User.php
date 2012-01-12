@@ -70,7 +70,7 @@ class User {
      * Saves just lat and lng to the DB
      */
     public function saveLocation() {
-        $stmt = db::prepareStatement('INSERT INTO `user` (`id`, `lat`, `lng`) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE `lat`=?, `lng`=?');
+        $stmt = db::prepareStatement('INSERT INTO `user` (`id`, `lat`, `lng`, `last_updated`) VALUES(?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE `lat`=?, `lng`=?');
         $stmt->bind_param(
             'idddd',
             $this->id,
