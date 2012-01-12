@@ -36,7 +36,7 @@ public class User {
         this.id = id;
         this.location = Util.getLocationObject(lat, lng);
         this.distance = null;
-        this.lastUpdated = new Date(lastUpdated * 1000);
+        this.lastUpdated = new Date(Math.min(System.currentTimeMillis(), lastUpdated * 1000));
     }
     
     public void updateFromUser(User toUpdateFrom) {
