@@ -23,7 +23,7 @@ public class SLArrangeMeet extends SLBaseActivity {
     private FriendList friendList;
     private VenueList venueList;
     
-    private Timer fetchTimer;
+    private Timer fetchTimer = null;
     
     private volatile ActivityStage currentStage = ActivityStage.FRIEND_LIST;
     
@@ -91,51 +91,53 @@ public class SLArrangeMeet extends SLBaseActivity {
      * Starts repeating fetch requests
      */
     public void startFetchRequests() {
-        fetchTimer = new Timer();
-        
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                // Only fetch if we've done an initial fetch
-                if (friendList.initialFetchCompleted()) {
-                    requestManager.addRequest(
-                        new SLFetchRequest(
-                            requestManager,
-                            new RequestListener<List<User>>() {
-                                @SuppressWarnings("unchecked")
-                                public void onComplete(Object result) {
-                                    final List<User> friends = (List<User>) result;
-                                    
-                                    // Start a new thread to handle callbacks
-                                    new Thread(
-                                        new Runnable() {
-                                            public void run() {
-                                                // Pass onto friendList and friendView
-                                                friendList.onSLUpdate(friends);
-                                                ((SLArrangeMapView) mapView).onSLUpdate(friends);
-                                                venueList.onSLUpdate(friends);
+        if (fetchTimer == null) {
+            fetchTimer = new Timer();
+            
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    // Only fetch if we've done an initial fetch
+                    if (friendList.initialFetchCompleted()) {
+                        requestManager.addRequest(
+                            new SLFetchRequest(
+                                requestManager,
+                                new RequestListener<List<User>>() {
+                                    @SuppressWarnings("unchecked")
+                                    public void onComplete(Object result) {
+                                        final List<User> friends = (List<User>) result;
+                                        
+                                        // Start a new thread to handle callbacks
+                                        new Thread(
+                                            new Runnable() {
+                                                public void run() {
+                                                    // Pass onto friendList and friendView
+                                                    friendList.onSLUpdate(friends);
+                                                    ((SLArrangeMapView) mapView).onSLUpdate(friends);
+                                                    venueList.onSLUpdate(friends);
+                                                }
                                             }
-                                        }
-                                    ).start();
-                                }
-                                
-                                public void onError(ResultCode resultCode) {
-                                    stopFetchRequests();
-                                }
-
-                                public void onCancel() {
-                                    stopFetchRequests();
-                                }
-                            },
-                            facebook,
-                            socialLocate
-                        )
-                    );
+                                        ).start();
+                                    }
+                                    
+                                    public void onError(ResultCode resultCode) {
+                                        stopFetchRequests();
+                                    }
+    
+                                    public void onCancel() {
+                                        stopFetchRequests();
+                                    }
+                                },
+                                facebook,
+                                socialLocate
+                            )
+                        );
+                    }
                 }
-            }
-        };
-        
-        fetchTimer.scheduleAtFixedRate(task, new Date(), 60000 / FETCHES_PER_MINUTE);
+            };
+            
+            fetchTimer.scheduleAtFixedRate(task, new Date(), 60000 / FETCHES_PER_MINUTE);
+        }
     }
     
     /**
@@ -274,6 +276,11 @@ public class SLArrangeMeet extends SLBaseActivity {
     public void onResume() {
         // Stop background updates
         BackgroundUpdater.cancelAlarm(this);
+        
+        if (friendList.initialFetchCompleted()) {
+            // Start repetitive fetches
+            startFetchRequests();
+        }
         
         super.onResume();
     }
